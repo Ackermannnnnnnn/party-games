@@ -1,0 +1,26 @@
+# node
+node_modules/
+npm-debug.log*
+
+# build
+dist/
+build/
+
+# env (NE JAMAIS commit les vrais .env !)
+.env
+.env.local
+.env.production
+
+# editors
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# logs
+logs/
+*.log
+
+# divers
+.cache/
+coverage/

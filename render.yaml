@@ -1,0 +1,39 @@
+# Render.com — déploiement automatique de Party Games
+# Ce fichier permet à Render de créer les 2 services en 1 clic.
+# Push ce fichier sur ton repo GitHub puis "Blueprints" sur render.com
+# → "New Blueprint Instance" → choisis ton repo → Deploy.
+services:
+  # ─── SERVEUR (Node.js + Socket.io) ───
+  - type: web
+    name: party-games-server
+    runtime: node
+    region: frankfurt           # europe pour latence minimale (oregon, singapore, ohio dispos aussi)
+    plan: free                  # 512 MB RAM, sleep après 15 min inactivité
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        sync: false             # à remplir manuellement avec l'URL du client après déploiement
+
+  # ─── CLIENT (React buildé en static) ───
+  - type: web
+    name: party-games-client
+    runtime: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_SERVER_URL
+        sync: false             # à remplir avec l'URL du serveur après déploiement
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+    routes:
+      - type: rewrite           # SPA : toutes les routes vont vers index.html
+        source: /*
+        destination: /index.html

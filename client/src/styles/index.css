@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  /* Pas de scroll-bounce horizontal sur iOS */
+  overscroll-behavior-x: none;
+}
+
+/* Évite le zoom auto iOS sur input < 16px */
+@media (max-width: 640px) {
+  input, select, textarea, button {
+    font-size: 16px !important;
+  }
+}
+
+/* Cible touch : minimum 44x44px (Apple HIG) */
+button, input[type="checkbox"], select {
+  min-height: 40px;
+}
+
+/* Petit utilitaire de bouton */
+.btn {
+  @apply px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-semibold transition-all duration-150 shadow-md;
+  min-height: 44px;
+}
+.btn-primary { @apply bg-brand hover:bg-brand-dark active:bg-brand-dark text-white; }
+.btn-ghost   { @apply bg-slate-800 hover:bg-slate-700 active:bg-slate-700 text-slate-100; }
+
+.card {
+  @apply bg-slate-800/70 backdrop-blur rounded-2xl shadow-xl p-4 sm:p-6 border border-slate-700;
+}
+
+/* Scrollbar discrète (chat, listes) */
+.scrollable {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167, 139, 250, 0.3) transparent;
+}
+.scrollable::-webkit-scrollbar { width: 6px; }
+.scrollable::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.3); border-radius: 3px; }

@@ -1,0 +1,56 @@
+# Nginx config pour Party Games
+# __DOMAIN__ est remplacé par le script setup-vps.sh
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name __DOMAIN__ www.__DOMAIN__;
+
+    # ───── Frontend statique (React buildé) ─────
+    root /var/www/party-games/client/dist;
+    index index.html;
+
+    # SPA fallback : toutes les routes inconnues vont vers index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Cache long pour les assets buildés (avec hash dans le nom)
+    location /assets/ {
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Pas de cache pour index.html (pour que les updates soient immédiats)
+    location = /index.html {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+    }
+
+    # ───── Backend Node.js (Socket.io) ─────
+    # /socket.io/ → proxy vers le serveur Node
+    location /socket.io/ {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 86400;  # 24h pour les longues sessions WS
+    }
+
+    # Healthcheck endpoint
+    location = /health {
+        proxy_pass http://localhost:3001/health;
+        access_log off;
+    }
+
+    # Limite la taille des uploads (au cas où)
+    client_max_body_size 1m;
+
+    # Sécurité de base
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+}
