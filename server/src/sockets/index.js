@@ -19,7 +19,7 @@ export function registerSocketHandlers(io, socket) {
     if (!parsed) return;
     try {
       const room = roomManager.createRoom();
-      const player = new Player({ pseudo: parsed.pseudo, socketId: socket.id });
+      const player = new Player({ pseudo: parsed.pseudo, avatar: parsed.avatar, socketId: socket.id });
       room.addPlayer(player);
       _attachSocketToRoom(socket, room, player);
       socket.emit('room:joined', { code: room.code, playerId: player.id });
@@ -40,6 +40,7 @@ export function registerSocketHandlers(io, socket) {
     if (existing) {
       existing.socketId = socket.id;
       existing.connected = true;
+      if (parsed.avatar) existing.avatar = parsed.avatar; // MAJ de l'avatar à la reconnexion
       _attachSocketToRoom(socket, room, existing);
       socket.emit('room:joined', { code: room.code, playerId: existing.id, reconnected: true });
       room.emitRoomState();
@@ -55,7 +56,7 @@ export function registerSocketHandlers(io, socket) {
 
     // 3) Sinon : nouveau joueur (autorise meme en cours de partie -> spectateur ou actif selon jeu)
     try {
-      const player = new Player({ pseudo: parsed.pseudo, socketId: socket.id });
+      const player = new Player({ pseudo: parsed.pseudo, avatar: parsed.avatar, socketId: socket.id });
       room.addPlayer(player);
       _attachSocketToRoom(socket, room, player);
       socket.emit('room:joined', { code: room.code, playerId: player.id });
@@ -84,6 +85,16 @@ export function registerSocketHandlers(io, socket) {
   });
 
   socket.on('room:leave', () => _leaveRoom(socket));
+
+  // Change l'avatar en cours de partie (broadcast à tous)
+  socket.on('player:setAvatar', (data) => {
+    const parsed = validate(socket, schemas.setAvatar, data);
+    if (!parsed) return;
+    const { room, player } = _getContext(socket);
+    if (!room || !player) return socket.emit('error', { code: 'NOT_IN_ROOM' });
+    player.avatar = parsed.avatar;
+    room.emitRoomState();
+  });
 
   // ───────── CHAT ─────────
   socket.on('chat:send', (data) => {

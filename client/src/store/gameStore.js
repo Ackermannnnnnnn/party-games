@@ -7,6 +7,7 @@ import { create } from 'zustand';
 export const useGameStore = create((set) => ({
   // Identité
   pseudo: localStorage.getItem('pseudo') || '',
+  avatar: localStorage.getItem('avatar') || 'face_grin',
   playerId: null,
 
   // Connexion
@@ -27,6 +28,10 @@ export const useGameStore = create((set) => ({
   setPseudo: (pseudo) => {
     localStorage.setItem('pseudo', pseudo);
     set({ pseudo });
+  },
+  setAvatar: (avatar) => {
+    localStorage.setItem('avatar', avatar);
+    set({ avatar });
   },
   setPlayerId: (id) => {
     if (id) localStorage.setItem('playerId', id);

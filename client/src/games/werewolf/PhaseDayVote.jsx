@@ -1,6 +1,7 @@
 import { useGameStore } from '../../store/gameStore.js';
 import { api } from '../../hooks/useSocket.js';
 import Timer from '../../components/Timer.jsx';
+import Avatar from '../../components/Avatar.jsx';
 
 export default function PhaseDayVote() {
   const { gameState, room, playerId } = useGameStore();
@@ -49,9 +50,14 @@ export default function PhaseDayVote() {
                 'bg-slate-900/40 border-slate-700 text-slate-200 hover:border-amber-400'
               }`}
             >
-              {!isAlive && '💀 '}
-              {p.id === mayorId && '👑 '}
-              {p.pseudo}{isMe && ' (toi)'}
+              <span className="flex items-center justify-center gap-2">
+                <Avatar id={p.avatar} size="sm" />
+                <span className="truncate">
+                  {!isAlive && '💀 '}
+                  {p.id === mayorId && '👑 '}
+                  {p.pseudo}{isMe && ' (toi)'}
+                </span>
+              </span>
               {votedIds.has(p.id) && <span className="block text-xs mt-1 text-emerald-300">a voté</span>}
             </button>
           );

@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/gameStore.js';
 import { useSounds } from '../../hooks/useSounds.js';
 import { api } from '../../hooks/useSocket.js';
 import { motion, AnimatePresence } from 'framer-motion';
+import Avatar from '../../components/Avatar.jsx';
 
 const REVEAL_DELAY_MS = 1300;
 const INITIAL_DELAY_MS = 800;
@@ -14,12 +15,16 @@ export default function PhasePodium() {
   const isHost = playerId === room.hostId;
   const [showHistory, setShowHistory] = useState(false);
 
-  const ranking = (p.ranking || []).map(({ playerId: pid, points }) => ({
-    pseudo: room.players.find(pl => pl.id === pid)?.pseudo || '?',
-    points,
-    isMe: pid === playerId,
-    pid,
-  }));
+  const ranking = (p.ranking || []).map(({ playerId: pid, points }) => {
+    const pl = room.players.find(x => x.id === pid);
+    return {
+      pseudo: pl?.pseudo || '?',
+      avatar: pl?.avatar,
+      points,
+      isMe: pid === playerId,
+      pid,
+    };
+  });
 
   const totalToReveal = ranking.length;
   const [revealedFromBottom, setRevealedFromBottom] = useState(0);
@@ -96,6 +101,7 @@ export default function PhasePodium() {
                       <span className={realRank === 0 ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-3xl'}>
                         {medal || `#${realRank + 1}`}
                       </span>
+                      <Avatar id={pl.avatar} size={realRank === 0 ? 'md' : 'sm'} />
                       <p className={`font-bold truncate ${pl.isMe ? 'text-brand-light' : ''}`}>
                         {pl.pseudo}{pl.isMe && ' (toi)'}
                       </p>

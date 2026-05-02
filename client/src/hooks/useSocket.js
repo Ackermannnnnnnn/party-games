@@ -80,8 +80,9 @@ export function useSocket() {
 
 // API helpers (encapsule les emits)
 export const api = {
-  createRoom: (pseudo) => socket.emit('room:create', { pseudo }),
-  joinRoom:   (code, pseudo) => socket.emit('room:join', { code: code.toUpperCase(), pseudo }),
+  createRoom: (pseudo, avatar) => socket.emit('room:create', { pseudo, avatar }),
+  joinRoom:   (code, pseudo, avatar) => socket.emit('room:join', { code: code.toUpperCase(), pseudo, avatar }),
+  setAvatar:  (avatar) => socket.emit('player:setAvatar', { avatar }),
   leaveRoom:  () => {
     socket.emit('room:leave');
     localStorage.removeItem('roomCode');

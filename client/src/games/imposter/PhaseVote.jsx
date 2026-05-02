@@ -1,6 +1,7 @@
 import { useGameStore } from '../../store/gameStore.js';
 import { api } from '../../hooks/useSocket.js';
 import Timer from '../../components/Timer.jsx';
+import Avatar from '../../components/Avatar.jsx';
 
 export default function PhaseVote() {
   const { gameState, room, playerId } = useGameStore();
@@ -38,9 +39,12 @@ export default function PhaseVote() {
                   : 'bg-slate-900 border-slate-700 hover:border-brand hover:bg-slate-800'
               }`}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">{p.pseudo}{isMe && ' (toi)'}</span>
-                {votedIds.has(p.id) && <span className="text-xs text-slate-400">a voté</span>}
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2 min-w-0">
+                  <Avatar id={p.avatar} size="sm" />
+                  <span className="font-semibold truncate">{p.pseudo}{isMe && ' (toi)'}</span>
+                </span>
+                {votedIds.has(p.id) && <span className="text-xs text-slate-400 shrink-0">a voté</span>}
               </div>
               <div className="mt-2 flex flex-wrap gap-1">
                 {words.length === 0

@@ -4,11 +4,13 @@ import { z } from 'zod';
 // caractères ; bloque seulement ce qui pourrait briser le HTML/JS.
 const pseudoSchema = z.string().trim().min(1).max(20)
   .regex(/^[^<>&"'`\\]+$/, 'Pseudo invalide (caractères spéciaux interdits)');
+const avatarSchema = z.string().min(1).max(40).optional();
 
 export const schemas = {
-  roomCreate: z.object({ pseudo: pseudoSchema }),
-  roomJoin:   z.object({ code: z.string().length(6), pseudo: pseudoSchema }),
-  roomRejoin: z.object({ code: z.string().length(6), playerId: z.string().min(8) }),
+  roomCreate:    z.object({ pseudo: pseudoSchema, avatar: avatarSchema }),
+  roomJoin:      z.object({ code: z.string().length(6), pseudo: pseudoSchema, avatar: avatarSchema }),
+  roomRejoin:    z.object({ code: z.string().length(6), playerId: z.string().min(8) }),
+  setAvatar:     z.object({ avatar: z.string().min(1).max(40) }),
   chatSend:   z.object({ text: z.string().trim().min(1).max(300) }),
   gameSelect: z.object({ gameId: z.string().min(1).max(40) }),
   setGame:    z.object({ gameId: z.string().min(1).max(40) }),

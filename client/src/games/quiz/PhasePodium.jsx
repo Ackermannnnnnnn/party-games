@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/gameStore.js';
 import { useSounds } from '../../hooks/useSounds.js';
 import { api } from '../../hooks/useSocket.js';
 import { motion, AnimatePresence } from 'framer-motion';
+import Avatar from '../../components/Avatar.jsx';
 
 const REVEAL_DELAY_MS = 1400;
 const INITIAL_DELAY_MS = 1000;
@@ -16,13 +17,17 @@ export default function PhasePodium() {
   const isHardcore = !!p.options?.hardcoreMode;
   const isBR = !!p.options?.battleRoyaleMode;
 
-  const ranking = (p.ranking || []).map(({ playerId: pid, points, eliminated }) => ({
-    pseudo: room.players.find(pl => pl.id === pid)?.pseudo || '?',
-    points,
-    isMe: pid === playerId,
-    eliminated,
-    pid,
-  }));
+  const ranking = (p.ranking || []).map(({ playerId: pid, points, eliminated }) => {
+    const pl = room.players.find(x => x.id === pid);
+    return {
+      pseudo: pl?.pseudo || '?',
+      avatar: pl?.avatar,
+      points,
+      isMe: pid === playerId,
+      eliminated,
+      pid,
+    };
+  });
 
   // Reveal progressif : on dévoile depuis le bas vers le haut.
   // revealedFromBottom = combien d'items dévoilés en partant du dernier.
@@ -138,6 +143,7 @@ export default function PhasePodium() {
                       <span className={`${realRank === 0 ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-3xl'}`}>
                         {medal || `#${realRank + 1}`}
                       </span>
+                      <Avatar id={pl.avatar} size={realRank === 0 ? 'md' : 'sm'} />
                       <div className="min-w-0">
                         <p className={`font-bold truncate ${pl.isMe ? 'text-brand-light' : ''}`}>
                           {pl.pseudo}{pl.isMe && ' (toi)'}

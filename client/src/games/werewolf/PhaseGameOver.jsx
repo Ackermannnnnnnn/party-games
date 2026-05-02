@@ -1,6 +1,7 @@
 import { useGameStore } from '../../store/gameStore.js';
 import { api } from '../../hooks/useSocket.js';
 import { motion } from 'framer-motion';
+import Avatar from '../../components/Avatar.jsx';
 
 const ROLE_INFO = {
   villageois:  { icon: '🧑‍🌾', label: 'Villageois' },
@@ -51,10 +52,13 @@ export default function PhaseGameOver() {
                   won ? 'bg-emerald-500/15 border border-emerald-500/40' : 'bg-slate-900/40'
                 }`}
               >
-                <span className={`font-medium ${p.id === playerId ? 'text-brand-light' : ''}`}>
-                  {p.id === mayorId && '👑 '}
-                  {p.pseudo}{p.id === playerId && ' (toi)'}
-                  {won && <span className="ml-2 text-xs text-emerald-300">🏆 vainqueur</span>}
+                <span className={`font-medium flex items-center gap-2 ${p.id === playerId ? 'text-brand-light' : ''}`}>
+                  <Avatar id={p.avatar} size="sm" />
+                  <span>
+                    {p.id === mayorId && '👑 '}
+                    {p.pseudo}{p.id === playerId && ' (toi)'}
+                    {won && <span className="ml-2 text-xs text-emerald-300">🏆 vainqueur</span>}
+                  </span>
                 </span>
                 <span>
                   {info?.icon} {info?.label || role}
