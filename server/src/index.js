@@ -9,7 +9,7 @@ import { roomManager } from './core/RoomManager.js';
 import { createAdminRouter } from './admin/router.js';
 
 const PORT = process.env.PORT || 3001;
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://partygrid.click';
 
 const app = express();
 app.use(cors({ origin: CORS_ORIGIN }));
