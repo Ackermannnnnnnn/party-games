@@ -457,9 +457,33 @@ export function listThemes() {
   }));
 }
 
+// Store dynamique (modifiable via /admin)
+import { imposterStore } from '../../admin/stores.js';
+
+// Init du store avec les paires par défaut au chargement.
+// Si un fichier JSON existe, le store l'utilisera à la place.
+imposterStore.init(
+  Object.entries(THEMES)
+    .filter(([id]) => id !== 'random')
+    .flatMap(([themeId, t]) =>
+      t.pairs.map((pair, idx) => ({
+        id: `${themeId}_${idx}`,
+        themeId,
+        civil: pair[0],
+        imposter: pair[1],
+      }))
+    )
+);
+
 export function pickRandomPair(themeId = 'random') {
-  const theme = THEMES[themeId] || THEMES.random;
-  return theme.pairs[Math.floor(Math.random() * theme.pairs.length)];
+  const pool = imposterStore.getByTheme(themeId);
+  if (pool.length === 0) {
+    const theme = THEMES[themeId] || THEMES.random;
+    const pair = theme.pairs[Math.floor(Math.random() * theme.pairs.length)];
+    return pair;
+  }
+  const p = pool[Math.floor(Math.random() * pool.length)];
+  return [p.civil, p.imposter];
 }
 
 export function isValidTheme(themeId) {

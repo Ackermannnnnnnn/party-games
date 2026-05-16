@@ -37,8 +37,17 @@ export default function PhaseDescribe() {
   return (
     <div className="card space-y-5">
       <div className="text-center">
-        <p className="text-slate-400 text-sm">Ton mot</p>
-        <p className="font-display text-3xl text-brand-light">{word}</p>
+        {word ? (
+          <>
+            <p className="text-slate-400 text-sm">Ton mot</p>
+            <p className="font-display text-3xl text-brand-light">{word}</p>
+          </>
+        ) : (
+          <>
+            <p className="text-slate-400 text-sm">🎩 Tu es Mr White</p>
+            <p className="font-display text-xl text-amber-300">Bluffe ! Devine le thème depuis les indices des autres.</p>
+          </>
+        )}
       </div>
 
       <div className="border-t border-slate-700 pt-4">

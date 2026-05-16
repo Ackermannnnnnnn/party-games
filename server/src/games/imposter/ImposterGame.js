@@ -15,6 +15,7 @@ const PHASES = {
   DESCRIBE: 'DESCRIBE',
   ROUND_END: 'ROUND_END',
   VOTE: 'VOTE',
+  MR_WHITE_GUESS: 'MR_WHITE_GUESS',
   RESULTS: 'RESULTS',
 };
 
@@ -26,7 +27,10 @@ const DEFAULT_OPTIONS = {
   imposterKnows: true,    // l'imposteur sait qu'il est imposteur ?
   voteDurationSec: 45,
   turnDurationSec: 0,     // 0 = pas de timer par tour
+  mrWhiteEnabled: false,  // Si true : 1 des imposteurs est "Mr White" (sans mot)
 };
+
+const MR_WHITE_GUESS_DURATION_MS = 45_000;
 
 export class ImposterGame extends BaseGame {
   static id = 'imposter';
@@ -54,6 +58,8 @@ export class ImposterGame extends BaseGame {
 
     this.round = 0;
     this.imposterIds = new Set();   // ⚠️ Set : peut contenir plusieurs imposteurs
+    this.mrWhiteId = null;          // ID du Mr White (un seul, parmi les imposteurs)
+    this.mrWhiteGuess = null;       // sa réponse à la phase MR_WHITE_GUESS
     this.civilWord = null;
     this.imposterWord = null;
 
@@ -78,6 +84,7 @@ export class ImposterGame extends BaseGame {
     o.imposterKnows   = !!o.imposterKnows;
     o.voteDurationSec = Math.max(15, Math.min(180, parseInt(o.voteDurationSec, 10) || 45));
     o.turnDurationSec = Math.max(0, Math.min(120, parseInt(o.turnDurationSec, 10) || 0));
+    o.mrWhiteEnabled  = !!o.mrWhiteEnabled;
     return o;
   }
 
@@ -111,6 +118,11 @@ export class ImposterGame extends BaseGame {
     // Tirer N imposteurs parmi les vivants
     const shuffled = this.shuffle(alive);
     this.imposterIds = new Set(shuffled.slice(0, this.options.imposterCount));
+    // Mr White : 1 imposteur tiré au sort parmi les imposteurs (s'il est activé)
+    this.mrWhiteId = this.options.mrWhiteEnabled
+      ? [...this.imposterIds][Math.floor(Math.random() * this.imposterIds.size)]
+      : null;
+    this.mrWhiteGuess = null;
 
     const [civilWord, imposterWord] = pickRandomPair(this.options.theme);
     this.civilWord = civilWord;
@@ -217,6 +229,9 @@ export class ImposterGame extends BaseGame {
       case 'nextSpeakingRound':  return this._onNextSpeakingRound(playerId);
       case 'startVote':          return this._onStartVote(playerId);
       case 'castVote':           return this._onVote(playerId, payload);
+      case 'mrWhiteGuess':       return this._onMrWhiteGuess(playerId, payload);
+      case 'revote':             return this._onRevote(playerId);
+      case 'newWord':            return this._onNewWord(playerId);
       case 'nextMatch':          return this._onNextMatch(playerId);
       case 'endGame':            return this._onEndGame(playerId);
       default:
@@ -332,6 +347,15 @@ export class ImposterGame extends BaseGame {
     const eliminatedId = topIds.length === 1 ? topIds[0] : null;
     if (eliminatedId) this.eliminatedIds.add(eliminatedId);
 
+    // Si Mr White vient d'être éliminé → il a une chance de deviner le mot
+    if (eliminatedId && eliminatedId === this.mrWhiteId) {
+      this.setPhase(PHASES.MR_WHITE_GUESS);
+      this.setTimer(MR_WHITE_GUESS_DURATION_MS, () => {
+        if (this.phase === PHASES.MR_WHITE_GUESS) this._resolveMrWhiteGuess();
+      });
+      return;
+    }
+
     // Conditions de victoire (multi-imposteurs)
     const aliveImposters = [...this.imposterIds].filter(id => !this.eliminatedIds.has(id)).length;
     const aliveCivils    = this.playerIds.filter(id => !this.eliminatedIds.has(id) && !this.imposterIds.has(id)).length;
@@ -354,6 +378,89 @@ export class ImposterGame extends BaseGame {
     };
 
     this.setPhase(PHASES.RESULTS);
+  }
+
+  /** Mr White soumet sa réponse pour deviner le mot des civils. */
+  _onMrWhiteGuess(playerId, payload) {
+    if (this.phase !== PHASES.MR_WHITE_GUESS) return this._error(playerId, 'BAD_PHASE');
+    if (playerId !== this.mrWhiteId) return this._error(playerId, 'NOT_MR_WHITE');
+    if (this.mrWhiteGuess !== null) return this._error(playerId, 'ALREADY_GUESSED');
+    const guess = String(payload?.guess || '').trim().slice(0, 60);
+    this.mrWhiteGuess = guess;
+    this.clearAllTimers();
+    this._resolveMrWhiteGuess();
+  }
+
+  _resolveMrWhiteGuess() {
+    const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '').trim();
+    const correct = this.mrWhiteGuess && norm(this.mrWhiteGuess) === norm(this.civilWord);
+
+    // Résultat final
+    const aliveImposters = [...this.imposterIds].filter(id => !this.eliminatedIds.has(id)).length;
+    const aliveCivils    = this.playerIds.filter(id => !this.eliminatedIds.has(id) && !this.imposterIds.has(id)).length;
+
+    let winner;
+    if (correct) {
+      // Mr White gagne SEUL : il devine, malgré son élimination
+      winner = 'mr_white';
+    } else if (aliveImposters === 0) {
+      winner = 'civils';
+    } else if (aliveImposters >= aliveCivils) {
+      winner = 'imposter';
+    } else {
+      winner = 'civils'; // Mr White a faux + il était le dernier imposter en vie possible
+    }
+
+    this.lastResult = {
+      eliminatedId: this.mrWhiteId,
+      eliminatedWasImposter: true,
+      mrWhiteGuess: this.mrWhiteGuess,
+      mrWhiteGuessCorrect: !!correct,
+      imposterIds: [...this.imposterIds],
+      mrWhiteId: this.mrWhiteId,
+      imposterWord: this.imposterWord,
+      civilWord: this.civilWord,
+      winner,
+      gameOver: true,
+    };
+    this.setPhase(PHASES.RESULTS);
+  }
+
+  /** Égalité : refait juste le vote, garde les mots/indices actuels. */
+  _onRevote(playerId) {
+    if (playerId !== this.room.hostId) return this._error(playerId, 'NOT_HOST');
+    if (this.phase !== PHASES.RESULTS) return this._error(playerId, 'BAD_PHASE');
+    if (!this.lastResult?.tied) return this._error(playerId, 'NOT_TIED', 'Pas d\'égalité.');
+    this.votes.clear();
+    this.lastResult = null;
+    this._startVotePhase();
+  }
+
+  /** Égalité : nouveau mot, recommence la manche depuis le début (REVEAL). */
+  _onNewWord(playerId) {
+    if (playerId !== this.room.hostId) return this._error(playerId, 'NOT_HOST');
+    if (this.phase !== PHASES.RESULTS) return this._error(playerId, 'BAD_PHASE');
+    if (!this.lastResult?.tied) return this._error(playerId, 'NOT_TIED');
+    // Reset complet de la manche en cours sans incrémenter `round`
+    this.descriptions.clear();
+    this.dontKnowIds.clear();
+    this.votes.clear();
+    this.speakingRound = 0;
+    this.currentSpeakerIdx = 0;
+    this.turnEndsAt = null;
+    this.lastResult = null;
+    this.speakingOrder = this.shuffle(this.playerIds.filter(id => !this.eliminatedIds.has(id)));
+    // Tirage d'une nouvelle paire (et nouveau imposteur)
+    const alive = [...this.speakingOrder];
+    const shuffled = this.shuffle(alive);
+    this.imposterIds = new Set(shuffled.slice(0, this.options.imposterCount));
+    const [civilWord, imposterWord] = pickRandomPair(this.options.theme);
+    this.civilWord = civilWord;
+    this.imposterWord = imposterWord;
+    this.setPhase(PHASES.REVEAL);
+    this.setTimer(REVEAL_DURATION_MS, () => {
+      if (this.phase === PHASES.REVEAL) this._startSpeakingRound();
+    });
   }
 
   _onNextMatch(playerId) {
@@ -416,6 +523,9 @@ export class ImposterGame extends BaseGame {
           voteEndsAt: Date.now() + this.options.voteDurationSec * 1000,
         };
 
+      case PHASES.MR_WHITE_GUESS:
+        return { ...base, mrWhiteId: this.mrWhiteId };
+
       case PHASES.RESULTS:
         return { ...base, result: this.lastResult };
 
@@ -435,13 +545,14 @@ export class ImposterGame extends BaseGame {
     }
 
     const isImposter = this.imposterIds.has(playerId);
+    const isMrWhite = playerId === this.mrWhiteId;
 
     if ([PHASES.REVEAL, PHASES.DESCRIBE, PHASES.ROUND_END, PHASES.VOTE].includes(this.phase)) {
-      const data = {
-        word: isImposter ? this.imposterWord : this.civilWord,
-      };
+      // Mr White n'a PAS de mot — il doit bluffer puis deviner s'il est éliminé
+      const word = isMrWhite ? null : (isImposter ? this.imposterWord : this.civilWord);
+      const data = { word };
       if (this.options.imposterKnows) {
-        data.role = isImposter ? 'imposter' : 'civil';
+        data.role = isMrWhite ? 'mr_white' : (isImposter ? 'imposter' : 'civil');
         if (isImposter && this.imposterIds.size > 1) {
           data.fellowImposters = [...this.imposterIds].filter(id => id !== playerId);
         }
@@ -451,10 +562,16 @@ export class ImposterGame extends BaseGame {
       return data;
     }
 
+    if (this.phase === PHASES.MR_WHITE_GUESS) {
+      // Seul Mr White voit l'interface de devinette ; les autres voient un écran d'attente
+      return { isMrWhite, role: isMrWhite ? 'mr_white' : (isImposter ? 'imposter' : 'civil') };
+    }
+
     if (this.phase === PHASES.RESULTS) {
       return {
         wasImposter: isImposter,
-        role: isImposter ? 'imposter' : 'civil',
+        wasMrWhite: isMrWhite,
+        role: isMrWhite ? 'mr_white' : (isImposter ? 'imposter' : 'civil'),
       };
     }
     return {};

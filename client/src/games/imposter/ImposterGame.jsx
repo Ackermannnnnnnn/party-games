@@ -6,14 +6,16 @@ import PhaseReveal from './PhaseReveal.jsx';
 import PhaseDescribe from './PhaseDescribe.jsx';
 import PhaseRoundEnd from './PhaseRoundEnd.jsx';
 import PhaseVote from './PhaseVote.jsx';
+import PhaseMrWhiteGuess from './PhaseMrWhiteGuess.jsx';
 import PhaseResults from './PhaseResults.jsx';
 
 const phaseComponents = {
-  REVEAL:    PhaseReveal,
-  DESCRIBE:  PhaseDescribe,
-  ROUND_END: PhaseRoundEnd,
-  VOTE:      PhaseVote,
-  RESULTS:   PhaseResults,
+  REVEAL:           PhaseReveal,
+  DESCRIBE:         PhaseDescribe,
+  ROUND_END:        PhaseRoundEnd,
+  VOTE:             PhaseVote,
+  MR_WHITE_GUESS:   PhaseMrWhiteGuess,
+  RESULTS:          PhaseResults,
 };
 
 export default function ImposterGame() {

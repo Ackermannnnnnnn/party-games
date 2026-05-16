@@ -167,11 +167,10 @@ export class PetitBacGame extends BaseGame {
       this._computeScoring();
       return;
     }
-    this.validationEndsAt = Date.now() + VALIDATION_TIMER_MS;
+    // Pas de timer auto : l'hôte décide quand passer (bouton "Calculer scores")
+    // Cela évite de couper la correction collective.
+    this.validationEndsAt = null;
     this.setPhase(PHASES.VALIDATING);
-    this.setTimer(VALIDATION_TIMER_MS, () => {
-      if (this.phase === PHASES.VALIDATING) this._computeScoring();
-    });
   }
 
   _computeScoring() {

@@ -705,15 +705,23 @@ export function isValidCategory(id) {
   return id in CATEGORIES;
 }
 
+// Store dynamique (modifiable via /admin)
+import { quizStore } from '../../admin/stores.js';
+
+// Init du store avec les données par défaut (depuis CATEGORIES) au chargement.
+// Si un fichier JSON existe déjà, le store l'utilisera à la place.
+quizStore.init(
+  Object.values(CATEGORIES)
+    .filter(c => c.id !== 'all')
+    .flatMap(c => c.questions.map(q => ({ ...q })))
+);
+
 /**
  * Tire N questions distinctes au hasard.
- * @param {string} categoryId
- * @param {number} n
- * @param {string} difficulty 'random' | 'easy' | 'medium' | 'hard' | 'extreme'
- * @param {Set<string>} excludedIds — questions à exclure (anti-répétition)
+ * Utilise le store dynamique (modifiable via /admin) plutôt que les données statiques.
  */
 export function pickQuestions(categoryId, n, difficulty = 'random', excludedIds = new Set()) {
-  let pool = (CATEGORIES[categoryId] || CATEGORIES.all).questions;
+  let pool = quizStore.getByCategory(categoryId);
 
   const difficultyMap = { easy: 1, medium: 2, hard: 3, extreme: 4 };
   if (difficulty in difficultyMap) {

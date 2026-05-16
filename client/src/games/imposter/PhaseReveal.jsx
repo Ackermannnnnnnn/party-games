@@ -44,7 +44,20 @@ export default function PhaseReveal() {
           animate={{ scale: 1, opacity: 1 }}
           className="space-y-4"
         >
-          <div className="text-4xl sm:text-5xl md:text-6xl font-display tracking-wider break-words px-2">{word}</div>
+          {role === 'mr_white' ? (
+            <div className="space-y-3">
+              <div className="text-6xl">🎩</div>
+              <div className="text-3xl sm:text-4xl font-display tracking-wider text-amber-300">
+                Tu es Mr WHITE
+              </div>
+              <p className="text-slate-300 text-sm max-w-md mx-auto">
+                Tu n'as <strong>PAS de mot</strong>. Tu dois bluffer pour passer pour un civil.
+                Si tu es éliminé, tu auras une chance de deviner le mot — réussis et tu gagnes seul !
+              </p>
+            </div>
+          ) : (
+            <div className="text-4xl sm:text-5xl md:text-6xl font-display tracking-wider break-words px-2">{word}</div>
+          )}
 
           {role === 'imposter' && (
             <>

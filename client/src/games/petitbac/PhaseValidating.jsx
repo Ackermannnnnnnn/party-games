@@ -53,11 +53,12 @@ export default function PhaseValidating() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {p.validationEndsAt && <Timer endsAt={p.validationEndsAt} />}
-          {isHost && (
+          {isHost ? (
             <button onClick={() => api.gameAction('forceScoring', {})} className="btn btn-primary text-sm px-3 py-2">
               🧮 Calculer les scores
             </button>
+          ) : (
+            <span className="text-xs text-slate-400 italic">L'hôte clique quand on a fini</span>
           )}
         </div>
       </div>

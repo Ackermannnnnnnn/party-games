@@ -546,6 +546,11 @@ export class WerewolfGame extends BaseGame {
     const targetRole = this.assignments.get(targetId);
     this.seerHistory.push({ day: this.day, playerId: targetId, roleId: targetRole });
     this.room.emitGameState();
+    // Auto-passage à la suite après un court délai pour qu'elle voie le résultat
+    this.clearAllTimers();
+    this.setTimer(3500, () => {
+      if (this.phase === P.NIGHT_SEER) this._goWitch();
+    });
   }
 
   _onWitch(playerId, payload) {

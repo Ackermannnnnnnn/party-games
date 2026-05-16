@@ -6,6 +6,7 @@ import { Server as IOServer } from 'socket.io';
 import { logger } from './utils/logger.js';
 import { registerSocketHandlers } from './sockets/index.js';
 import { roomManager } from './core/RoomManager.js';
+import { createAdminRouter } from './admin/router.js';
 
 const PORT = process.env.PORT || 3001;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
@@ -17,6 +18,9 @@ app.use(express.json());
 app.get('/health', (_req, res) => {
   res.json({ ok: true, rooms: roomManager.size(), uptime: process.uptime() });
 });
+
+// Routes admin (CRUD questions Quiz + paires Imposter)
+app.use('/admin', createAdminRouter());
 
 const httpServer = http.createServer(app);
 

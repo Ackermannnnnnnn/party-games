@@ -8,6 +8,7 @@ const DEFAULT_OPTS = {
   imposterKnows: true,
   voteDurationSec: 45,
   turnDurationSec: 0,
+  mrWhiteEnabled: false,
 };
 
 /**
@@ -129,6 +130,23 @@ export default function GameOptions({ playerCount, onStart }) {
           <p className="font-medium">L'imposteur sait qu'il est l'imposteur</p>
           <p className="text-xs text-slate-400">
             Décoche pour le mode "hardcore" : l'imposteur ne sait pas, il doit s'en rendre compte tout seul.
+          </p>
+        </div>
+      </label>
+
+      {/* Mr White */}
+      <label className={`flex items-center gap-3 select-none ${isHost ? 'cursor-pointer' : ''} bg-slate-900/40 px-3 py-2 rounded-lg`}>
+        <input
+          type="checkbox"
+          disabled={!isHost}
+          checked={opts.mrWhiteEnabled}
+          onChange={(e) => update('mrWhiteEnabled', e.target.checked)}
+          className="accent-brand w-4 h-4"
+        />
+        <div>
+          <p className="font-medium">🎩 Mr White</p>
+          <p className="text-xs text-slate-400">
+            Un des imposteurs est "Mr White" : il n'a PAS de mot et doit bluffer. Si éliminé, il a une chance de deviner pour gagner SEUL.
           </p>
         </div>
       </label>

@@ -5,6 +5,7 @@ import { useSocket, api } from './hooks/useSocket.js';
 import { useGameStore } from './store/gameStore.js';
 import Home from './pages/Home.jsx';
 import GameRoom from './pages/GameRoom.jsx';
+import Admin from './pages/Admin.jsx';
 import VolumeToggle from './components/VolumeToggle.jsx';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -86,6 +87,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/room/:code" element={<GameRoom />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
