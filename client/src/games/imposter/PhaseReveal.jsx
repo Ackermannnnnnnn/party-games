@@ -29,6 +29,8 @@ export default function PhaseReveal() {
       <p className="text-xs text-slate-500 mb-6 sm:mb-8">
         {opts.imposterCount > 1 && `${opts.imposterCount} imposteurs · `}
         {opts.imposterKnows ? 'mode normal' : 'mode hardcore (l\'imposteur ne sait pas)'}
+        {opts.mrWhiteEnabled && ' · 🎩 Mr White en jeu'}
+        {opts.mrWhiteRequested && !opts.mrWhiteEnabled && ' · sans Mr White (4 joueurs minimum)'}
       </p>
 
       {!revealed ? (

@@ -29,9 +29,13 @@ export default function ImposterGame() {
     if (phase === 'VOTE') play('vote');
     if (phase === 'RESULTS') {
       const winner = gameState?.public?.result?.winner;
-      const wasImp = gameState?.private?.wasImposter;
-      const youWon = (winner === 'imposter') === !!wasImp;
-      play(youWon ? 'victory' : 'defeat');
+      const role = gameState?.private?.role;
+      // Mr White partage la victoire des imposteurs, sauf s'il devine le mot (il gagne alors seul)
+      const youWon = winner === 'civils'   ? role === 'civil'
+                   : winner === 'mr_white' ? role === 'mr_white'
+                   : winner === 'imposter' ? (role === 'imposter' || role === 'mr_white')
+                   : false;
+      if (winner && role) play(youWon ? 'victory' : 'defeat');
     }
   }, [phase]);
 

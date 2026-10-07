@@ -64,6 +64,35 @@ export function useSounds() {
   };
 }
 
+/**
+ * Petit carillon "c'est ton tour" (deux notes), généré à la volée : aucun fichier .mp3 requis.
+ * Branché sur la sortie de Howler, donc il respecte le bouton 🔊/🔇 et le volume global.
+ */
+export function playTurnChime() {
+  try {
+    const ctx = Howler.ctx;
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume?.();
+    const out = Howler.masterGain || ctx.destination;
+    const now = ctx.currentTime;
+    [[880, 0], [1318.5, 0.14]].forEach(([freq, delay]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, now + delay);
+      gain.gain.exponentialRampToValueAtTime(0.25, now + delay + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + 0.45);
+      osc.connect(gain);
+      gain.connect(out);
+      osc.start(now + delay);
+      osc.stop(now + delay + 0.5);
+    });
+  } catch (e) {
+    console.warn('[sounds] turn chime failed:', e);
+  }
+}
+
 /** Volume global (0..1). Persistant via localStorage. */
 export function setGlobalVolume(v) {
   const vol = Math.max(0, Math.min(1, Number(v) || 0));

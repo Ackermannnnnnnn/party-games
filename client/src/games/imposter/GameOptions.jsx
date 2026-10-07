@@ -35,8 +35,12 @@ export default function GameOptions({ playerCount, onStart }) {
     return <p className="text-slate-400 text-sm">Chargement des options…</p>;
   }
 
-  const maxImposterCap = Math.max(1, playerCount - 2);
+  // Mr White est un joueur EN PLUS des imposteurs : il prend une place et demande 4 joueurs.
+  const mrWhiteMin = manifest.limits.mrWhiteMinPlayers || 4;
+  const mrWhiteInPlay = opts.mrWhiteEnabled && playerCount >= mrWhiteMin;
+  const maxImposterCap = Math.max(1, playerCount - 2 - (mrWhiteInPlay ? 1 : 0));
   const maxImposter = Math.min(manifest.limits.imposterCount.max, maxImposterCap);
+  const imposterCount = Math.min(opts.imposterCount, maxImposter);
 
   const update = (key, value) => setOpts(o => ({ ...o, [key]: value }));
 
@@ -79,11 +83,11 @@ export default function GameOptions({ playerCount, onStart }) {
               type="number"
               min={manifest.limits.imposterCount.min}
               max={maxImposter}
-              value={opts.imposterCount}
+              value={imposterCount}
               onChange={(e) => update('imposterCount', Math.max(1, Math.min(maxImposter, parseInt(e.target.value, 10) || 1)))}
               className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-brand"
             />
-          ) : <ReadOnly value={opts.imposterCount} />}
+          ) : <ReadOnly value={imposterCount} />}
         </Field>
 
         {/* Vote durée */}
@@ -146,8 +150,14 @@ export default function GameOptions({ playerCount, onStart }) {
         <div>
           <p className="font-medium">🎩 Mr White</p>
           <p className="text-xs text-slate-400">
-            Un des imposteurs est "Mr White" : il n'a PAS de mot et doit bluffer. Si éliminé, il a une chance de deviner pour gagner SEUL.
+            Un joueur en plus des imposteurs est "Mr White" : il n'a PAS de mot et doit bluffer.
+            Chacun vote deux fois (imposteur + Mr White). Si éliminé, il a une chance de deviner pour gagner SEUL.
           </p>
+          {opts.mrWhiteEnabled && playerCount < mrWhiteMin && (
+            <p className="text-xs text-amber-300 mt-1">
+              ⚠️ Il faut au moins {mrWhiteMin} joueurs : sinon la partie se joue sans Mr White.
+            </p>
+          )}
         </div>
       </label>
 

@@ -3,11 +3,17 @@ import { useGameStore } from '../../store/gameStore.js';
 import { api } from '../../hooks/useSocket.js';
 import { motion } from 'framer-motion';
 import Timer from '../../components/Timer.jsx';
+import TurnAlert from '../../components/TurnAlert.jsx';
+import { playTurnChime } from '../../hooks/useSounds.js';
+import { clueError } from './wordRules.js';
 
 export default function PhaseDescribe() {
   const { gameState, room, playerId } = useGameStore();
   const [text, setText] = useState('');
+  const [error, setError] = useState(null);
+  const [showTurnAlert, setShowTurnAlert] = useState(false);
   const inputRef = useRef(null);
+  const announcedTurn = useRef(null);
 
   const word           = gameState?.private?.word;
   const descriptions   = gameState?.public?.descriptions || {};
@@ -26,16 +32,42 @@ export default function PhaseDescribe() {
     if (isMyTurn) inputRef.current?.focus();
   }, [isMyTurn]);
 
+  // Quand mon tour commence : petit son, vibration (mobile) et flash à l'écran
+  useEffect(() => {
+    if (!isMyTurn) {
+      announcedTurn.current = null;
+      setShowTurnAlert(false);
+      return;
+    }
+    // Une seule annonce par tour (le StrictMode de React rejoue les effets en dev)
+    if (announcedTurn.current !== speakingRound) {
+      announcedTurn.current = speakingRound;
+      playTurnChime();
+      try { navigator.vibrate?.(200); } catch {}
+    }
+    setShowTurnAlert(true);
+    const t = setTimeout(() => setShowTurnAlert(false), 1500);
+    return () => clearTimeout(t);
+  }, [isMyTurn, speakingRound]);
+
   const submit = (e) => {
     e.preventDefault();
     const v = text.trim();
     if (!v) return;
+    // Mot interdit (le mien, ou déjà donné) : on prévient sans effacer la saisie
+    const problem = clueError(v, word, descriptions);
+    if (problem) {
+      setError(problem);
+      return;
+    }
     api.gameAction('submitWord', { text: v });
     setText('');
+    setError(null);
   };
 
   return (
     <div className="card space-y-5">
+      <TurnAlert show={showTurnAlert} />
       <div className="text-center">
         {word ? (
           <>
@@ -86,17 +118,23 @@ export default function PhaseDescribe() {
         </motion.div>
 
         {isMyTurn && (
-          <form onSubmit={submit} className="flex gap-2">
-            <input
-              ref={inputRef}
-              className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-brand"
-              placeholder="Ex: rouge"
-              value={text}
-              onChange={(e) => setText(e.target.value.slice(0, 30))}
-              maxLength={30}
-            />
-            <button className="btn btn-primary text-sm">Envoyer</button>
-          </form>
+          <>
+            <form onSubmit={submit} className="flex gap-2">
+              <input
+                ref={inputRef}
+                className={`flex-1 bg-slate-900 border rounded-lg px-3 py-2 outline-none focus:border-brand ${
+                  error ? 'border-rose-500' : 'border-slate-700'
+                }`}
+                placeholder="Ex: rouge"
+                value={text}
+                onChange={(e) => { setText(e.target.value.slice(0, 30)); setError(null); }}
+                maxLength={30}
+                aria-invalid={!!error}
+              />
+              <button className="btn btn-primary text-sm">Envoyer</button>
+            </form>
+            {error && <p className="text-rose-300 text-sm mt-2" role="alert">⚠️ {error}</p>}
+          </>
         )}
       </div>
 

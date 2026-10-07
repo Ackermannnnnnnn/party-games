@@ -193,7 +193,7 @@ export function registerSocketHandlers(io, socket) {
             room.close('HOST_LEFT');
             roomManager.delete(room.code);
           } else {
-            room.emitRoomState();
+            _notifyPlayerLeft(room, player.id);
           }
         }
       }, 30_000);
@@ -227,6 +227,17 @@ function _leaveRoom(socket) {
     room.close('HOST_LEFT');
     roomManager.delete(room.code);
   } else {
-    room.emitRoomState();
+    _notifyPlayerLeft(room, player.id);
+  }
+}
+
+/**
+ * Un joueur a quitté définitivement la room : on met à jour la liste des joueurs,
+ * puis on prévient le jeu en cours pour qu'il continue sans lui (tour de parole, votes...).
+ */
+function _notifyPlayerLeft(room, playerId) {
+  room.emitRoomState();
+  if (room.gameInstance && typeof room.gameInstance.onPlayerLeft === 'function') {
+    room.gameInstance.onPlayerLeft(playerId);
   }
 }
