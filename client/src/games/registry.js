@@ -6,6 +6,8 @@ import PetitBacGame    from './petitbac/PetitBacGame.jsx';
 import PetitBacOptions from './petitbac/PetitBacOptions.jsx';
 import WerewolfGame    from './werewolf/WerewolfGame.jsx';
 import WerewolfOptions from './werewolf/WerewolfOptions.jsx';
+import TelephoneGame    from './telephone/TelephoneGame.jsx';
+import TelephoneOptions from './telephone/TelephoneOptions.jsx';
 
 export const GAMES = {
   imposter: {
@@ -43,6 +45,15 @@ export const GAMES = {
     minPlayers: 5,
     Component: WerewolfGame,
     OptionsComp: WerewolfOptions,
+  },
+  telephone: {
+    id: 'telephone',
+    label: 'Téléphone dessiné',
+    icon: '🎨',
+    description: 'Écris, dessine, devine… et découvre comment ta phrase a déraillé.',
+    minPlayers: 3,
+    Component: TelephoneGame,
+    OptionsComp: TelephoneOptions,
   },
 };
 
