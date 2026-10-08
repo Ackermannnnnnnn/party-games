@@ -13,6 +13,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['"Bebas Neue"', 'Inter', 'sans-serif'],
+        hand: ['"Patrick Hand"', '"Comic Sans MS"', 'cursive'],
       },
     },
   },

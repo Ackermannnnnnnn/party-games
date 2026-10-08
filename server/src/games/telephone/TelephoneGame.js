@@ -4,7 +4,7 @@ import { randomPrompts } from './prompts.js';
 import { sanitizeStrokes } from './drawing.js';
 
 /**
- * Téléphone dessiné (téléphone arabe en dessins).
+ * Gartic Phone (téléphone arabe en dessins).
  *
  * Chaque joueur démarre un "album" avec une phrase. À chaque étape, les albums
  * tournent : on dessine la phrase reçue, puis on décrit le dessin reçu, etc.
@@ -56,7 +56,7 @@ function cleanText(raw) {
 
 export class TelephoneGame extends BaseGame {
   static id = 'telephone';
-  static label = 'Téléphone dessiné';
+  static label = 'Gartic Phone';
   static minPlayers = 3;
   static maxPlayers = 12;
 
@@ -158,7 +158,7 @@ export class TelephoneGame extends BaseGame {
     this.seen = [];
     this.albumFinished = false;
 
-    logger.info({ room: this.room.code, round: this.round, players: ids.length, steps: this.totalSteps }, 'Telephone: new game');
+    logger.info({ room: this.room.code, round: this.round, players: ids.length, steps: this.totalSteps }, 'Gartic Phone: new game');
     this._startStep();
     return true;
   }

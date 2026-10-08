@@ -6,8 +6,8 @@ import Avatar from '../../components/Avatar.jsx';
 import DrawingView from './DrawingView.jsx';
 
 /**
- * Album : on découvre comment chaque phrase a évolué de joueur en joueur.
- * L'hôte tourne les pages, tout le monde voit la même chose en même temps.
+ * Album : on découvre comment chaque phrase a évolué de joueur en joueur,
+ * façon conversation. L'hôte tourne les pages, tout le monde voit la même chose.
  */
 export default function PhaseAlbum() {
   const { gameState, room, playerId } = useGameStore();
@@ -31,94 +31,117 @@ export default function PhaseAlbum() {
   };
 
   return (
-    <div className="card space-y-5">
-      <div className="text-center">
-        <p className="text-xs uppercase tracking-wide text-slate-400">
+    <div className="space-y-6">
+      {/* En-tête de l'album */}
+      <div className="text-center space-y-3">
+        <span className="inline-block text-[11px] uppercase tracking-[0.2em] text-slate-300 bg-white/5 border border-white/10 rounded-full px-3 py-1">
           Album {pub.albumIdx + 1} / {pub.albumCount}
-        </p>
-        <h2 className="font-display text-2xl sm:text-3xl text-brand-light">
-          📖 L'album de {pub.owner?.pseudo}
-        </h2>
+        </span>
+        <div className="flex items-center justify-center gap-3">
+          <Avatar id={pub.owner?.avatar} size="lg" ring />
+          <h2 className="gp-title text-4xl sm:text-5xl leading-none text-left">
+            L'album<br className="sm:hidden" /> de {pub.owner?.pseudo}
+          </h2>
+        </div>
+        {/* Sommaire : l'hôte peut rouvrir un album */}
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {albums.map((a, i) => {
+            const active = i === pub.albumIdx;
+            const cls = `px-3 py-1 rounded-full text-xs border transition-colors ${
+              active
+                ? 'bg-gradient-to-r from-pink-500 to-violet-500 border-transparent text-white'
+                : 'bg-white/5 border-white/10 text-slate-300'
+            }`;
+            const label = <>{a.done ? '✓ ' : ''}{a.owner.pseudo}</>;
+            return isHost ? (
+              <button
+                key={a.owner.id}
+                type="button"
+                onClick={() => api.gameAction('albumGoto', { index: i })}
+                aria-current={active}
+                className={`${cls} hover:border-pink-300`}
+                style={{ minHeight: 0 }}
+              >
+                {label}
+              </button>
+            ) : (
+              <span key={a.owner.id} className={cls}>{label}</span>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Sommaire : l'hôte peut rouvrir un album */}
-      <div className="flex flex-wrap justify-center gap-1.5">
-        {albums.map((a, i) => {
-          const active = i === pub.albumIdx;
-          const cls = `px-3 py-1 rounded-full text-xs border ${
-            active ? 'bg-brand border-brand-light text-white' : 'bg-slate-900/60 border-slate-700 text-slate-300'
-          }`;
-          const label = <>{a.done ? '✓ ' : ''}{a.owner.pseudo}</>;
-          return isHost ? (
-            <button
-              key={a.owner.id}
-              type="button"
-              onClick={() => api.gameAction('albumGoto', { index: i })}
-              aria-current={active}
-              className={`${cls} hover:border-brand-light`}
-              style={{ minHeight: 0 }}
-            >
-              {label}
-            </button>
-          ) : (
-            <span key={a.owner.id} className={cls}>{label}</span>
-          );
-        })}
-      </div>
-
-      <ol className="space-y-4 max-w-xl mx-auto w-full">
+      {/* Conversation */}
+      <ol className="space-y-5 max-w-xl mx-auto w-full">
         {entries.map((entry, index) => {
           const isLast = index === entries.length - 1;
+          const right = index % 2 === 1;
           return (
             <motion.li
               key={`${pub.albumIdx}-${index}`}
               ref={isLast ? lastRef : null}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-2"
+              initial={{ opacity: 0, y: 24, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+              className={`flex items-end gap-2 ${right ? 'flex-row-reverse' : ''}`}
             >
-              <div className="flex items-center gap-2 text-sm text-slate-300">
-                <Avatar id={entry.author.avatar} size="sm" />
-                <span>
-                  <strong className="text-white">{entry.author.pseudo}</strong> {verb(entry, index)}
-                  {entry.auto && <span className="text-slate-500"> (complété automatiquement)</span>}
-                </span>
+              <Avatar id={entry.author.avatar} size="md" />
+              <div className={`min-w-0 flex-1 flex flex-col ${right ? 'items-end' : 'items-start'}`}>
+                <p className="text-xs text-slate-400 mb-1 px-1">
+                  <strong className="text-slate-200">{entry.author.pseudo}</strong> {verb(entry, index)}
+                  {entry.auto && <span className="text-slate-500"> · complété automatiquement</span>}
+                </p>
+                {entry.type === 'text' ? (
+                  <p
+                    className={`gp-hand text-2xl sm:text-3xl leading-snug px-5 py-3 max-w-full break-words shadow-lg ${
+                      right
+                        ? 'bg-gradient-to-br from-violet-500 to-pink-500 text-white rounded-3xl rounded-br-md'
+                        : 'bg-white text-slate-800 rounded-3xl rounded-bl-md'
+                    }`}
+                  >
+                    {entry.text}
+                  </p>
+                ) : entry.strokes.length === 0 ? (
+                  <p className="gp-hand text-xl px-5 py-6 rounded-2xl border-2 border-dashed border-white/15 text-slate-400 w-full text-center">
+                    Pas de dessin…
+                  </p>
+                ) : (
+                  <div className={`gp-polaroid w-full ${right ? 'rotate-1' : '-rotate-1'}`}>
+                    <DrawingView strokes={entry.strokes} animate={isLast} className="rounded" />
+                  </div>
+                )}
               </div>
-              {entry.type === 'text' ? (
-                <p className="bg-slate-900/70 border border-slate-700 rounded-xl px-4 py-3 text-lg sm:text-xl font-semibold break-words">
-                  « {entry.text} »
-                </p>
-              ) : entry.strokes.length === 0 ? (
-                <p className="bg-slate-900/40 border border-dashed border-slate-700 rounded-xl px-4 py-6 text-center text-slate-400 italic">
-                  Pas de dessin
-                </p>
-              ) : (
-                <DrawingView strokes={entry.strokes} animate={isLast} />
-              )}
             </motion.li>
           );
         })}
       </ol>
 
-      <p className="text-center text-xs text-slate-500">
-        {entries.length} / {pub.total} pages
-      </p>
+      <p className="text-center text-xs text-slate-500">{entries.length} / {pub.total} pages</p>
+
+      {pub.finished && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center gp-title text-3xl"
+        >
+          🎉 Tous les albums ont été lus !
+        </motion.p>
+      )}
 
       {/* Commandes */}
       {isHost ? (
         <div className="flex flex-col sm:flex-row justify-center gap-3">
           {!(allShown && isLastAlbum) && (
-            <button className="btn btn-primary" onClick={() => api.gameAction('albumNext', {})}>
+            <button className="gp-btn text-lg" onClick={() => api.gameAction('albumNext', {})}>
               {allShown ? '📖 Album suivant' : '▶ Révéler la suite'}
             </button>
           )}
           {pub.finished && (
-            <button className="btn btn-primary" onClick={() => api.gameAction('restart', {})}>
+            <button className="gp-btn text-lg" onClick={() => api.gameAction('restart', {})}>
               🔁 Nouvelle partie
             </button>
           )}
-          <button className="btn btn-ghost" onClick={() => api.gameAction('endGame', {})}>
+          <button className="gp-btn-ghost" onClick={() => api.gameAction('endGame', {})}>
             🏠 Retour au lobby
           </button>
         </div>

@@ -1,0 +1,170 @@
+# Mots courants absents des sources (argot, verlan, internet, anglicismes, sigles devenus mots).
+# Un mot par ligne ; les variantes (pluriel, féminin, conjugaisons usuelles) sont écrites en entier.
+ok okay okays oké
+covid covids
+mdr ptdr lol lols xptdr jpp tkt osef ksos wtf omg bref
+gif gifs emoji emojis émoticône émoticônes smiley smileys
+crush crushs crusher crushé crushée
+streamer streamers streameur streameurs streameuse streameuses stream streams streamé streamer streamait
+youtubeur youtubeurs youtubeuse youtubeuses vlogueur vlogueuse vlogueurs vlogueuses vlog vlogs
+tiktokeur tiktokeuse tiktokeurs tiktokeuses instagrammeur instagrammeuse
+influenceur influenceurs influenceuse influenceuses
+kawaii kawaiis
+dab dabs dabber
+wesh wsh frérot frérots frangin frangine frangins frangines reuf reufs reuss
+bg bgs bogoss bogosse bogosses
+relou relous reloue chelou chelous cheloue
+ouf oufs vénère vénères vener
+daron darons daronne daronnes
+kiffer kiffe kiffes kiffent kiffé kiffée kiffés kiffons kiffez kiff kiffs kif
+bolos boloss
+seum seums
+gênance malaisant malaisante malaisants malaisantes
+cringe cringes cringer
+swag swaggy
+bae
+go gos
+crari
+zarbi zarbis
+ouech
+tchip tchiper tchipé
+gadjo gadji gadjos gadjis
+khey kheys
+miskine miskina
+chanmé chanmés
+téma tema
+vénèr
+zbeul
+bolosse
+spoil spoils spoiler spoilé spoilée spoilers
+ghoster ghosté ghostée ghosting
+liker liké likée like likes
+follower followers follow follows
+hashtag hashtags
+selfie selfies
+story stories
+replay replays
+podcast podcasts podcasteur podcasteuse
+playlist playlists
+binge
+geek geeks geekette
+gamer gamers gameur gameuse gameurs gameuses
+noob noobs
+lag lags laguer
+spam spams spammer spammé
+bug bugs bugger buggé buggée bogue
+reboot rebooter
+wifi wifis
+smartphone smartphones
+appli applis
+ordi ordis
+texto textos
+tuto tutos
+selfie
+mail mails mailer
+courriel courriels
+like
+hater haters
+troll trolls troller trollé
+meme memes mème mèmes
+buzz buzzer buzzé
+fake fakes
+check checker checké
+cool cools coolos
+chill chiller chillé
+fun funs
+top tops
+nul nuls nulle nulles
+trop
+grave
+stylé stylée stylés stylées
+canon canons
+ouais
+nan
+bah beh
+ben
+bof
+ouf
+oups
+youpi
+wouah waouh waou
+miam
+beurk berk
+ah oh eh hé ho hein hum euh
+bisou bisous
+coucou
+salut
+yo
+ciao tchao
+bye
+pote potes
+meuf meufs keum keums
+mec mecs
+gars
+nana nanas
+gosse gosses
+môme mômes
+bagnole bagnoles caisse caisses
+fric thune thunes oseille blé
+boulot boulots taf tafs
+bouffe bouffer
+pinard
+clope clopes
+teuf teufs teufeur teufeuse
+soirée soirées
+apéro apéros
+resto restos
+mcdo
+kebab kebabs
+tacos
+burger burgers
+pizza pizzas
+sushi sushis
+ramen ramens
+poke pokes
+brunch brunchs bruncher
+smoothie smoothies
+cookie cookies
+muffin muffins
+donut donuts
+cupcake cupcakes
+nugget nuggets
+wrap wraps
+bagel bagels
+latte lattes
+cappuccino cappuccinos
+matcha
+bubble
+foot footeux
+basket baskets
+hand
+rugby
+tennis
+skate skates skateur skateuse
+surf surfeur surfeuse
+trottinette trottinettes
+vélo vélos
+scooter scooters
+covoiturage covoiturer
+uber
+coloc colocs colocataire colocation
+appart apparts
+dodo
+manif manifs
+prof profs
+dico dicos
+exo exos
+interro interros
+bac
+fac facs
+amphi amphis
+resto
+ado ados
+bébé bébés
+papy papys mamie mamies
+tonton tontons tata tatas
+doudou doudous
+nounou nounous
+chouchou chouchous chouchoute
+chéri chérie chéris chéries
+c'est-à-dire

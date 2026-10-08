@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGameStore } from '../../store/gameStore.js';
 import { api } from '../../hooks/useSocket.js';
-import StepHeader from './StepHeader.jsx';
+import GarticHeader, { WaitingCard } from './GarticHeader.jsx';
 import DrawingView from './DrawingView.jsx';
 import { useDraft } from './useDraft.js';
 
@@ -42,51 +42,64 @@ export default function PhaseText() {
   };
 
   return (
-    <div className="card space-y-4">
-      <StepHeader icon={isGuess ? '🔍' : '✍️'} title={isGuess ? 'Que vois-tu ?' : 'Écris une phrase'} />
+    <div className="space-y-6">
+      <GarticHeader
+        title={isGuess ? 'Que vois-tu ?' : 'Écris une phrase'}
+        subtitle={isGuess ? 'Décris ce dessin : le joueur suivant devra le redessiner.' : 'Un mot ou une phrase que quelqu\'un devra dessiner. Plus c\'est absurde, mieux c\'est !'}
+      />
 
-      {isGuess ? (
-        <div className="max-w-xl mx-auto w-full space-y-2">
-          <DrawingView strokes={drawing || []} />
-          {drawing && drawing.length === 0 && (
-            <p className="text-center text-amber-300 text-sm">Ce dessin est vide… invente ce que tu veux !</p>
-          )}
+      {isGuess && (
+        <div className="max-w-lg mx-auto w-full">
+          <div className="gp-polaroid -rotate-1">
+            <DrawingView strokes={drawing || []} className="rounded" />
+            <p className="gp-hand text-slate-500 text-center text-xl pt-1">
+              {drawing && drawing.length === 0 ? 'Ce dessin est vide… invente !' : 'Qu\'est-ce que c\'est ?'}
+            </p>
+          </div>
         </div>
-      ) : (
-        <p className="text-slate-300 text-center">
-          Un mot ou une phrase que quelqu'un d'autre devra <strong>dessiner</strong>. Plus c'est absurde, mieux c'est.
-        </p>
       )}
 
       {done ? (
-        <div className="text-center space-y-3 py-2">
-          <p className="text-emerald-300 font-semibold">✅ Envoyé : « {text} »</p>
-          <p className="text-slate-400 text-sm">En attente des autres joueurs…</p>
-          <button type="button" className="btn btn-ghost text-sm" onClick={() => api.gameAction('edit', {})}>
-            ✏️ Modifier
-          </button>
-        </div>
+        <WaitingCard
+          icon={isGuess ? '🔍' : '✍️'}
+          message={<>Tu as écrit <span className="gp-hand text-xl text-pink-200">« {text} »</span></>}
+          onEdit={() => api.gameAction('edit', {})}
+        />
       ) : (
-        <form onSubmit={submit} className="space-y-2 max-w-xl mx-auto w-full">
-          <div className="flex gap-2">
+        <form onSubmit={submit} className="max-w-xl mx-auto w-full space-y-4">
+          {/* Lignes du carnet tous les 2,4rem, décalées de 0,75rem : le texte s'écrit pile sur une ligne */}
+          <div className="gp-paper pr-4 pl-14 pt-3 relative" style={{ backgroundPosition: '0 0.75rem' }}>
+            <label htmlFor="gp-text" className="sr-only">{isGuess ? 'Ta description du dessin' : 'Ta phrase'}</label>
             <input
+              id="gp-text"
               autoFocus
               value={text}
               onChange={(e) => setText(e.target.value.slice(0, MAX_LENGTH))}
               maxLength={MAX_LENGTH}
-              placeholder={isGuess ? 'Décris ce dessin…' : 'Ex : un chat qui fait du ski'}
+              placeholder={isGuess ? 'Je vois…' : 'Un chat qui fait du ski…'}
               aria-label={isGuess ? 'Ta description du dessin' : 'Ta phrase'}
-              className="flex-1 min-w-0 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-brand"
+              autoComplete="off"
+              className="gp-hand block w-full h-[2.4rem] bg-transparent text-3xl leading-[2.4rem] text-slate-800 placeholder:text-slate-400 outline-none"
+              style={{ minHeight: 0 }}
             />
-            {!isGuess && suggestions.length > 0 && (
-              <button type="button" onClick={suggest} className="btn btn-ghost px-3" title="Une idée au hasard" aria-label="Une idée au hasard">
-                🎲
-              </button>
-            )}
+            <div className="flex items-center justify-between h-[2.4rem]">
+              <span className="text-xs text-slate-400 tabular-nums">{text.length}/{MAX_LENGTH}</span>
+              {!isGuess && suggestions.length > 0 && (
+                <button
+                  type="button"
+                  onClick={suggest}
+                  className="text-sm font-semibold text-violet-600 hover:text-pink-600 transition-colors"
+                  style={{ minHeight: 0 }}
+                  title="Une idée au hasard"
+                  aria-label="Une idée au hasard"
+                >
+                  🎲 Une idée ?
+                </button>
+              )}
+            </div>
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-slate-500 tabular-nums">{text.length}/{MAX_LENGTH}</span>
-            <button className="btn btn-primary disabled:opacity-50" disabled={!text.trim()}>
+          <div className="flex justify-center">
+            <button className="gp-btn text-lg w-full sm:w-auto" disabled={!text.trim()}>
               ✅ Valider
             </button>
           </div>

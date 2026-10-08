@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore.js';
 import { playTurnChime } from '../../hooks/useSounds.js';
+import '@fontsource/patrick-hand/400.css';
 import PhaseText from './PhaseText.jsx';
 import PhaseDraw from './PhaseDraw.jsx';
 import PhaseAlbum from './PhaseAlbum.jsx';
@@ -42,13 +43,15 @@ export default function TelephoneGame() {
   // Arrivé en cours de partie : on ne joue pas les étapes, mais on regarde l'album avec les autres
   if (isSpectator && phase !== 'ALBUM') {
     return (
-      <div className="card text-center py-10 space-y-4">
-        <div className="text-5xl">👀</div>
-        <h2 className="font-display text-2xl text-brand-light">Tu es spectateur</h2>
-        <p className="text-slate-300">
-          Une partie est en cours (étape {step + 1} / {gameState.public.totalSteps}).
-          Tu verras l'album à la fin et tu joueras à la <strong>prochaine partie</strong>.
-        </p>
+      <div className="gp-shell">
+        <div className="gp-inner text-center py-10 space-y-4">
+          <div className="text-6xl"><span className="gp-wiggle">👀</span></div>
+          <h2 className="gp-title text-4xl">Tu es spectateur</h2>
+          <p className="text-slate-300">
+            Une partie est en cours (étape {step + 1} / {gameState.public.totalSteps}).
+            Tu verras l'album à la fin et tu joueras à la <strong>prochaine partie</strong>.
+          </p>
+        </div>
       </div>
     );
   }
@@ -66,7 +69,11 @@ export default function TelephoneGame() {
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.25 }}
       >
-        <Component />
+        <div className="gp-shell">
+          <div className="gp-inner">
+            <Component />
+          </div>
+        </div>
       </motion.div>
     </AnimatePresence>
   );

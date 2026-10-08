@@ -1,6 +1,6 @@
 import { useGameStore } from '../../store/gameStore.js';
 import { api } from '../../hooks/useSocket.js';
-import StepHeader from './StepHeader.jsx';
+import GarticHeader, { WaitingCard } from './GarticHeader.jsx';
 import DrawingCanvas from './DrawingCanvas.jsx';
 import { useDraft } from './useDraft.js';
 
@@ -20,36 +20,31 @@ export default function PhaseDraw() {
   );
 
   return (
-    <div className="card space-y-4">
-      <StepHeader icon="🎨" title="Dessine !" />
+    <div className="space-y-5">
+      <GarticHeader title="Dessine !" />
 
-      <div className="text-center bg-slate-900/60 rounded-xl px-4 py-3">
-        <p className="text-xs uppercase tracking-wide text-slate-400">À dessiner</p>
-        <p className="text-xl sm:text-2xl font-semibold text-white break-words">« {prompt} »</p>
-      </div>
-
-      <div className="max-w-2xl mx-auto w-full">
-        <DrawingCanvas strokes={strokes} onChange={setStrokes} disabled={done} />
+      <div className="flex justify-center">
+        <div className="gp-sticky px-6 py-3 max-w-xl -rotate-1 text-center">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-amber-800/70 font-bold">À dessiner</p>
+          <p className="gp-hand text-3xl sm:text-4xl leading-tight break-words">{prompt}</p>
+        </div>
       </div>
 
       {done ? (
-        <div className="text-center space-y-3">
-          <p className="text-emerald-300 font-semibold">✅ Dessin envoyé</p>
-          <p className="text-slate-400 text-sm">En attente des autres joueurs…</p>
-          <button type="button" className="btn btn-ghost text-sm" onClick={() => api.gameAction('edit', {})}>
-            ✏️ Modifier
-          </button>
-        </div>
+        <WaitingCard icon="🎨" message="Ton dessin est parti. On attend les autres artistes…" onEdit={() => api.gameAction('edit', {})} />
       ) : (
-        <div className="flex justify-center">
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => api.gameAction('submitDrawing', { strokes, step: pub.step })}
-          >
-            ✅ J'ai fini
-          </button>
-        </div>
+        <>
+          <DrawingCanvas strokes={strokes} onChange={setStrokes} />
+          <div className="flex justify-center">
+            <button
+              type="button"
+              className="gp-btn text-lg w-full sm:w-auto"
+              onClick={() => api.gameAction('submitDrawing', { strokes, step: pub.step })}
+            >
+              ✅ J'ai fini
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

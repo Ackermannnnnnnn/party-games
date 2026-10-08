@@ -8,6 +8,8 @@ import WerewolfGame    from './werewolf/WerewolfGame.jsx';
 import WerewolfOptions from './werewolf/WerewolfOptions.jsx';
 import TelephoneGame    from './telephone/TelephoneGame.jsx';
 import TelephoneOptions from './telephone/TelephoneOptions.jsx';
+import BombPartyGame    from './bombparty/BombPartyGame.jsx';
+import BombPartyOptions from './bombparty/BombPartyOptions.jsx';
 
 export const GAMES = {
   imposter: {
@@ -48,12 +50,21 @@ export const GAMES = {
   },
   telephone: {
     id: 'telephone',
-    label: 'Téléphone dessiné',
+    label: 'Gartic Phone',
     icon: '🎨',
     description: 'Écris, dessine, devine… et découvre comment ta phrase a déraillé.',
     minPlayers: 3,
     Component: TelephoneGame,
     OptionsComp: TelephoneOptions,
+  },
+  bombparty: {
+    id: 'bombparty',
+    label: 'BombParty',
+    icon: '💣',
+    description: 'Trouve vite un mot avec la syllabe avant que la bombe explose !',
+    minPlayers: 2,
+    Component: BombPartyGame,
+    OptionsComp: BombPartyOptions,
   },
 };
 

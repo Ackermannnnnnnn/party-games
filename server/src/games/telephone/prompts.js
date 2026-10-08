@@ -1,5 +1,5 @@
 /**
- * Phrases de secours du Téléphone dessiné.
+ * Phrases de secours de Gartic Phone.
  * Servent de suggestions (bouton 🎲) et remplacent la phrase d'un joueur qui n'a rien écrit à temps.
  */
 export const PROMPTS = [

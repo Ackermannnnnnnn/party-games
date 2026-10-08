@@ -93,6 +93,85 @@ export function playTurnChime() {
   }
 }
 
+// ───────── Petits sons synthétisés (aucun fichier requis), branchés sur le volume de Howler ─────────
+function audio() {
+  const ctx = Howler.ctx;
+  if (!ctx) return null;
+  if (ctx.state === 'suspended') ctx.resume?.();
+  return { ctx, out: Howler.masterGain || ctx.destination };
+}
+
+function tone(freq, start, duration, { type = 'sine', gain = 0.22 } = {}) {
+  const a = audio();
+  if (!a) return;
+  const t = a.ctx.currentTime + start;
+  const osc = a.ctx.createOscillator();
+  const g = a.ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(gain, t + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+  osc.connect(g);
+  g.connect(a.out);
+  osc.start(t);
+  osc.stop(t + duration + 0.05);
+}
+
+/** Mot accepté : deux notes vives. */
+export function playSuccess() {
+  try { tone(784, 0, 0.18); tone(1175, 0.08, 0.25); } catch {}
+}
+
+/** Mot refusé : bourdonnement grave. */
+export function playFail() {
+  try { tone(140, 0, 0.22, { type: 'square', gain: 0.08 }); } catch {}
+}
+
+/** Vie bonus : petit arpège. */
+export function playBonus() {
+  try { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.08, 0.3, { gain: 0.18 })); } catch {}
+}
+
+/** Explosion : souffle de bruit filtré + coup sourd. */
+export function playExplosion() {
+  try {
+    const a = audio();
+    if (!a) return;
+    const { ctx, out } = a;
+    const t = ctx.currentTime;
+    const length = Math.floor(ctx.sampleRate * 0.9);
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2.5);
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(2200, t);
+    filter.frequency.exponentialRampToValueAtTime(120, t + 0.8);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.7, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+    noise.connect(filter);
+    filter.connect(g);
+    g.connect(out);
+    noise.start(t);
+    const thump = ctx.createOscillator();
+    const tg = ctx.createGain();
+    thump.frequency.setValueAtTime(110, t);
+    thump.frequency.exponentialRampToValueAtTime(35, t + 0.5);
+    tg.gain.setValueAtTime(0.6, t);
+    tg.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+    thump.connect(tg);
+    tg.connect(out);
+    thump.start(t);
+    thump.stop(t + 0.6);
+  } catch (e) {
+    console.warn('[sounds] explosion failed:', e);
+  }
+}
+
 /** Volume global (0..1). Persistant via localStorage. */
 export function setGlobalVolume(v) {
   const vol = Math.max(0, Math.min(1, Number(v) || 0));

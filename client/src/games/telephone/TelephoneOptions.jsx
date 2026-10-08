@@ -17,7 +17,7 @@ function ReadOnly({ value }) {
   return <span className="bg-slate-900/60 rounded-lg px-3 py-2 text-slate-300">{value}</span>;
 }
 
-/** Options du Téléphone dessiné, synchronisées en temps réel entre l'hôte et les joueurs. */
+/** Options de Gartic Phone, synchronisées en temps réel entre l'hôte et les joueurs. */
 export default function TelephoneOptions({ playerCount, onStart }) {
   const [manifest, setManifest] = useState(null);
   const [opts, setOpts, isHost] = useGameOptions('telephone', DEFAULT_OPTS);
