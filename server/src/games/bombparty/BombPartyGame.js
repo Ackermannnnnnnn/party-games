@@ -194,17 +194,22 @@ export class BombPartyGame extends BaseGame {
       victim.alive = false;
       this.eliminated.push(victimId);
     }
+    const syllable = this.syllable;
+    const gameOver = this._aliveIds().length <= 1;
+    this.failsOnSyllable += 1;
+    // Le joueur suivant garde la même syllabe tant qu'elle n'a pas explosé PROMPT_LIFE fois
+    const syllableChanges = gameOver || this.failsOnSyllable >= PROMPT_LIFE;
     this._event('boom', {
       playerId: victimId,
-      syllable: this.syllable,
+      syllable,
       eliminated: !victim.alive,
-      examples: examplesFor(this.syllable, 3, this.used),
+      // Pas de solutions affichées si le suivant doit trouver un mot avec la même syllabe
+      examples: syllableChanges ? examplesFor(syllable, 3, this.used) : [],
     });
 
-    if (this._aliveIds().length <= 1) return this._finish();
+    if (gameOver) return this._finish();
 
-    this.failsOnSyllable += 1;
-    if (this.failsOnSyllable >= PROMPT_LIFE) this._newSyllable();
+    if (syllableChanges) this._newSyllable();
     this.holderId = this._nextAlive(victimId);
     this.input = '';
     this._newBomb();
