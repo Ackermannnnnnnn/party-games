@@ -100,7 +100,7 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 30 }}
             onAnimationComplete={() => setTimeout(() => setError(null), 3500)}
-            className="fixed bottom-4 left-3 right-3 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:max-w-md bg-rose-500 text-white px-4 py-3 rounded-xl shadow-2xl text-sm sm:text-base text-center cursor-pointer"
+            className="fixed z-50 bottom-4 left-3 right-3 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:max-w-md bg-rose-500 text-white px-4 py-3 rounded-xl shadow-2xl text-sm sm:text-base text-center cursor-pointer"
             onClick={() => setError(null)}
           >
             ⚠️ {serverError.message || serverError.code}

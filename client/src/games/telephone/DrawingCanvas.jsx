@@ -19,12 +19,17 @@ const TOOLS = [
 
 /**
  * Zone de dessin (souris, doigt ou stylet) avec crayon, pot de peinture et gomme.
+ * `layout="mobile"` : version tactile qui remplit son conteneur (toile ajustée à la place
+ * disponible, outils compacts en dessous, ou à droite en paysage).
  * Le parent possède la liste des opérations (`strokes`) ; on la met à jour à chaque trait
  * terminé ou remplissage. Les opérations déjà faites sont gardées dans un canvas en mémoire :
  * un nouveau trait ne redessine pas tout le dessin (les remplissages coûtent cher).
  */
-export default function DrawingCanvas({ strokes, onChange, disabled = false }) {
+export default function DrawingCanvas({ strokes, onChange, disabled = false, layout = 'desktop' }) {
+  const mobile = layout === 'mobile';
   const canvasRef = useRef(null);
+  const areaRef = useRef(null);       // (mobile) place disponible pour la toile
+  const [fit, setFit] = useState(null); // (mobile) taille de la toile en px CSS
   const baseRef = useRef(null);       // canvas en mémoire : toutes les opérations validées
   const baseOps = useRef(null);       // opérations actuellement peintes dans baseRef
   const strokesRef = useRef(strokes);
@@ -62,6 +67,43 @@ export default function DrawingCanvas({ strokes, onChange, disabled = false }) {
     baseOps.current = strokes;
     blit();
   }, [strokes]);
+
+  // Sur iOS/Android, empêcher le navigateur d'interpréter le glissé du doigt
+  // (défilement, loupe, sélection de texte, menu « copier »).
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+    const block = (e) => { if (e.cancelable) e.preventDefault(); };
+    canvas.addEventListener('touchstart', block, { passive: false });
+    canvas.addEventListener('touchmove', block, { passive: false });
+    canvas.addEventListener('contextmenu', block);
+    return () => {
+      canvas.removeEventListener('touchstart', block);
+      canvas.removeEventListener('touchmove', block);
+      canvas.removeEventListener('contextmenu', block);
+    };
+  }, [mobile]);
+
+  // Changement de mise en page (rotation de l'écran…) : la nouvelle toile reprend le dessin
+  useEffect(() => { blit(); }, [mobile]);
+
+  // (mobile) la toile 4:3 prend toute la place disponible sans déborder
+  useEffect(() => {
+    if (!mobile || !areaRef.current) return undefined;
+    const area = areaRef.current;
+    const measure = () => {
+      const cs = getComputedStyle(area);
+      const w = area.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const h = area.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      if (!w || !h) return;
+      const width = Math.floor(Math.min(w, (h * CANVAS_W) / CANVAS_H));
+      setFit({ width, height: Math.floor((width * CANVAS_H) / CANVAS_W) });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(area);
+    return () => observer.disconnect();
+  }, [mobile]);
 
   /** Position du pointeur dans le repère fixe du dessin. */
   const toPoint = (e) => {
@@ -148,6 +190,87 @@ export default function DrawingCanvas({ strokes, onChange, disabled = false }) {
   const canUndo = strokes.length > 0 || !!clearedBackup.current;
   const cursor = disabled ? 'not-allowed' : tool === 'fill' ? 'cell' : 'crosshair';
 
+  const canvasEl = (
+    <canvas
+      ref={canvasRef}
+      width={CANVAS_W}
+      height={CANVAS_H}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      aria-label="Zone de dessin"
+      className="block w-full h-auto select-none"
+      style={{ aspectRatio: '4 / 3', touchAction: 'none', cursor, WebkitTouchCallout: 'none' }}
+    />
+  );
+
+  const cycleSize = () => {
+    const i = SIZES.findIndex((s) => s.value === size);
+    setSize(SIZES[(i + 1) % SIZES.length].value);
+    if (tool === 'fill') setTool('pen');
+  };
+  const sizeLabel = SIZES.find((s) => s.value === size)?.label || '';
+
+  if (mobile) {
+    return (
+      <div className="flex flex-col landscape:flex-row h-full min-h-0 gp-nosel">
+        {/* Toile */}
+        {/* En paysage, la marge du bas éloigne la toile de la barre de gestes du téléphone */}
+        <div ref={areaRef} className="relative flex-1 min-h-0 min-w-0 flex items-center justify-center px-2 py-2 landscape:pb-6">
+          <div className="gp-canvas-frame" style={fit ? { width: fit.width, height: fit.height } : { width: '100%' }}>
+            {canvasEl}
+          </div>
+        </div>
+
+        {/* Outils */}
+        <div
+          className="shrink-0 px-3 pt-2 space-y-2 landscape:w-56 landscape:overflow-y-auto landscape:pt-3 landscape:pl-0"
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+        >
+          <div className="grid grid-cols-8 landscape:grid-cols-4 gap-1.5 justify-items-center" role="group" aria-label="Couleur">
+            {COLORS.map((c) => (
+              <button
+                key={c.value}
+                type="button"
+                onClick={() => { setColor(c.value); if (tool === 'eraser') setTool('pen'); }}
+                aria-label={c.label}
+                aria-pressed={tool !== 'eraser' && color === c.value}
+                className="gp-swatch"
+                style={{ backgroundColor: c.value, width: '2.15rem', height: '2.15rem' }}
+              />
+            ))}
+          </div>
+          <div className="flex items-center justify-between gap-1.5 landscape:flex-wrap landscape:justify-start">
+            <div className="flex gap-1.5" role="group" aria-label="Outil">
+              {TOOLS.map((t) => (
+                <button key={t.id} type="button" onClick={() => setTool(t.id)} aria-pressed={tool === t.id}
+                  aria-label={t.label} className="gp-tool w-11 px-0 text-lg">
+                  {t.icon}
+                </button>
+              ))}
+            </div>
+            <button type="button" onClick={cycleSize} className="gp-tool w-11 px-0" aria-label={`Épaisseur : ${sizeLabel} (toucher pour changer)`}>
+              <span
+                className="rounded-full"
+                style={{ width: 4 + size / 2.4, height: 4 + size / 2.4, background: tool === 'eraser' ? '#e2e8f0' : color, boxShadow: '0 0 0 1px rgba(255,255,255,0.4)' }}
+              />
+            </button>
+            <div className="flex gap-1.5">
+              <button type="button" onClick={undo} disabled={!canUndo} className="gp-tool w-11 px-0 text-lg" aria-label="Annuler">↩️</button>
+              <button type="button" onClick={clearAll} disabled={strokes.length === 0} className="gp-tool w-11 px-0 text-lg" aria-label="Tout effacer">🗑️</button>
+            </div>
+          </div>
+          {(full || (tool === 'fill' && fillsLeft <= 0)) && (
+            <p className="text-center text-amber-300 text-xs" role="alert">
+              {full ? 'Dessin plein : annule des traits pour continuer.' : `Plus de remplissage possible (${MAX_FILLS} maximum).`}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const palette = (
     <div
       className="flex flex-wrap justify-center gap-2 lg:grid lg:grid-cols-2 lg:gap-2 lg:content-start"
@@ -170,23 +293,12 @@ export default function DrawingCanvas({ strokes, onChange, disabled = false }) {
   );
 
   return (
-    <div className="space-y-3">
-      <div className={`flex flex-col gap-3 lg:flex-row lg:items-start ${disabled ? '' : ''}`}>
+    <div className="space-y-3 gp-nosel">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
         {!disabled && <div className="order-2 lg:order-1 lg:pt-1">{palette}</div>}
         <div className="order-1 lg:order-2 flex-1 min-w-0">
           <div className={`gp-canvas-frame ${disabled ? 'opacity-60' : ''}`}>
-            <canvas
-              ref={canvasRef}
-              width={CANVAS_W}
-              height={CANVAS_H}
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerCancel={onPointerUp}
-              aria-label="Zone de dessin"
-              className="block w-full h-auto select-none"
-              style={{ aspectRatio: '4 / 3', touchAction: 'none', cursor }}
-            />
+            {canvasEl}
           </div>
         </div>
       </div>
