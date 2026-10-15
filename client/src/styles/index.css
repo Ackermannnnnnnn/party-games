@@ -248,3 +248,44 @@ button, input[type="checkbox"], select {
   overscroll-behavior: none;
 }
 .gp-studio button { touch-action: manipulation; }
+
+/* ───────── Cémantix : du glacial au brûlant ───────── */
+.cx-shell {
+  border-radius: 1.75rem;
+  padding: 2px;
+  background: linear-gradient(135deg, #67e8f9, #3b82f6 35%, #f59e0b 70%, #ef4444);
+  box-shadow: 0 24px 70px -28px rgba(59, 130, 246, 0.6);
+}
+.cx-inner {
+  border-radius: calc(1.75rem - 2px);
+  background:
+    radial-gradient(80% 50% at 0% 0%, rgba(103, 232, 249, 0.12), transparent 60%),
+    radial-gradient(80% 50% at 100% 100%, rgba(239, 68, 68, 0.12), transparent 60%),
+    #0f1424;
+  padding: 1rem;
+}
+@media (min-width: 640px) { .cx-inner { padding: 1.5rem; } }
+.cx-title {
+  font-family: 'Bebas Neue', Inter, sans-serif;
+  letter-spacing: 0.05em;
+  background: linear-gradient(90deg, #a5f3fc, #93c5fd 35%, #fcd34d 70%, #fca5a5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.cx-btn {
+  @apply inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-bold text-white transition-all duration-150;
+  min-height: 48px;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1 50%, #f97316);
+  box-shadow: 0 10px 24px -12px rgba(99, 102, 241, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.cx-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
+.cx-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.cx-btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-semibold text-slate-100 transition-all duration-150;
+  min-height: 48px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.cx-btn-ghost:hover { background: rgba(255, 255, 255, 0.11); }
+.cx-bar { background: linear-gradient(90deg, #22d3ee, #84cc16 45%, #f59e0b 75%, #ef4444); }

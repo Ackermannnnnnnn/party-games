@@ -10,6 +10,8 @@ import TelephoneGame    from './telephone/TelephoneGame.jsx';
 import TelephoneOptions from './telephone/TelephoneOptions.jsx';
 import BombPartyGame    from './bombparty/BombPartyGame.jsx';
 import BombPartyOptions from './bombparty/BombPartyOptions.jsx';
+import CemantixGame     from './cemantix/CemantixGame.jsx';
+import CemantixOptions  from './cemantix/CemantixOptions.jsx';
 
 export const GAMES = {
   imposter: {
@@ -65,6 +67,15 @@ export const GAMES = {
     minPlayers: 2,
     Component: BombPartyGame,
     OptionsComp: BombPartyOptions,
+  },
+  cemantix: {
+    id: 'cemantix',
+    label: 'Cémantix',
+    icon: '🌡️',
+    description: 'Trouve le mot secret : plus ton mot est proche par le sens, plus il fait chaud.',
+    minPlayers: 1,
+    Component: CemantixGame,
+    OptionsComp: CemantixOptions,
   },
 };
 
