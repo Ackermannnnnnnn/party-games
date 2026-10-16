@@ -12,6 +12,8 @@ import BombPartyGame    from './bombparty/BombPartyGame.jsx';
 import BombPartyOptions from './bombparty/BombPartyOptions.jsx';
 import CemantixGame     from './cemantix/CemantixGame.jsx';
 import CemantixOptions  from './cemantix/CemantixOptions.jsx';
+import CodenamesGame    from './codenames/CodenamesGame.jsx';
+import CodenamesOptions from './codenames/CodenamesOptions.jsx';
 
 export const GAMES = {
   imposter: {
@@ -76,6 +78,15 @@ export const GAMES = {
     minPlayers: 1,
     Component: CemantixGame,
     OptionsComp: CemantixOptions,
+  },
+  codenames: {
+    id: 'codenames',
+    label: 'Codenames',
+    icon: '🕵️',
+    description: 'Deux équipes, un indice d\'un mot : retrouve tes agents, évite l\'assassin.',
+    minPlayers: 4,
+    Component: CodenamesGame,
+    OptionsComp: CodenamesOptions,
   },
 };
 
