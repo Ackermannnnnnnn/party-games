@@ -19,6 +19,44 @@ function StepTimer({ endsAt }) {
   return <span className={`font-mono tabular-nums ${left <= 10 ? 'text-rose-300 animate-pulse' : 'text-slate-300'}`}>⏱ {left}s</span>;
 }
 
+function Mini({ avatar, className = '' }) {
+  return <Avatar id={avatar} size="xs" className={`!w-[18px] !h-[18px] !text-[11px] sm:!w-6 sm:!h-6 sm:!text-sm ring-2 ring-slate-900 ${className}`} />;
+}
+
+// ───────── Récap des équipes (pendant la partie) ─────────
+function TeamsRecap({ state, playerId }) {
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {['red', 'blue'].map((team) => {
+        const t = TEAM[team];
+        const members = state.players.filter((p) => p.team === team);
+        const spy = members.find((p) => p.role === 'spy');
+        const agents = members.filter((p) => p.role !== 'spy');
+        const active = state.phase === 'PLAYING' && state.turn?.team === team;
+        const Person = ({ p, spyRole }) => (
+          <li className={`flex items-center gap-1.5 min-w-0 ${p.connected === false ? 'opacity-40' : ''}`}>
+            <Mini avatar={p.avatar} className="!ring-0" />
+            <span className={`truncate text-xs sm:text-sm ${p.id === playerId ? 'font-bold text-white' : 'text-slate-200'}`}>
+              {spyRole && '🕵️ '}{p.pseudo}{p.id === playerId && ' (toi)'}
+            </span>
+          </li>
+        );
+        return (
+          <div key={team} data-team-recap={team}
+            className={`rounded-xl border px-2 py-1.5 sm:px-3 sm:py-2 transition ${t.soft} ${active ? `ring-2 ${t.ring}` : 'opacity-80'}`}>
+            <p className={`text-[10px] sm:text-[11px] uppercase tracking-wider font-semibold mb-1 ${t.text}`}>{t.dot} {t.name}</p>
+            <ul className="space-y-1">
+              {spy ? <Person p={spy} spyRole /> : <li className="text-xs text-slate-500 italic">🕵️ pas d'espion</li>}
+              {agents.map((p) => <Person key={p.id} p={p} />)}
+              {agents.length === 0 && <li className="text-xs text-slate-500 italic">aucun agent</li>}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ───────── Choix des équipes ─────────
 function TeamColumn({ team, state, playerId }) {
   const t = TEAM[team];
@@ -90,15 +128,18 @@ function TeamsPhase({ state, playerId, isHost }) {
 }
 
 // ───────── Grille ─────────
-function Board({ state, keyColors, canGuess }) {
+function Board({ state, keyColors, canGuess, playerId }) {
   const [pending, setPending] = useState(null);
   useEffect(() => { setPending(null); }, [state.turn?.team, state.turn?.stage]);
   const over = state.phase === 'GAME_OVER';
+  const byId = Object.fromEntries(state.players.map((p) => [p.id, p]));
+  const pointers = {};
+  for (const pt of state.points || []) if (pt.id !== playerId && byId[pt.id]) (pointers[pt.index] ||= []).push(byId[pt.id]);
 
   const tap = (i) => {
     if (!canGuess || state.board[i].revealed) return;
     if (pending === i) { api.gameAction('reveal', { index: i }); setPending(null); }
-    else setPending(i);
+    else { setPending(i); api.gameAction('point', { index: i }); }
   };
 
   return (
@@ -129,6 +170,17 @@ function Board({ state, keyColors, canGuess }) {
             <span className={`${size} ${c.revealed ? 'opacity-90' : ''}`} style={{ fontSize: `min(${len > 7 ? 14 : 16}px, calc((100cqw - 6px) / ${(Math.max(len, 4) * 0.74).toFixed(2)}))` }}>{c.word}</span>
             {c.revealed && c.color === 'assassin' && <span className="absolute top-0.5 right-1 text-xs">💀</span>}
             {!c.revealed && key === 'assassin' && <span className="absolute top-0.5 right-1 text-[10px]">💀</span>}
+            {c.revealed && c.by && (
+              <span className="absolute -bottom-1.5 -left-1.5 z-[5] flex items-center gap-1 pointer-events-none" title={`Retournée par ${c.by.pseudo}`}>
+                <Mini avatar={c.by.avatar} />
+                <span className="hidden sm:inline max-w-[5.5rem] truncate text-[10px] font-semibold normal-case tracking-normal bg-slate-900/85 text-slate-100 rounded px-1">{c.by.pseudo}</span>
+              </span>
+            )}
+            {!c.revealed && pointers[i] && (
+              <span className="absolute -top-2 -left-1.5 z-[5] flex -space-x-1.5 pointer-events-none" title={`${pointers[i].map((p) => p.pseudo).join(', ')} pense à cette carte`}>
+                {pointers[i].map((p) => <Mini key={p.id} avatar={p.avatar} className="!ring-yellow-300" />)}
+              </span>
+            )}
             {pending === i && (
               <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 translate-y-full whitespace-nowrap text-[10px] font-semibold normal-case bg-yellow-300 text-slate-900 rounded px-1.5 py-0.5 z-10">
                 Retoucher pour révéler
@@ -199,14 +251,14 @@ function History({ history, players }) {
   if (!history.length) return null;
   const name = (id) => players.find((p) => p.id === id)?.pseudo || '?';
   return (
-    <details className="rounded-xl bg-white/[0.04] px-3 py-2">
+    <details className="rounded-xl bg-white/[0.04] px-3 py-2" open>
       <summary className="cursor-pointer text-sm text-slate-300">📜 Indices donnés ({history.length})</summary>
       <ol className="mt-2 space-y-1.5 text-sm">
         {[...history].reverse().map((h, i) => (
           <li key={i}>
             <span className={TEAM[h.team].text}>{TEAM[h.team].dot} {name(h.spyId)}</span> : <strong>{h.word}</strong> · {h.count === -1 ? '∞' : h.count}
             {h.guesses.length > 0 && (
-              <span className="text-slate-400"> → {h.guesses.map((g) => `${g.word}${g.color === h.team ? ' ✓' : g.color === 'assassin' ? ' 💀' : ' ✗'}`).join(', ')}</span>
+              <span className="text-slate-400"> → {h.guesses.map((g) => `${g.word}${g.color === h.team ? ' ✓' : g.color === 'assassin' ? ' 💀' : ' ✗'} (${g.pseudo || name(g.by)})`).join(', ')}</span>
             )}
           </li>
         ))}
@@ -282,7 +334,7 @@ export default function CodenamesGame() {
                     <StepTimer endsAt={turn.endsAt} />
                   </>
                 ) : (
-                  <motion.p initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`font-display text-3xl sm:text-4xl tracking-wider ${TEAM[state.winner].text}`}>
+                  <motion.p initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`font-display text-2xl sm:text-4xl leading-tight tracking-wider ${TEAM[state.winner].text}`}>
                     🏆 Les {TEAM[state.winner].name} gagnent !
                   </motion.p>
                 )}
@@ -299,7 +351,9 @@ export default function CodenamesGame() {
               <p className="text-center text-xs text-slate-400 -mt-1">Tu vois les couleurs secrètes : 🔴 / 🔵 encadrées, 💀 l'assassin, le reste est neutre.</p>
             )}
 
-            <Board state={state} keyColors={state.phase === 'PLAYING' ? priv.key : null} canGuess={isMyGuessTurn} />
+            <TeamsRecap state={state} playerId={playerId} />
+
+            <Board state={state} keyColors={state.phase === 'PLAYING' ? priv.key : null} canGuess={isMyGuessTurn} playerId={playerId} />
 
             {state.phase === 'PLAYING' && <CluePanel state={state} me={me} isMySpyTurn={isMySpyTurn} isMyGuessTurn={isMyGuessTurn} />}
 

@@ -89,6 +89,7 @@ export class CodenamesGame extends BaseGame {
 
   onPlayerLeft(playerId) {
     // Les rôles restent : si un maître-espion part, un coéquipier peut reprendre sa place
+    this.points?.delete(playerId);
     if (this.phase === PHASES.PLAYING && this.turn) {
       const team = this.turn.team;
       const noAgentLeft = this.turn.stage === 'GUESS' && this._agentsOf(team).length === 0;
@@ -127,6 +128,7 @@ export class CodenamesGame extends BaseGame {
   }
 
   _startTurn(team) {
+    this.points = new Map();
     this.turn = { team, stage: 'CLUE', clue: null, guessesLeft: 0, endsAt: null };
     this._armTimer();
     this.setPhase(PHASES.PLAYING);
@@ -154,6 +156,7 @@ export class CodenamesGame extends BaseGame {
       case 'startRound':      return isHost ? this._onStartRound(playerId) : this._notHost(playerId);
       case 'giveClue':        return this._onGiveClue(playerId, payload);
       case 'reveal':          return this._onReveal(playerId, payload);
+      case 'point':           return this._onPoint(playerId, payload);
       case 'endTurn':         return this._onEndTurnAction(playerId);
       case 'claimSpymaster':  return this._onClaimSpymaster(playerId);
       case 'newBoard':        return isHost ? this._onNewBoard(playerId) : this._notHost(playerId);
@@ -241,8 +244,11 @@ export class CodenamesGame extends BaseGame {
 
     card.revealed = true;
     card.revealedBy = playerId;
+    const p = this.room.players.get(playerId);
+    card.by = { pseudo: p?.pseudo || '?', avatar: p?.avatar };
+    for (const [id, i] of this.points) if (i === index) this.points.delete(id);
     const team = this.turn.team;
-    this.history[this.history.length - 1]?.guesses.push({ word: card.word, color: card.color, by: playerId });
+    this.history[this.history.length - 1]?.guesses.push({ word: card.word, color: card.color, by: playerId, pseudo: card.by.pseudo });
 
     if (card.color === 'assassin') return this._finish(other(team), 'ASSASSIN');
     if (this._remaining('red') === 0) return this._finish('red', 'ALL_FOUND');
@@ -253,6 +259,17 @@ export class CodenamesGame extends BaseGame {
       this.turn.guessesLeft -= 1;
       if (this.turn.guessesLeft <= 0) return this._endTurn();
     }
+    this.room.emitGameState();
+  }
+
+  /** Un agent montre à son équipe la carte qu'il envisage (index, ou null pour retirer). */
+  _onPoint(playerId, payload) {
+    if (this.phase !== PHASES.PLAYING || this.turn.stage !== 'GUESS') return;
+    const me = this._member(playerId);
+    if (!me || me.team !== this.turn.team || me.role !== 'agent') return;
+    const index = payload?.index === null ? null : parseInt(payload?.index, 10);
+    if (index === null || !this.board[index] || this.board[index].revealed) this.points.delete(playerId);
+    else this.points.set(playerId, index);
     this.room.emitGameState();
   }
 
@@ -309,11 +326,13 @@ export class CodenamesGame extends BaseGame {
         word: c.word,
         revealed: c.revealed,
         revealedBy: c.revealedBy,
+        by: c.by || null,
         color: c.revealed || over ? c.color : null,
       })),
       remaining: this.board.length ? { red: this._remaining('red'), blue: this._remaining('blue') } : null,
       totals: this.board.length ? { red: this.startingTeam === 'red' ? 9 : 8, blue: this.startingTeam === 'blue' ? 9 : 8 } : null,
       turn: this.turn,
+      points: this.phase === PHASES.PLAYING && this.points ? [...this.points].map(([id, index]) => ({ id, index })) : [],
       history: this.history,
       winner: this.winner,
       reason: this.reason,
