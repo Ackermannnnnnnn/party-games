@@ -4,7 +4,7 @@ import { z } from 'zod';
 // caractères ; bloque seulement ce qui pourrait briser le HTML/JS.
 const pseudoSchema = z.string().trim().min(1).max(20)
   .regex(/^[^<>&"'`\\]+$/, 'Pseudo invalide (caractères spéciaux interdits)');
-const avatarSchema = z.string().min(1).max(40).optional();
+const avatarSchema = z.string().min(1).max(80).optional();
 // Photo de profil (data URL déjà réduite côté client, ~10-30 Ko)
 const photoSchema = z.string().max(140_000).optional();
 

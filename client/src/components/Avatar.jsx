@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getAvatar, isPhoto, photoUrl } from '../data/avatars.js';
+import { getAvatar, imageUrl, isPhoto, photoUrl } from '../data/avatars.js';
 
 const SIZES = {
   xs: { box: 'w-6 h-6',   text: 'text-sm' },
@@ -12,14 +12,14 @@ const SIZES = {
 /** Rond avec la photo du joueur (si possible), sinon l'emoji de son avatar. */
 export function AvatarFace({ id, className = '', style, emojiStyle }) {
   const [broken, setBroken] = useState(null);
-  const url = isPhoto(id) ? photoUrl(id) : null;
+  const url = isPhoto(id) ? photoUrl(id) : imageUrl(id);
   if (url && broken !== url) {
     return (
       <img src={url} alt="" draggable="false" onError={() => setBroken(url)}
         className={`rounded-full object-cover bg-slate-700 select-none ${className}`} style={style} />
     );
   }
-  const a = getAvatar(isPhoto(id) ? null : id);
+  const a = getAvatar(url ? null : id);
   return (
     <span className={`inline-flex items-center justify-center rounded-full bg-gradient-to-br ${a.bg} select-none ${className}`} style={{ ...style, ...emojiStyle }}
       title={a.label} aria-label={a.label}>

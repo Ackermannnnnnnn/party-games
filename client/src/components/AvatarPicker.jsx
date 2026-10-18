@@ -120,7 +120,8 @@ function PhotoTab({ onDone }) {
  */
 export default function AvatarPicker({ open, onClose, mandatory = false }) {
   const { avatar, setAvatar, room } = useGameStore();
-  const [activeCat, setActiveCat] = useState('photo');
+  // S'il y a des avatars perso (dossier client/avatars), on ouvre directement leur onglet
+  const [activeCat, setActiveCat] = useState(() => (AVATARS[0]?.id?.startsWith('img:') ? AVATAR_CATEGORIES[0].id : 'photo'));
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
   const filtered = q

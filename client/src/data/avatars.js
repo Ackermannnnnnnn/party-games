@@ -7,7 +7,7 @@ import { SERVER_URL } from '../lib/socket.js';
  * (l'`id` doit rester unique dans toute la liste).
  */
 
-export const AVATAR_CATEGORIES = [
+const BUILTIN_CATEGORIES = [
   { id: 'marvel',   label: 'Marvel',     icon: '🦸' },
   { id: 'dc',       label: 'DC',         icon: '🦸‍♂️' },
   { id: 'disney',   label: 'Disney',     icon: '🏰' },
@@ -22,7 +22,7 @@ export const AVATAR_CATEGORIES = [
   { id: 'misc',     label: 'Autres',     icon: '😀' },
 ];
 
-export const AVATARS = [
+const BUILTIN_AVATARS = [
   // ───── 🦸 Marvel ─────
   { id: 'ironman',     cat: 'marvel', label: 'Iron Man',         emoji: '🤖', bg: 'from-red-500 to-yellow-500' },
   { id: 'hulk',        cat: 'marvel', label: 'Hulk',             emoji: '💚', bg: 'from-green-600 to-green-400' },
@@ -234,6 +234,17 @@ export const AVATARS = [
   { id: 'face_poo',    cat: 'misc', label: 'Caca',        emoji: '💩', bg: 'from-amber-700 to-amber-900' },
 ];
 
+// ───── Avatars perso : images déposées dans client/avatars/ (voir scripts/avatars.mjs) ─────
+const generated = import.meta.glob('../generated/customAvatars.json', { eager: true, import: 'default' });
+const CUSTOM = Object.values(generated)[0] || { categories: [], avatars: [] };
+
+/** Onglets : d'abord les dossiers perso, puis les avatars intégrés. */
+export const AVATAR_CATEGORIES = [...CUSTOM.categories, ...BUILTIN_CATEGORIES];
+export const AVATARS = [
+  ...CUSTOM.avatars.map((a) => ({ ...a, bg: 'from-slate-600 to-slate-800', emoji: '🖼️' })),
+  ...BUILTIN_AVATARS,
+];
+
 /** Avatar par défaut si rien de choisi (le 1er de la liste). */
 export const DEFAULT_AVATAR_ID = 'face_grin';
 
@@ -244,6 +255,12 @@ export function photoUrl(id) {
   if (id === PHOTO_LOCAL) { try { return localStorage.getItem('avatarPhoto'); } catch { return null; } }
   if (!isPhoto(id)) return null;
   return `${SERVER_URL}/photos/${id.slice(6)}`;
+}
+
+/** URL de l'image d'un avatar perso (`img:…`), sinon null. */
+export function imageUrl(id) {
+  if (typeof id !== 'string' || !id.startsWith('img:')) return null;
+  return AVATARS.find((a) => a.id === id)?.img || null;
 }
 
 export function getAvatar(id) {

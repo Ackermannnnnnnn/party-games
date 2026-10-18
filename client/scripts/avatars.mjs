@@ -1,0 +1,93 @@
+// Prépare les avatars perso déposés dans client/avatars/ (lancé automatiquement avant `npm run dev` et `npm run build`).
+//
+//   client/avatars/Hulk.png                → avatar « Hulk » dans l'onglet « ⭐ Perso »
+//   client/avatars/Marvel/Iron-Man.jpg     → avatar « Iron Man » dans l'onglet « Marvel »
+//   client/avatars/🎌 Mangas/goku.webp     → avatar « Goku » dans l'onglet « 🎌 Mangas »
+//
+// Chaque image est recadrée en carré et réduite (256 px, WebP) dans public/avatars-gen/,
+// et la liste est écrite dans src/generated/customAvatars.json.
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SRC = path.join(ROOT, 'avatars');
+const OUT = path.join(ROOT, 'public', 'avatars-gen');
+const LIST = path.join(ROOT, 'src', 'generated', 'customAvatars.json');
+const EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.avif']);
+const SIZE = 256;
+
+let sharp = null;
+try { sharp = (await import('sharp')).default; } catch { console.warn('[avatars] sharp indisponible : images copiées sans réduction.'); }
+
+const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || crypto.createHash('md5').update(s).digest('hex').slice(0, 8);
+const pretty = (file) => {
+  const base = path.parse(file).name.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return base.charAt(0).toUpperCase() + base.slice(1);
+};
+/** « 🎌 Mangas » → icône 🎌, nom « Mangas » ; « Marvel » → icône 🖼️ */
+const splitIcon = (name) => {
+  const m = /^(\p{Extended_Pictographic}[️‍\p{Extended_Pictographic}]*)\s*(.*)$/u.exec(name);
+  return m ? { icon: m[1], label: m[2] || name } : { icon: '🖼️', label: name };
+};
+
+fs.rmSync(OUT, { recursive: true, force: true });
+fs.mkdirSync(OUT, { recursive: true });
+fs.mkdirSync(path.dirname(LIST), { recursive: true });
+
+const categories = [];
+const avatars = [];
+const usedIds = new Set();
+
+async function addImage(file, cat) {
+  const label = pretty(path.basename(file));
+  let id = `img:${cat.id}/${slug(label)}`.slice(0, 70);
+  while (usedIds.has(id)) id += 'x';
+  usedIds.add(id);
+  const name = id.slice(4).replace('/', '__');
+  let outName;
+  try {
+    if (!sharp) throw new Error('no sharp');
+    const anim = path.extname(file).toLowerCase() === '.gif';
+    outName = `${name}.webp`;
+    await sharp(file, { animated: anim })
+      .rotate()
+      .resize(SIZE, SIZE, { fit: 'cover', position: 'attention' })
+      .webp({ quality: 82 })
+      .toFile(path.join(OUT, outName));
+  } catch (e) {
+    const size = fs.statSync(file).size;
+    if (size > 1_500_000) { console.warn(`[avatars] ignoré (trop lourd, ${Math.round(size / 1024)} Ko) : ${file}`); usedIds.delete(id); return; }
+    outName = `${name}${path.extname(file).toLowerCase()}`;
+    fs.copyFileSync(file, path.join(OUT, outName));
+  }
+  avatars.push({ id, cat: cat.id, label, img: `/avatars-gen/${encodeURIComponent(outName)}` });
+}
+
+async function scanDir(dir, cat) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  for (const e of entries) {
+    if (e.name.startsWith('.')) continue;
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) {
+      if (cat.id !== 'perso') { await scanDir(full, cat); continue; } // sous-sous-dossiers : même onglet
+      const { icon, label } = splitIcon(e.name);
+      const sub = { id: `c-${slug(label)}`, label, icon };
+      categories.push(sub);
+      await scanDir(full, sub);
+    } else if (EXT.has(path.extname(e.name).toLowerCase())) {
+      await addImage(full, cat);
+    }
+  }
+}
+
+if (fs.existsSync(SRC)) {
+  const perso = { id: 'perso', label: 'Perso', icon: '⭐' };
+  categories.push(perso);
+  await scanDir(SRC, perso);
+}
+const used = categories.filter((c) => avatars.some((a) => a.cat === c.id));
+fs.writeFileSync(LIST, JSON.stringify({ categories: used, avatars }, null, 1));
+console.log(`[avatars] ${avatars.length} avatar(s) perso dans ${used.length} onglet(s).`);
