@@ -1,687 +1,896 @@
 import { BaseGame } from '../../core/BaseGame.js';
-import { ROLES, isWolf, listAssignableRoles } from './roles.js';
+import { ROLES, SPECIAL_ROLES, isWolf, listRoles, suggestComposition } from './roles.js';
 import { logger } from '../../utils/logger.js';
 
-const P = {
-  DEAL_ROLES:        'DEAL_ROLES',
-  MAYOR_ELECTION:    'MAYOR_ELECTION',
-  NIGHT_CUPIDON:     'NIGHT_CUPIDON',
-  NIGHT_LOVERS:      'NIGHT_LOVERS',
-  NIGHT_GUARD:       'NIGHT_GUARD',
-  NIGHT_WEREWOLVES:  'NIGHT_WEREWOLVES',
-  NIGHT_WHITE_WOLF:  'NIGHT_WHITE_WOLF',
-  NIGHT_SEER:        'NIGHT_SEER',
-  NIGHT_WITCH:       'NIGHT_WITCH',
-  DAY_REVEAL:        'DAY_REVEAL',
-  DAY_HUNTER:        'DAY_HUNTER',
-  DAY_VOTE:          'DAY_VOTE',
-  DAY_LYNCH:         'DAY_LYNCH',
-  GAME_OVER:         'GAME_OVER',
-};
+/**
+ * Loup-Garou de Thiercelieux, pensé pour jouer ensemble (même pièce ou vocal) :
+ * l'appli fait le meneur de jeu — distribution, nuit rôle par rôle, annonces, votes.
+ *
+ * Phases publiques :
+ *   DEAL → NIGHT (étapes : DUSK, CUPIDON, LOVERS, GUARD, WOLVES, WHITE_WOLF, SEER, WITCH)
+ *   → MORNING → [HUNTER] → [SUCCESSION] → [MAYOR_ELECTION → MAYOR_ELECTED] → DEBATE
+ *   → [RUNOFF] → [TIEBREAK] → EXECUTION → [HUNTER] → [SUCCESSION] → NIGHT … → GAME_OVER
+ *
+ * Anti-triche : une étape de nuit est jouée dès que le rôle est dans la composition,
+ * même si son détenteur est mort (durée simulée) — personne ne peut déduire qui est mort.
+ */
 
-const DURATIONS = {
-  DEAL_ROLES:       9000,
-  MAYOR_ELECTION:   30000,
-  NIGHT_CUPIDON:    30000,
-  NIGHT_LOVERS:     6000,
-  NIGHT_GUARD:      20000,
-  NIGHT_WEREWOLVES: 35000,
-  NIGHT_WHITE_WOLF: 20000,
-  NIGHT_SEER:       20000,
-  NIGHT_WITCH:      25000,
-  DAY_REVEAL:       8000,
-  DAY_HUNTER:       20000,
-  DAY_LYNCH:        6000,
+const PACE = { rapide: 0.65, normal: 1, tranquille: 1.5 };
+const STEP_MS = {
+  DUSK: 6000,
+  CUPIDON: 40000,
+  LOVERS: 9000,
+  GUARD: 30000,
+  WOLVES: 60000,
+  WHITE_WOLF: 30000,
+  SEER: 30000,
+  WITCH: 40000,
 };
+const MS = {
+  DEAL: 60000,
+  MORNING: 8000,
+  MORNING_PER_DEATH: 3000,
+  HUNTER: 35000,
+  SUCCESSION: 30000,
+  MAYOR_ELECTION: 60000,
+  MAYOR_ELECTED: 6000,
+  RUNOFF: 60000,
+  TIEBREAK: 30000,
+  EXECUTION: 9000,
+  ALL_VOTED: 10000,
+};
+const DEBATE_CHOICES = [60, 120, 180, 240, 300, 420, 600];
 
 const DEFAULT_OPTIONS = {
-  werewolfCount: 1,
-  enabledRoles: ['voyante', 'sorciere', 'chasseur', 'garde'],
-  enableMayor: true,
-  dayVoteDurationSec: 60,
+  wolves: 2,
+  roles: ['voyante', 'sorciere', 'chasseur', 'garde'],
+  mayor: true,
+  debateSec: 180,
+  pace: 'normal',
+  revealRoles: true,
+  deadSeeAll: true,
+  publicVotes: true,
+};
+
+const STEP_ROLE = {
+  CUPIDON: 'cupidon', GUARD: 'garde', WHITE_WOLF: 'loup_blanc', SEER: 'voyante', WITCH: 'sorciere',
 };
 
 export class WerewolfGame extends BaseGame {
   static id = 'werewolf';
   static label = 'Loup-Garou';
   static minPlayers = 5;
-  static maxPlayers = 12;
+  static maxPlayers = 18;
 
   static getOptionsManifest() {
+    const suggestions = {};
+    for (let n = 5; n <= 18; n++) suggestions[n] = suggestComposition(n);
     return {
-      roles: listAssignableRoles(),
       defaults: DEFAULT_OPTIONS,
-      limits: {
-        werewolfCount: { min: 1, max: 3 },
-        dayVoteDurationSec: { min: 30, max: 180 },
-      },
+      roles: listRoles(),
+      specialRoles: SPECIAL_ROLES,
+      suggestions,
+      debateChoices: DEBATE_CHOICES,
+      paces: [
+        { id: 'rapide', label: '⚡ Rapide' },
+        { id: 'normal', label: '🌙 Normal' },
+        { id: 'tranquille', label: '🕯️ Tranquille' },
+      ],
     };
   }
 
   constructor(room, options = {}) {
     super(room, options);
-    this.options = this._sanitizeOptions(options);
-
-    this.day = 0;
-    this.firstNight = true;
-    this.firstDay = true;
-    this.assignments = new Map();
-    this.aliveIds = new Set();
-    this.deathLog = [];
-
-    this.loverIds = [];
-    this.witchHealUsed = false;
-    this.witchKillUsed = false;
-    this.seerHistory = [];
-
-    // Maire
-    this.mayorId = null;
-    this.mayorVotes = new Map();
-
-    // Garde
-    this.guardLastTarget = null;
-    this.guardCurrentTarget = null;
-
-    // Loup blanc : alterne, kill possible nuits paires (2, 4, 6...)
-    this.whiteWolfKilledThisNight = null;
-
-    // États transitoires
-    this.werewolfVotes = new Map();
-    this.witchTarget = null;
-    this.witchAction = null;
-    this.witchKillTarget = null;
-    this.dayVotes = new Map();
-    this.dayVoteEndsAt = null;
-    this.pendingHunterId = null;
-
-    this.lastResult = null;
-    this.lastNightDeaths = [];   // [{ playerId, roleId }]
-    this.lastDayDeaths = [];
-    // Contexte pour router après le tir du chasseur
-    // 'night' = on revient vers DAY_VOTE  ;  'lynch' = on enchaîne sur la nuit
-    this.hunterContext = null;
+    this.options = WerewolfGame.sanitize(options);
+    this.gameNo = 0;
+    this._reset();
   }
 
-  _sanitizeOptions(raw) {
+  static sanitize(raw) {
     const o = { ...DEFAULT_OPTIONS, ...(raw || {}) };
-    o.werewolfCount = Math.max(1, Math.min(3, parseInt(o.werewolfCount, 10) || 1));
-    if (!Array.isArray(o.enabledRoles)) o.enabledRoles = [];
-    const validSpecials = new Set(['voyante', 'sorciere', 'chasseur', 'cupidon', 'garde', 'loup_blanc']);
-    o.enabledRoles = o.enabledRoles.filter(r => validSpecials.has(r));
-    o.enableMayor = !!o.enableMayor;
-    o.dayVoteDurationSec = Math.max(30, Math.min(180, parseInt(o.dayVoteDurationSec, 10) || 60));
-    return o;
-  }
-
-  // ───────── Setup ─────────
-  start() {
-    const players = this.playerIds;
-    if (players.length < WerewolfGame.minPlayers) {
-      this.room.broadcast('error', { code: 'NOT_ENOUGH_PLAYERS' });
-      this.room.endGame({ aborted: true });
-      return;
-    }
-    // Compter le total : loups réguliers + loup blanc (compte aussi comme loup)
-    const wolfCount = this.options.werewolfCount + (this.options.enabledRoles.includes('loup_blanc') ? 1 : 0);
-    const otherSpecials = this.options.enabledRoles.filter(r => r !== 'loup_blanc').length;
-    if (wolfCount + otherSpecials >= players.length) {
-      this.room.broadcast('error', { code: 'TOO_MANY_ROLES', message: 'Trop de rôles pour le nombre de joueurs.' });
-      this.room.endGame({ aborted: true });
-      return;
-    }
-
-    const shuffled = this.shuffle(players);
-    let i = 0;
-    for (let w = 0; w < this.options.werewolfCount; w++) {
-      this.assignments.set(shuffled[i++], 'loup_garou');
-    }
-    if (this.options.enabledRoles.includes('loup_blanc')) {
-      this.assignments.set(shuffled[i++], 'loup_blanc');
-    }
-    for (const role of this.options.enabledRoles) {
-      if (role === 'loup_blanc') continue;
-      this.assignments.set(shuffled[i++], role);
-    }
-    while (i < shuffled.length) {
-      this.assignments.set(shuffled[i++], 'villageois');
-    }
-    for (const id of players) this.aliveIds.add(id);
-
-    logger.info({ room: this.room.code, options: this.options, assignments: [...this.assignments] }, 'Werewolf started');
-
-    this.setPhase(P.DEAL_ROLES);
-    this.setTimer(DURATIONS.DEAL_ROLES, () => this._afterDeal());
-  }
-
-  _afterDeal() {
-    if (this.options.enableMayor) {
-      this.mayorVotes.clear();
-      this.setPhase(P.MAYOR_ELECTION);
-      this.setTimer(DURATIONS.MAYOR_ELECTION, () => this._resolveMayorElection());
-    } else {
-      this._beginNight();
-    }
-  }
-
-  _resolveMayorElection() {
-    this.clearAllTimers();
-    if (this.mayorVotes.size > 0) {
-      const tally = new Map();
-      for (const t of this.mayorVotes.values()) tally.set(t, (tally.get(t) || 0) + 1);
-      let max = 0; const tops = [];
-      for (const [id, c] of tally) {
-        if (c > max) { max = c; tops.length = 0; tops.push(id); }
-        else if (c === max) tops.push(id);
-      }
-      this.mayorId = tops.length === 1 ? tops[0] : null;
-    } else {
-      this.mayorId = null;
-    }
-    this._beginNight();
-  }
-
-  // ───────── Cycle nuit/jour ─────────
-  _beginNight() {
-    this.day += 1;
-    this.werewolfVotes.clear();
-    this.witchTarget = null;
-    this.witchAction = null;
-    this.witchKillTarget = null;
-    this.lastNightDeaths = [];
-    this.guardCurrentTarget = null;
-    this.whiteWolfKilledThisNight = null;
-
-    if (this.firstNight && this._isAlive('cupidon')) {
-      this.setPhase(P.NIGHT_CUPIDON);
-      this.setTimer(DURATIONS.NIGHT_CUPIDON, () => this._afterCupidon());
-    } else {
-      this._afterCupidon();
-    }
-  }
-
-  _afterCupidon() {
-    if (this.firstNight && this.loverIds.length === 2) {
-      this.setPhase(P.NIGHT_LOVERS);
-      this.setTimer(DURATIONS.NIGHT_LOVERS, () => this._goGuard());
-    } else {
-      this._goGuard();
-    }
-  }
-
-  _goGuard() {
-    this.firstNight = false;
-    if (this._isAlive('garde')) {
-      this.setPhase(P.NIGHT_GUARD);
-      this.setTimer(DURATIONS.NIGHT_GUARD, () => this._goWolves());
-    } else {
-      this._goWolves();
-    }
-  }
-
-  _goWolves() {
-    if (this._aliveWolvesCount() === 0) return this._checkWinAndAdvance();
-    this.setPhase(P.NIGHT_WEREWOLVES);
-    this.setTimer(DURATIONS.NIGHT_WEREWOLVES, () => this._afterWolves());
-  }
-
-  _afterWolves() {
-    // Détermine la victime des loups
-    if (this.werewolfVotes.size > 0) {
-      const tally = new Map();
-      for (const targetId of this.werewolfVotes.values()) tally.set(targetId, (tally.get(targetId) || 0) + 1);
-      let max = 0; const tops = [];
-      for (const [id, c] of tally) {
-        if (c > max) { max = c; tops.length = 0; tops.push(id); }
-        else if (c === max) tops.push(id);
-      }
-      this.witchTarget = this.pickRandom(tops);
-    } else {
-      this.witchTarget = null;
-    }
-    this._goWhiteWolf();
-  }
-
-  _goWhiteWolf() {
-    // Loup blanc agit nuits paires (2, 4, 6...) si vivant
-    if (this._isAlive('loup_blanc') && this.day % 2 === 0) {
-      this.setPhase(P.NIGHT_WHITE_WOLF);
-      this.setTimer(DURATIONS.NIGHT_WHITE_WOLF, () => this._goSeer());
-    } else {
-      this._goSeer();
-    }
-  }
-
-  _goSeer() {
-    if (this._isAlive('voyante')) {
-      this.setPhase(P.NIGHT_SEER);
-      this.setTimer(DURATIONS.NIGHT_SEER, () => this._goWitch());
-    } else {
-      this._goWitch();
-    }
-  }
-
-  _goWitch() {
-    if (this._isAlive('sorciere')) {
-      this.setPhase(P.NIGHT_WITCH);
-      this.setTimer(DURATIONS.NIGHT_WITCH, () => this._beginDay());
-    } else {
-      this._beginDay();
-    }
-  }
-
-  _beginDay() {
-    // Calcul des morts de la nuit
-    const deaths = [];
-    // 1. Victime des loups (sauf si garde a protégé)
-    if (this.witchTarget && this.witchAction !== 'heal' && this.guardCurrentTarget !== this.witchTarget) {
-      deaths.push({ id: this.witchTarget });
-    }
-    // 2. Victime de la sorcière
-    if (this.witchAction === 'kill' && this.witchKillTarget) {
-      deaths.push({ id: this.witchKillTarget });
-    }
-    // 3. Loup blanc tue un loup
-    if (this.whiteWolfKilledThisNight) {
-      deaths.push({ id: this.whiteWolfKilledThisNight });
-    }
-    // Update guard rule
-    this.guardLastTarget = this.guardCurrentTarget;
-
-    this._applyDeaths(deaths);
-    this.lastNightDeaths = deaths
-      .filter(d => !this.aliveIds.has(d.id) || true) // tous les morts de cette nuit
-      .map(d => ({ playerId: d.id, roleId: this.assignments.get(d.id) }));
-    // Inclure aussi les morts par cascade (lover broken_heart) ce tour-ci
-    const justDied = this.deathLog.filter(d => d.day === this.day);
-    this.lastNightDeaths = justDied.map(d => ({ playerId: d.playerId, roleId: this.assignments.get(d.playerId) }));
-
-    if (this._checkWin()) {
-      this.setPhase(P.GAME_OVER);
-      return;
-    }
-    // Le village se RÉVEILLE D'ABORD : on annonce les morts (et leur rôle)
-    // AVANT que le chasseur agisse. Le chasseur "découvre" qu'il est mort
-    // en même temps que tout le monde.
-    this.setPhase(P.DAY_REVEAL);
-    this.setTimer(DURATIONS.DAY_REVEAL, () => this._afterDayReveal());
-  }
-
-  _afterDayReveal() {
-    if (this.pendingHunterId) {
-      this.hunterContext = 'night';
-      this.setPhase(P.DAY_HUNTER);
-      this.setTimer(DURATIONS.DAY_HUNTER, () => {
-        this.pendingHunterId = null;
-        this._afterHunter();
-      });
-      return;
-    }
-    this._beginVote();
-  }
-
-  _beginVote() {
-    if (this._checkWin()) return this.setPhase(P.GAME_OVER);
-    this.dayVotes.clear();
-    this.dayVoteEndsAt = Date.now() + this.options.dayVoteDurationSec * 1000;
-    this.setPhase(P.DAY_VOTE);
-    this.setTimer(this.options.dayVoteDurationSec * 1000, () => this._resolveLynch());
-  }
-
-  _resolveLynch() {
-    this.clearAllTimers();
-    const tally = new Map();
-    for (const [voterId, targetId] of this.dayVotes) {
-      const weight = (voterId === this.mayorId) ? 2 : 1; // vote du maire = double
-      tally.set(targetId, (tally.get(targetId) || 0) + weight);
-    }
-    let max = 0; const tops = [];
-    for (const [id, c] of tally) {
-      if (c > max) { max = c; tops.length = 0; tops.push(id); }
-      else if (c === max) tops.push(id);
-    }
-    const lynchedId = tops.length === 1 ? tops[0] : null;
-    this.lastResult = {
-      lynchedId,
-      lynchedRoleId: lynchedId ? this.assignments.get(lynchedId) : null,
-      tally: Object.fromEntries(tally),
-      tied: tops.length > 1,
+    const wolves = Math.max(1, Math.min(5, parseInt(o.wolves, 10) || 1));
+    const roles = [...new Set(Array.isArray(o.roles) ? o.roles : [])].filter((r) => SPECIAL_ROLES.includes(r));
+    const debateSec = DEBATE_CHOICES.includes(Number(o.debateSec)) ? Number(o.debateSec) : 180;
+    return {
+      wolves,
+      roles,
+      mayor: o.mayor !== false,
+      debateSec,
+      pace: PACE[o.pace] ? o.pace : 'normal',
+      revealRoles: o.revealRoles !== false,
+      deadSeeAll: o.deadSeeAll !== false,
+      publicVotes: o.publicVotes !== false,
     };
-
-    if (lynchedId) this._applyDeaths([{ id: lynchedId }]);
-    if (this._checkWin()) return this.setPhase(P.GAME_OVER);
-
-    // Toujours afficher le lynchage AVANT que le chasseur agisse
-    this.setPhase(P.DAY_LYNCH);
-    this.setTimer(DURATIONS.DAY_LYNCH, () => this._afterDayLynch());
   }
 
-  _afterDayLynch() {
-    if (this.pendingHunterId) {
-      this.hunterContext = 'lynch';
-      this.setPhase(P.DAY_HUNTER);
-      this.setTimer(DURATIONS.DAY_HUNTER, () => {
-        this.pendingHunterId = null;
-        this._afterHunter();
-      });
+  _reset() {
+    this.seats = [];                 // ordre autour de la table
+    this.names = new Map();          // id -> { pseudo, avatar } (garde le nom des partis)
+    this.assignments = new Map();
+    this.alive = new Set();
+    this.left = new Set();
+    this.ready = new Set();
+    this.night = 0;
+    this.step = null;
+    this.stepEndsAt = null;
+    this.stepHardEnd = null;
+    this.queue = [];
+    this.lovers = [];
+    this.guardLast = null;
+    this.guardTarget = null;
+    this.guardDone = false;
+    this.wolfVotes = new Map();
+    this.wolfTarget = null;
+    this.wolfChat = [];
+    this.spying = false;
+    this.spiedTonight = false;
+    this.wwTarget = null;
+    this.wwDone = false;
+    this.seerHistory = [];
+    this.potions = { heal: true, kill: true };
+    this.witchHeal = false;
+    this.witchKill = null;
+    this.witchDone = false;
+    this.cupidDone = false;
+    this.mayorId = null;
+    this.mayorElectionDone = false;
+    this.mayorVotes = new Map();
+    this.votes = new Map();
+    this.voteRound = 'main';
+    this.candidates = null;
+    this.allVotedAt = null;
+    this.tally = null;
+    this.execution = null;
+    this.morning = null;
+    this.deathLog = [];
+    this.pendingHunters = [];
+    this.pendingSuccession = null;
+    this.hunterId = null;
+    this.successionFrom = null;
+    this.log = [];
+    this.secret = [];
+    this.result = null;
+  }
+
+  // ───────── Mise en place ─────────
+  start() {
+    this.clearAllTimers();
+    this._reset();
+    this.gameNo += 1;
+    const players = this.playerIds;
+    const { wolves, roles } = this.options;
+    const wolfCards = wolves + (roles.includes('loup_blanc') ? 1 : 0);
+    const others = roles.filter((r) => r !== 'loup_blanc').length;
+    if (players.length < WerewolfGame.minPlayers || wolfCards + others > players.length || wolfCards >= players.length - wolfCards) {
+      this.room.broadcast('error', { code: 'BAD_COMPOSITION', message: 'Composition impossible pour ce nombre de joueurs.' });
+      this.room.endGame({ aborted: true });
       return;
     }
-    this._afterLynch();
+    const deck = [...Array(wolves).fill('loup_garou'), ...roles];
+    while (deck.length < players.length) deck.push('villageois');
+    const shuffled = this.shuffle(deck);
+    this.seats = this.shuffle(players);
+    this.seats.forEach((id, i) => {
+      this.assignments.set(id, shuffled[i]);
+      this.alive.add(id);
+      const p = this.room.players.get(id);
+      this.names.set(id, { pseudo: p?.pseudo || '?', avatar: p?.avatar });
+    });
+    logger.info({ room: this.room.code, options: this.options }, 'Werewolf started');
+    this._setTimed('DEAL', MS.DEAL, () => this._beginNight());
   }
 
-  _afterHunter() {
-    if (this._checkWin()) return this.setPhase(P.GAME_OVER);
-    // Cascade : un autre chasseur peut être déclenché (ex : amoureux)
-    if (this.pendingHunterId) {
-      this.setPhase(P.DAY_HUNTER);
-      this.setTimer(DURATIONS.DAY_HUNTER, () => {
-        this.pendingHunterId = null;
-        this._afterHunter();
-      });
-      return;
+  _composition() {
+    const counts = {};
+    for (const r of this.assignments.values()) counts[r] = (counts[r] || 0) + 1;
+    return counts;
+  }
+  _hasRole(role) { return [...this.assignments.values()].includes(role); }
+  _holders(role) { return [...this.alive].filter((id) => this.assignments.get(id) === role); }
+  _aliveWolves() { return [...this.alive].filter((id) => isWolf(this.assignments.get(id))); }
+  _pace(ms) { return Math.round(ms * PACE[this.options.pace]); }
+
+  _setTimed(phase, ms, fn) {
+    this.clearAllTimers();
+    this._stepFn = fn;
+    this.stepEndsAt = Date.now() + ms;
+    this.stepHardEnd = this.stepEndsAt;
+    this.setTimer(ms, fn);
+    this.setPhase(phase);
+  }
+
+  /** Raccourcit l'étape en cours (action terminée) sans jamais la rallonger. */
+  _endSoon(ms, fn = this._stepFn) {
+    const at = Date.now() + ms;
+    if (this.stepEndsAt && at >= this.stepEndsAt) return;
+    this.clearAllTimers();
+    this.stepEndsAt = at;
+    this.setTimer(ms, fn);
+  }
+
+  /** Revient à l'échéance d'origine (ex. : les loups ne sont plus d'accord). */
+  _restoreEnd(fn = this._stepFn) {
+    if (!this.stepHardEnd || this.stepEndsAt === this.stepHardEnd) return;
+    this.clearAllTimers();
+    this.stepEndsAt = this.stepHardEnd;
+    this.setTimer(Math.max(500, this.stepHardEnd - Date.now()), fn);
+  }
+
+  // ───────── Nuit ─────────
+  _beginNight() {
+    this.night += 1;
+    this.wolfVotes.clear();
+    this.wolfTarget = null;
+    this.wolfChat = [];
+    this.spying = false;
+    this.spiedTonight = false;
+    this.wwTarget = null;
+    this.wwDone = false;
+    this.guardTarget = null;
+    this.guardDone = false;
+    this.witchHeal = false;
+    this.witchKill = null;
+    this.witchDone = false;
+    this.execution = null;
+    this.tally = null;
+    this.morning = null;
+
+    const q = ['DUSK'];
+    if (this.night === 1 && this._hasRole('cupidon')) q.push('CUPIDON', 'LOVERS');
+    if (this._hasRole('garde')) q.push('GUARD');
+    q.push('WOLVES');
+    if (this._hasRole('loup_blanc') && this.night % 2 === 0) q.push('WHITE_WOLF');
+    if (this._hasRole('voyante')) q.push('SEER');
+    if (this._hasRole('sorciere')) q.push('WITCH');
+    this.queue = q;
+    this.log.push({ k: 'night', n: this.night });
+    this._nextStep();
+  }
+
+  _nextStep() {
+    const step = this.queue.shift();
+    if (!step) return this._dawn();
+    if (step === 'LOVERS' && this.lovers.length !== 2) return this._nextStep();
+    this.step = step;
+    let ms = this._pace(STEP_MS[step]);
+    if (step === 'DUSK' || step === 'LOVERS') ms = STEP_MS[step];
+    const role = STEP_ROLE[step];
+    if (role && this._holders(role).length === 0) {
+      // Rôle mort : on fait semblant (durée crédible) pour ne rien trahir
+      ms = this._pace(7000 + Math.floor(Math.random() * 8000));
     }
-    // Reprendre le flow normal selon le contexte
-    if (this.hunterContext === 'lynch') {
-      this.hunterContext = null;
-      this._afterLynch();
-    } else {
-      this.hunterContext = null;
-      this._beginVote();
+    this._setTimed('NIGHT', ms, () => this._endStep());
+  }
+
+  _endStep() {
+    this.clearAllTimers();
+    if (this.step === 'WOLVES') this._resolveWolves();
+    if (this.step === 'WITCH') this.witchDone = true;
+    this._nextStep();
+  }
+
+  _resolveWolves() {
+    const tally = new Map();
+    for (const t of this.wolfVotes.values()) if (t) tally.set(t, (tally.get(t) || 0) + 1);
+    const tops = this._tops(tally);
+    this.wolfTarget = tops.length ? this.pickRandom(tops) : null;
+    this.spying = false;
+    this.secret.push({ n: this.night, k: 'wolves', id: this.wolfTarget });
+  }
+
+  _tops(tally) {
+    let max = 0; let tops = [];
+    for (const [id, c] of tally) {
+      if (c > max) { max = c; tops = [id]; } else if (c === max) tops.push(id);
     }
+    return tops;
   }
 
-  _afterLynch() {
-    if (this._checkWin()) return this.setPhase(P.GAME_OVER);
-    this._beginNight();
+  _dawn() {
+    this.step = null;
+    this.guardLast = this.guardTarget;
+    const victims = [];
+    const t = this.wolfTarget;
+    if (t && this.alive.has(t)) {
+      if (this.guardTarget === t) this.secret.push({ n: this.night, k: 'guarded', id: t });
+      else if (this.witchHeal) { /* sauvé par la sorcière (déjà noté) */ }
+      else victims.push({ id: t, cause: 'wolves' });
+    }
+    if (this.wwTarget) victims.push({ id: this.wwTarget, cause: 'white_wolf' });
+    if (this.witchKill) victims.push({ id: this.witchKill, cause: 'witch' });
+    const deaths = this._kill(victims);
+    this.morning = { night: this.night, deaths: deaths.map((d) => this._publicDeath(d)) };
+    this.log.push({ k: 'dawn', n: this.night, deaths: this.morning.deaths });
+    this._setTimed('MORNING', MS.MORNING + MS.MORNING_PER_DEATH * deaths.length, () => this._aftermath(() => this._afterMorning()));
   }
 
-  // ───────── Application des morts ─────────
-  _applyDeaths(deaths) {
-    const queue = [...deaths];
-    while (queue.length > 0) {
-      const { id } = queue.shift();
-      if (!this.aliveIds.has(id)) continue;
-      this.aliveIds.delete(id);
-      this.deathLog.push({ day: this.day, playerId: id });
-      // Amoureux : l'autre meurt aussi
-      if (this.loverIds.includes(id)) {
-        const other = this.loverIds.find(x => x !== id);
-        if (other && this.aliveIds.has(other)) queue.push({ id: other });
+  _publicDeath(d) {
+    return {
+      id: d.id,
+      role: this.options.revealRoles ? d.role : null,
+      cause: d.cause === 'love' || d.cause === 'hunter' || d.cause === 'vote' || d.cause === 'left' ? d.cause : null,
+    };
+  }
+
+  _afterMorning() {
+    if (this.options.mayor && !this.mayorElectionDone) {
+      this.mayorVotes.clear();
+      return this._setTimed('MAYOR_ELECTION', MS.MAYOR_ELECTION, () => this._resolveMayor());
+    }
+    this._startDebate();
+  }
+
+  // ───────── Morts ─────────
+  /** Tue une liste de joueurs (et l'amoureux en cascade). Renvoie les morts effectives. */
+  _kill(list) {
+    const out = [];
+    const queue = [...list];
+    while (queue.length) {
+      const { id, cause } = queue.shift();
+      if (!this.alive.has(id)) continue;
+      this.alive.delete(id);
+      const role = this.assignments.get(id);
+      const d = { id, role, cause, n: this.night, day: this.phase !== 'NIGHT' && this.phase !== 'MORNING' };
+      this.deathLog.push(d);
+      out.push(d);
+      if (this.lovers.includes(id)) {
+        const other = this.lovers.find((x) => x !== id);
+        if (other && this.alive.has(other)) queue.push({ id: other, cause: 'love' });
       }
-      // Chasseur : déclenche son tir
-      if (this.assignments.get(id) === 'chasseur') {
-        this.pendingHunterId = id;
-      }
-      // Maire : titre perdu
+      if (role === 'chasseur' && cause !== 'left') this.pendingHunters.push(id);
       if (id === this.mayorId) {
         this.mayorId = null;
+        if (cause !== 'left') this.pendingSuccession = id;
       }
     }
+    return out;
   }
 
-  // ───────── Win conditions ─────────
-  _checkWin() {
-    const aliveAll = [...this.aliveIds];
-    const aliveWolves = aliveAll.filter(id => isWolf(this.assignments.get(id)));
-    const aliveOthers = aliveAll.filter(id => !isWolf(this.assignments.get(id)));
+  /** Après des morts : tir du chasseur, succession du maire, puis victoire ou suite. */
+  _aftermath(next) {
+    if (this._checkWin()) return this._gameOver();
+    if (this.pendingHunters.length) {
+      this.hunterId = this.pendingHunters.shift();
+      return this._setTimed('HUNTER', MS.HUNTER, () => {
+        this.log.push({ k: 'hunter', by: this.hunterId, id: null });
+        this.hunterId = null;
+        this._aftermath(next);
+      });
+    }
+    if (this.pendingSuccession) {
+      this.successionFrom = this.pendingSuccession;
+      this.pendingSuccession = null;
+      if (this.alive.size === 0) return next();
+      return this._setTimed('SUCCESSION', MS.SUCCESSION, () => {
+        this._setMayor(this.pickRandom([...this.alive]), 'succession');
+        this.successionFrom = null;
+        this._aftermath(next);
+      });
+    }
+    next();
+  }
 
-    // Loup blanc seul vivant -> victoire solo
-    if (aliveAll.length === 1 && this.assignments.get(aliveAll[0]) === 'loup_blanc') {
-      this.lastResult = { ...this.lastResult, winner: 'white_wolf', winners: [aliveAll[0]] };
+  _setMayor(id, how) {
+    this.mayorId = id;
+    this.log.push({ k: 'mayor', id, how, from: how === 'succession' ? this.successionFrom : null });
+  }
+
+  // ───────── Victoire ─────────
+  _checkWin() {
+    const alive = [...this.alive];
+    if (alive.length === 0) { this.result = { winner: 'nobody', winners: [] }; return true; }
+    const [a, b] = this.lovers;
+    const mixed = this.lovers.length === 2 && isWolf(this.assignments.get(a)) !== isWolf(this.assignments.get(b));
+    if (mixed && alive.length === 2 && alive.includes(a) && alive.includes(b)) {
+      this.result = { winner: 'lovers', winners: [a, b] };
       return true;
     }
-    if (aliveWolves.length === 0) {
-      this.lastResult = { ...this.lastResult, winner: 'village', winners: aliveOthers };
+    if (alive.length === 1 && this.assignments.get(alive[0]) === 'loup_blanc') {
+      this.result = { winner: 'white_wolf', winners: alive };
       return true;
     }
-    if (aliveWolves.length >= aliveOthers.length) {
-      this.lastResult = { ...this.lastResult, winner: 'wolves', winners: aliveWolves };
+    const wolves = alive.filter((id) => isWolf(this.assignments.get(id)));
+    if (wolves.length === 0) {
+      this.result = { winner: 'village', winners: this.seats.filter((id) => !isWolf(this.assignments.get(id))) };
+      return true;
+    }
+    const others = alive.length - wolves.length;
+    // Le loup blanc doit encore éliminer la meute : pas de victoire des loups tant qu'il vit
+    if (wolves.some((id) => this.assignments.get(id) === 'loup_blanc')) return false;
+    if (others === 0 || (wolves.length >= others && !this._villageCanComeBack(wolves.length, others))) {
+      this.result = { winner: 'wolves', winners: this.seats.filter((id) => this.assignments.get(id) === 'loup_garou') };
       return true;
     }
     return false;
   }
 
-  _checkWinAndAdvance() {
-    if (this._checkWin()) this.setPhase(P.GAME_OVER);
-    else this._beginNight();
+  /**
+   * Les loups sont aussi nombreux que les autres : la partie est jouée d'avance…
+   * sauf si le village a encore un moyen de renverser la situation.
+   */
+  _villageCanComeBack(wolves, others) {
+    const has = (role) => this._holders(role).length > 0;
+    if (has('chasseur')) return true;
+    if (has('sorciere') && this.potions.kill) return true;
+    if (this.mayorId && this.alive.has(this.mayorId) && !isWolf(this.assignments.get(this.mayorId)) && wolves === others) return true;
+    if (this.lovers.length === 2 && this.lovers.every((id) => this.alive.has(id))) return true;
+    return false;
   }
 
-  // ───────── Helpers ─────────
-  _isAlive(roleId) {
-    return [...this.aliveIds].some(id => this.assignments.get(id) === roleId);
+  _gameOver() {
+    this.clearAllTimers();
+    this.step = null;
+    this.stepEndsAt = null;
+    this.hunterId = null;
+    this.successionFrom = null;
+    logger.info({ room: this.room.code, result: this.result?.winner, nights: this.night }, 'Werewolf over');
+    this.setPhase('GAME_OVER');
   }
-  _aliveWolvesCount() {
-    return [...this.aliveIds].filter(id => isWolf(this.assignments.get(id))).length;
+
+  // ───────── Jour ─────────
+  _resolveMayor() {
+    this.clearAllTimers();
+    const tally = new Map();
+    for (const t of this.mayorVotes.values()) tally.set(t, (tally.get(t) || 0) + 1);
+    let tops = this._tops(tally).filter((id) => this.alive.has(id));
+    if (!tops.length) tops = [...this.alive];
+    this.mayorElectionDone = true;
+    this._setMayor(this.pickRandom(tops), tops.length > 1 && tally.size ? 'draw' : 'vote');
+    this.tally = Object.fromEntries(tally);
+    this._setTimed('MAYOR_ELECTED', MS.MAYOR_ELECTED, () => this._startDebate());
+  }
+
+  _startDebate() {
+    this.votes.clear();
+    this.voteRound = 'main';
+    this.candidates = null;
+    this.allVotedAt = null;
+    this.tally = null;
+    this._setTimed('DEBATE', this.options.debateSec * 1000, () => this._closeVote());
+  }
+
+  _weightedTally() {
+    const tally = new Map();
+    for (const [voter, target] of this.votes) {
+      if (!target || target === 'none' || !this.alive.has(voter)) continue;
+      tally.set(target, (tally.get(target) || 0) + (voter === this.mayorId ? 2 : 1));
+    }
+    return tally;
+  }
+
+  _closeVote() {
+    this.clearAllTimers();
+    const tally = this._weightedTally();
+    this.tally = Object.fromEntries(tally);
+    const tops = this._tops(tally);
+    if (tops.length === 1) return this._execute(tops[0], false);
+    if (tops.length === 0) return this._execute(null, false);
+    if (this.voteRound === 'main') {
+      this.voteRound = 'runoff';
+      this.candidates = tops;
+      this.votes.clear();
+      this.allVotedAt = null;
+      return this._setTimed('RUNOFF', this._pace(MS.RUNOFF), () => this._closeVote());
+    }
+    this.candidates = tops;
+    if (this.mayorId && this.alive.has(this.mayorId)) {
+      return this._setTimed('TIEBREAK', MS.TIEBREAK, () => this._execute(null, true));
+    }
+    this._execute(null, true);
+  }
+
+  _execute(id, tie) {
+    this.clearAllTimers();
+    let deaths = [];
+    if (id) deaths = this._kill([{ id, cause: 'vote' }]);
+    this.execution = {
+      id,
+      role: id && this.options.revealRoles ? this.assignments.get(id) : null,
+      tie,
+      tally: this.tally,
+      also: deaths.filter((d) => d.id !== id).map((d) => this._publicDeath(d)),
+    };
+    this.log.push({ k: 'vote', n: this.night, id, role: this.execution.role, tie, also: this.execution.also });
+    this._setTimed('EXECUTION', MS.EXECUTION, () => this._aftermath(() => this._beginNight()));
+  }
+
+  _checkAllVoted() {
+    const voters = [...this.alive].filter((id) => this.room.players.get(id)?.connected !== false);
+    const all = voters.length > 0 && voters.every((id) => this.votes.has(id));
+    if (all && !this.allVotedAt) {
+      this.allVotedAt = Date.now();
+      this._endSoon(MS.ALL_VOTED, () => this._closeVote());
+    } else if (!all && this.allVotedAt) {
+      this.allVotedAt = null;
+      this._restoreEnd(() => this._closeVote());
+    }
+  }
+
+  // ───────── Hooks room ─────────
+  onPlayerJoinedMidGame() { this.room.emitGameState(); }
+
+  onPlayerLeft(playerId) {
+    if (!this.assignments.has(playerId) || this.phase === 'GAME_OVER') return this.room.emitGameState();
+    this.left.add(playerId);
+    this.ready.delete(playerId);
+    if (this.alive.has(playerId)) {
+      const deaths = this._kill([{ id: playerId, cause: 'left' }]);
+      this.log.push({ k: 'left', id: playerId, role: this.assignments.get(playerId), also: deaths.filter((d) => d.id !== playerId).map((d) => this._publicDeath(d)) });
+      if (this._checkWin()) return this._gameOver();
+    }
+    if (this.phase === 'HUNTER' && this.hunterId === playerId) {
+      this.hunterId = null;
+      return this._aftermath(this._nextAfterDeaths());
+    }
+    if (this.phase === 'DEAL') return this._checkAllReady();
+    if (this.phase === 'DEBATE' || this.phase === 'RUNOFF') this._checkAllVoted();
+    if (this.phase === 'NIGHT' && this.step === 'WOLVES') this._checkWolvesDone();
+    this.room.emitGameState();
   }
 
   isMuted(playerId) {
-    if (this.phase === P.GAME_OVER) return false;
-    if (!this.aliveIds.has(playerId)) return true;
-    return this.phase.startsWith('NIGHT_');
+    if (this.phase === 'GAME_OVER' || this.phase === 'DEAL') return false;
+    if (!this.alive.has(playerId)) return true;
+    return this.phase === 'NIGHT';
   }
 
-  // ───────── Actions joueurs ─────────
-  handleAction(playerId, type, payload) {
+  // ───────── Actions ─────────
+  handleAction(playerId, type, payload = {}) {
+    const isHost = playerId === this.room.hostId;
     switch (type) {
-      case 'mayorVote':       return this._onMayorVote(playerId, payload);
-      case 'cupidonChoose':   return this._onCupidon(playerId, payload);
-      case 'guardProtect':    return this._onGuard(playerId, payload);
-      case 'wolfVote':        return this._onWolfVote(playerId, payload);
-      case 'whiteWolfKill':   return this._onWhiteWolf(playerId, payload);
-      case 'seerInspect':     return this._onSeer(playerId, payload);
-      case 'witchAction':     return this._onWitch(playerId, payload);
-      case 'dayVote':         return this._onDayVote(playerId, payload);
-      case 'hunterShoot':     return this._onHunter(playerId, payload);
-      case 'endGame':         return this._onEndGame(playerId);
+      case 'ready':       return this._onReady(playerId);
+      case 'cupid':       return this._onCupid(playerId, payload);
+      case 'guard':       return this._onGuard(playerId, payload);
+      case 'wolfVote':    return this._onWolfVote(playerId, payload);
+      case 'wolfChat':    return this._onWolfChat(playerId, payload);
+      case 'spy':         return this._onSpy(playerId, payload);
+      case 'whiteWolf':   return this._onWhiteWolf(playerId, payload);
+      case 'seer':        return this._onSeer(playerId, payload);
+      case 'witch':       return this._onWitch(playerId, payload);
+      case 'hunter':      return this._onHunter(playerId, payload);
+      case 'succession':  return this._onSuccession(playerId, payload);
+      case 'mayorVote':   return this._onMayorVote(playerId, payload);
+      case 'vote':        return this._onVote(playerId, payload);
+      case 'tiebreak':    return this._onTiebreak(playerId, payload);
+      case 'skip':        return isHost ? this._onSkip() : this._notHost(playerId);
+      case 'restart':     return isHost ? (this.phase === 'GAME_OVER' && this.start()) : this._notHost(playerId);
+      case 'endGame':
+        if (!isHost) return this._notHost(playerId);
+        this.cleanup();
+        return this.room.endGame({ game: 'werewolf', winner: this.result?.winner, nights: this.night });
       default:
-        return this._error(playerId, 'UNKNOWN_ACTION', `Action inconnue: ${type}`);
+        return this._error(playerId, 'UNKNOWN_ACTION', `Action inconnue : ${type}`);
     }
   }
 
-  _onMayorVote(playerId, payload) {
-    if (this.phase !== P.MAYOR_ELECTION) return this._error(playerId, 'BAD_PHASE');
-    if (!this.aliveIds.has(playerId)) return this._error(playerId, 'DEAD');
-    const targetId = String(payload?.targetId || '');
-    if (!this.aliveIds.has(targetId)) return this._error(playerId, 'BAD_TARGET');
-    this.mayorVotes.set(playerId, targetId);
-    this.room.emitGameState();
-    if ([...this.aliveIds].every(id => this.mayorVotes.has(id))) this._resolveMayorElection();
+  _actor(playerId, step, role) {
+    if (this.phase !== 'NIGHT' || this.step !== step) return false;
+    return this.alive.has(playerId) && this.assignments.get(playerId) === role;
+  }
+  _target(payload) {
+    const id = payload?.targetId == null ? null : String(payload.targetId);
+    return id && this.alive.has(id) ? id : null;
   }
 
-  _onCupidon(playerId, payload) {
-    if (this.phase !== P.NIGHT_CUPIDON) return this._error(playerId, 'BAD_PHASE');
-    if (this.assignments.get(playerId) !== 'cupidon') return this._error(playerId, 'NOT_CUPIDON');
-    const ids = Array.isArray(payload?.targetIds) ? payload.targetIds.map(String) : [];
-    if (ids.length !== 2 || ids[0] === ids[1]) return this._error(playerId, 'BAD_TARGETS');
-    if (!ids.every(id => this.aliveIds.has(id))) return this._error(playerId, 'BAD_TARGETS');
-    this.loverIds = ids;
-    this.clearAllTimers();
-    this._afterCupidon();
+  _onReady(playerId) {
+    if (this.phase !== 'DEAL' || !this.assignments.has(playerId)) return;
+    this.ready.add(playerId);
+    this._checkAllReady();
+    this.room.emitGameState();
+  }
+
+  _checkAllReady() {
+    const needed = this.seats.filter((id) => this.room.players.get(id)?.connected !== false && !this.left.has(id));
+    if (needed.every((id) => this.ready.has(id))) this._endSoon(1500, () => this._beginNight());
+  }
+
+  _onCupid(playerId, payload) {
+    if (!this._actor(playerId, 'CUPIDON', 'cupidon') || this.cupidDone) return;
+    const ids = Array.isArray(payload?.targetIds) ? [...new Set(payload.targetIds.map(String))] : [];
+    if (ids.length !== 2 || !ids.every((id) => this.alive.has(id))) return this._error(playerId, 'BAD_TARGETS', 'Choisis deux joueurs différents.');
+    this.lovers = ids;
+    this.cupidDone = true;
+    this.secret.push({ n: this.night, k: 'cupid', ids });
+    this._endSoon(2500, () => this._endStep());
+    this.room.emitGameState();
   }
 
   _onGuard(playerId, payload) {
-    if (this.phase !== P.NIGHT_GUARD) return this._error(playerId, 'BAD_PHASE');
-    if (this.assignments.get(playerId) !== 'garde' || !this.aliveIds.has(playerId)) return this._error(playerId, 'NOT_GUARD');
-    const targetId = String(payload?.targetId || '');
-    if (!this.aliveIds.has(targetId)) return this._error(playerId, 'BAD_TARGET');
-    if (targetId === this.guardLastTarget) return this._error(playerId, 'SAME_TARGET', 'Tu as déjà protégé ce joueur la nuit dernière.');
-    this.guardCurrentTarget = targetId;
-    this.clearAllTimers();
-    this._goWolves();
+    if (!this._actor(playerId, 'GUARD', 'garde') || this.guardDone) return;
+    const id = this._target(payload);
+    if (!id) return this._error(playerId, 'BAD_TARGET', 'Joueur invalide.');
+    if (id === this.guardLast) return this._error(playerId, 'SAME_TARGET', 'Tu as déjà protégé ce joueur la nuit dernière.');
+    this.guardTarget = id;
+    this.guardDone = true;
+    this.secret.push({ n: this.night, k: 'guard', id });
+    this._endSoon(2500, () => this._endStep());
+    this.room.emitGameState();
   }
 
   _onWolfVote(playerId, payload) {
-    if (this.phase !== P.NIGHT_WEREWOLVES) return this._error(playerId, 'BAD_PHASE');
-    if (!isWolf(this.assignments.get(playerId)) || !this.aliveIds.has(playerId)) return this._error(playerId, 'NOT_WOLF');
-    const targetId = String(payload?.targetId || '');
-    if (!this.aliveIds.has(targetId)) return this._error(playerId, 'BAD_TARGET');
-    if (isWolf(this.assignments.get(targetId))) return this._error(playerId, 'CANNOT_TARGET_WOLF');
-    this.werewolfVotes.set(playerId, targetId);
+    if (this.phase !== 'NIGHT' || this.step !== 'WOLVES') return;
+    if (!this.alive.has(playerId) || !isWolf(this.assignments.get(playerId))) return;
+    const id = payload?.targetId == null ? null : this._target(payload);
+    if (payload?.targetId != null && !id) return this._error(playerId, 'BAD_TARGET', 'Joueur invalide.');
+    if (id && isWolf(this.assignments.get(id))) return this._error(playerId, 'CANNOT_TARGET_WOLF', 'Pas un membre de la meute !');
+    if (id) this.wolfVotes.set(playerId, id); else this.wolfVotes.delete(playerId);
+    this._checkWolvesDone();
     this.room.emitGameState();
-    const wolves = [...this.aliveIds].filter(id => isWolf(this.assignments.get(id)));
-    if (wolves.every(id => this.werewolfVotes.has(id))) {
-      this.clearAllTimers();
-      this._afterWolves();
+  }
+
+  _checkWolvesDone() {
+    const wolves = this._aliveWolves();
+    const targets = wolves.map((id) => this.wolfVotes.get(id));
+    const unanimous = wolves.length > 0 && targets.every((t) => t && t === targets[0]);
+    if (unanimous) this._endSoon(4000, () => this._endStep());
+    else this._restoreEnd(() => this._endStep());
+  }
+
+  _onWolfChat(playerId, payload) {
+    if (this.phase !== 'NIGHT' || this.step !== 'WOLVES') return;
+    if (!this.alive.has(playerId) || !isWolf(this.assignments.get(playerId))) return;
+    const text = String(payload?.text ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 200);
+    if (!text) return;
+    this.wolfChat.push({ from: playerId, text, at: Date.now() });
+    if (this.wolfChat.length > 60) this.wolfChat.shift();
+    this.room.emitGameState();
+  }
+
+  _onSpy(playerId, payload) {
+    if (!this._actor(playerId, 'WOLVES', 'petite_fille')) return;
+    this.spying = !!payload?.on;
+    if (this.spying && !this.spiedTonight) {
+      this.spiedTonight = true;
+      this.secret.push({ n: this.night, k: 'spy', by: playerId });
     }
+    this.room.emitGameState();
   }
 
   _onWhiteWolf(playerId, payload) {
-    if (this.phase !== P.NIGHT_WHITE_WOLF) return this._error(playerId, 'BAD_PHASE');
-    if (this.assignments.get(playerId) !== 'loup_blanc' || !this.aliveIds.has(playerId)) return this._error(playerId, 'NOT_WHITE_WOLF');
-    const targetId = payload?.targetId ? String(payload.targetId) : null;
-    if (targetId) {
-      if (!this.aliveIds.has(targetId)) return this._error(playerId, 'BAD_TARGET');
-      if (this.assignments.get(targetId) !== 'loup_garou') return this._error(playerId, 'MUST_TARGET_WOLF', 'Tu ne peux tuer qu\'un loup-garou (pas toi-même).');
-      this.whiteWolfKilledThisNight = targetId;
+    if (!this._actor(playerId, 'WHITE_WOLF', 'loup_blanc') || this.wwDone) return;
+    const id = payload?.targetId == null ? null : this._target(payload);
+    if (payload?.targetId != null) {
+      if (!id || this.assignments.get(id) !== 'loup_garou') return this._error(playerId, 'MUST_TARGET_WOLF', 'Tu ne peux dévorer qu\'un loup-garou.');
+      this.wwTarget = id;
+      this.secret.push({ n: this.night, k: 'ww', id });
     }
-    this.clearAllTimers();
-    this._goSeer();
+    this.wwDone = true;
+    this._endSoon(2500, () => this._endStep());
+    this.room.emitGameState();
   }
 
   _onSeer(playerId, payload) {
-    if (this.phase !== P.NIGHT_SEER) return this._error(playerId, 'BAD_PHASE');
-    if (this.assignments.get(playerId) !== 'voyante' || !this.aliveIds.has(playerId)) return this._error(playerId, 'NOT_SEER');
-    const targetId = String(payload?.targetId || '');
-    if (targetId === playerId) return this._error(playerId, 'CANNOT_INSPECT_SELF');
-    if (!this.aliveIds.has(targetId)) return this._error(playerId, 'BAD_TARGET');
-    const targetRole = this.assignments.get(targetId);
-    this.seerHistory.push({ day: this.day, playerId: targetId, roleId: targetRole });
+    if (!this._actor(playerId, 'SEER', 'voyante')) return;
+    if (this.seerHistory.some((h) => h.n === this.night)) return;
+    const id = this._target(payload);
+    if (!id || id === playerId) return this._error(playerId, 'BAD_TARGET', 'Choisis un autre joueur.');
+    const role = this.assignments.get(id);
+    this.seerHistory.push({ n: this.night, id, role });
+    this.secret.push({ n: this.night, k: 'seer', id, role });
+    this._endSoon(6000, () => this._endStep());
     this.room.emitGameState();
-    // Auto-passage à la suite après un court délai pour qu'elle voie le résultat
-    this.clearAllTimers();
-    this.setTimer(3500, () => {
-      if (this.phase === P.NIGHT_SEER) this._goWitch();
-    });
   }
 
   _onWitch(playerId, payload) {
-    if (this.phase !== P.NIGHT_WITCH) return this._error(playerId, 'BAD_PHASE');
-    if (this.assignments.get(playerId) !== 'sorciere' || !this.aliveIds.has(playerId)) return this._error(playerId, 'NOT_WITCH');
-    const action = payload?.action;
-    if (action === 'heal') {
-      if (this.witchHealUsed) return this._error(playerId, 'NO_POTION');
-      if (!this.witchTarget) return this._error(playerId, 'NO_VICTIM');
-      this.witchAction = 'heal'; this.witchHealUsed = true;
-    } else if (action === 'kill') {
-      if (this.witchKillUsed) return this._error(playerId, 'NO_POTION');
-      const targetId = String(payload?.targetId || '');
-      if (!this.aliveIds.has(targetId)) return this._error(playerId, 'BAD_TARGET');
-      if (targetId === playerId) return this._error(playerId, 'CANNOT_KILL_SELF');
-      this.witchAction = 'kill'; this.witchKillTarget = targetId; this.witchKillUsed = true;
-    } else {
-      this.witchAction = 'pass';
+    if (!this._actor(playerId, 'WITCH', 'sorciere') || this.witchDone) return;
+    const heal = !!payload?.heal;
+    const kill = payload?.killId == null ? null : String(payload.killId);
+    if (heal && (!this.potions.heal || !this.wolfTarget)) return this._error(playerId, 'NO_POTION', 'Potion de vie indisponible.');
+    if (kill && (!this.potions.kill || !this.alive.has(kill) || kill === playerId)) return this._error(playerId, 'NO_POTION', 'Potion de mort impossible sur ce joueur.');
+    if (heal) {
+      this.potions.heal = false;
+      this.witchHeal = true;
+      this.secret.push({ n: this.night, k: 'heal', id: this.wolfTarget });
     }
-    this.clearAllTimers();
-    this._beginDay();
-  }
-
-  _onDayVote(playerId, payload) {
-    if (this.phase !== P.DAY_VOTE) return this._error(playerId, 'BAD_PHASE');
-    if (!this.aliveIds.has(playerId)) return this._error(playerId, 'DEAD');
-    const targetId = String(payload?.targetId || '');
-    if (!this.aliveIds.has(targetId)) return this._error(playerId, 'BAD_TARGET');
-    if (targetId === playerId) return this._error(playerId, 'CANNOT_VOTE_SELF');
-    this.dayVotes.set(playerId, targetId);
-    this.room.broadcast('game:event', { type: 'voteCast', payload: { voterId: playerId } });
+    if (kill) {
+      this.potions.kill = false;
+      this.witchKill = kill;
+      this.secret.push({ n: this.night, k: 'poison', id: kill });
+    }
+    this.witchDone = true;
+    this._endSoon(2500, () => this._endStep());
     this.room.emitGameState();
-    if ([...this.aliveIds].every(id => this.dayVotes.has(id))) this._resolveLynch();
   }
 
   _onHunter(playerId, payload) {
-    if (this.phase !== P.DAY_HUNTER) return this._error(playerId, 'BAD_PHASE');
-    if (this.pendingHunterId !== playerId) return this._error(playerId, 'NOT_YOUR_TURN');
-    const targetId = String(payload?.targetId || '');
-    if (!this.aliveIds.has(targetId)) return this._error(playerId, 'BAD_TARGET');
-    if (targetId === playerId) return this._error(playerId, 'CANNOT_SHOOT_SELF');
-    this._applyDeaths([{ id: targetId }]);
-    this.pendingHunterId = null;
-    // Le tir résonne pour tout le monde — son joué côté client sur cet event
-    this.room.broadcast('game:event', { type: 'hunterShot', payload: { hunterId: playerId, targetId } });
+    if (this.phase !== 'HUNTER' || this.hunterId !== playerId) return;
+    const id = this._target(payload);
+    if (!id) return this._error(playerId, 'BAD_TARGET', 'Joueur invalide.');
     this.clearAllTimers();
-    this._afterHunter();
+    const deaths = this._kill([{ id, cause: 'hunter' }]);
+    this.log.push({ k: 'hunter', by: playerId, id, role: this.options.revealRoles ? this.assignments.get(id) : null, also: deaths.filter((d) => d.id !== id).map((d) => this._publicDeath(d)) });
+    this.room.broadcast('game:event', { type: 'hunterShot', payload: { hunterId: playerId, targetId: id } });
+    this.hunterId = null;
+    const next = this._nextAfterDeaths();
+    this._aftermath(next);
   }
 
-  _onEndGame(playerId) {
-    if (playerId !== this.room.hostId) return this._error(playerId, 'NOT_HOST');
-    this.cleanup();
-    this.room.endGame({ game: 'werewolf', winner: this.lastResult?.winner, days: this.day });
+  /** Après une mort le jour (exécution) on va à la nuit ; après le matin on va au débat. */
+  _nextAfterDeaths() {
+    const fromMorning = this.execution === null && this.morning !== null;
+    return fromMorning ? () => this._afterMorning() : () => this._beginNight();
   }
 
-  // ───────── States ─────────
+  _onSuccession(playerId, payload) {
+    if (this.phase !== 'SUCCESSION' || this.successionFrom !== playerId) return;
+    const id = this._target(payload);
+    if (!id) return this._error(playerId, 'BAD_TARGET', 'Joueur invalide.');
+    this._setMayor(id, 'succession');
+    this.successionFrom = null;
+    this._aftermath(this._nextAfterDeaths());
+  }
+
+  _onMayorVote(playerId, payload) {
+    if (this.phase !== 'MAYOR_ELECTION' || !this.alive.has(playerId)) return;
+    const id = this._target(payload);
+    if (!id) return;
+    this.mayorVotes.set(playerId, id);
+    const voters = [...this.alive].filter((x) => this.room.players.get(x)?.connected !== false);
+    if (voters.every((x) => this.mayorVotes.has(x))) this._endSoon(3000, () => this._resolveMayor());
+    this.room.emitGameState();
+  }
+
+  _onVote(playerId, payload) {
+    if ((this.phase !== 'DEBATE' && this.phase !== 'RUNOFF') || !this.alive.has(playerId)) return;
+    const raw = payload?.targetId;
+    if (raw === null || raw === undefined) {
+      this.votes.delete(playerId);
+    } else if (raw === 'none') {
+      this.votes.set(playerId, 'none');
+    } else {
+      const id = this._target(payload);
+      if (!id || id === playerId) return this._error(playerId, 'BAD_TARGET', 'Vote invalide.');
+      if (this.candidates && !this.candidates.includes(id)) return this._error(playerId, 'BAD_TARGET', 'Vote seulement pour un des ex-æquo.');
+      this.votes.set(playerId, id);
+    }
+    this._checkAllVoted();
+    this.room.emitGameState();
+  }
+
+  _onTiebreak(playerId, payload) {
+    if (this.phase !== 'TIEBREAK' || playerId !== this.mayorId) return;
+    const id = this._target(payload);
+    if (!id || !this.candidates.includes(id)) return;
+    this._execute(id, true);
+  }
+
+  /** L'hôte accélère : clôt le débat, ou passe une annonce / la distribution. */
+  _onSkip() {
+    if (this.phase === 'DEBATE' || this.phase === 'RUNOFF') return this._closeVote();
+    if (['DEAL', 'MORNING', 'EXECUTION', 'MAYOR_ELECTED'].includes(this.phase)) {
+      this._endSoon(800);
+      this.room.emitGameState();
+    }
+  }
+
+  // ───────── États ─────────
+  _name(id) { return this.room.players.get(id) || this.names.get(id) || {}; }
+
   getPublicState() {
-    const players = this.playerIds.map(id => ({ id, alive: this.aliveIds.has(id) }));
-    const base = {
+    const over = this.phase === 'GAME_OVER';
+    const players = this.seats.map((id) => {
+      const p = this._name(id);
+      const alive = this.alive.has(id);
+      const death = this.deathLog.find((d) => d.id === id);
+      return {
+        id,
+        pseudo: p.pseudo,
+        avatar: p.avatar,
+        alive,
+        connected: this.room.players.get(id)?.connected ?? false,
+        left: this.left.has(id),
+        role: over || (!alive && this.options.revealRoles) ? this.assignments.get(id) : null,
+        deathNight: death ? death.n : null,
+        mayor: id === this.mayorId,
+      };
+    });
+    const s = {
       phase: this.phase,
-      day: this.day,
+      gameNo: this.gameNo,
+      night: this.night,
+      step: this.phase === 'NIGHT' ? this.step : null,
+      stepEndsAt: this.stepEndsAt,
       players,
-      aliveIds: [...this.aliveIds],
-      mayorId: this.mayorId,
-      // Death log : on ne révèle que les morts du jour passé ; on inclut leur rôle
-      deathLog: this.deathLog.map(d => ({ ...d, roleId: this.assignments.get(d.playerId) })),
-      loverIds: [...this.loverIds],
+      composition: this._composition(),
       options: this.options,
+      mayorId: this.mayorId,
+      log: this.log,
     };
-
-    if (this.phase === P.MAYOR_ELECTION) {
-      return { ...base, mayorVotedIds: [...this.mayorVotes.keys()] };
+    switch (this.phase) {
+      case 'DEAL':
+        s.readyIds = [...this.ready];
+        break;
+      case 'MORNING':
+        s.morning = this.morning;
+        break;
+      case 'HUNTER':
+        s.hunterId = this.hunterId;
+        break;
+      case 'SUCCESSION':
+        s.successionFrom = this.successionFrom;
+        break;
+      case 'MAYOR_ELECTION':
+        s.mayorVotes = Object.fromEntries(this.mayorVotes);
+        break;
+      case 'MAYOR_ELECTED':
+        s.tally = this.tally;
+        break;
+      case 'DEBATE':
+      case 'RUNOFF':
+        s.votedIds = [...this.votes.keys()];
+        if (this.options.publicVotes) s.votes = Object.fromEntries(this.votes);
+        s.candidates = this.candidates;
+        s.allVotedAt = this.allVotedAt;
+        s.lastTally = this.phase === 'RUNOFF' ? this.tally : null;
+        break;
+      case 'TIEBREAK':
+        s.candidates = this.candidates;
+        s.lastTally = this.tally;
+        break;
+      case 'EXECUTION':
+        s.execution = this.execution;
+        break;
+      case 'GAME_OVER':
+        s.result = this.result;
+        s.lovers = this.lovers;
+        s.secret = this.secret;
+        s.deaths = this.deathLog.map((d) => ({ id: d.id, cause: d.cause, n: d.n, day: d.day }));
+        break;
+      default:
     }
-    if (this.phase === P.NIGHT_WEREWOLVES) {
-      return { ...base, wolfVotedIds: [...this.werewolfVotes.keys()] };
-    }
-    if (this.phase === P.DAY_VOTE) {
-      return { ...base, votedIds: [...this.dayVotes.keys()], voteEndsAt: this.dayVoteEndsAt };
-    }
-    if (this.phase === P.DAY_REVEAL) {
-      return { ...base, nightDeaths: this.lastNightDeaths };
-    }
-    if (this.phase === P.DAY_LYNCH) {
-      return { ...base, lastLynch: this.lastResult };
-    }
-    if (this.phase === P.DAY_HUNTER) {
-      return { ...base, hunterId: this.pendingHunterId };
-    }
-    if (this.phase === P.GAME_OVER) {
-      const reveal = {};
-      for (const [pid, role] of this.assignments) reveal[pid] = role;
-      return { ...base, reveal, result: this.lastResult };
-    }
-    return base;
+    return s;
   }
 
   getPrivateStateFor(playerId) {
-    const myRole = this.assignments.get(playerId);
-    if (!myRole) return { spectator: true };
+    const role = this.assignments.get(playerId);
+    if (!role) return { spectator: true };
+    const alive = this.alive.has(playerId);
+    const d = { role, alive };
+    const step = this.phase === 'NIGHT' ? this.step : null;
 
-    const data = { role: myRole, alive: this.aliveIds.has(playerId) };
-
-    if (isWolf(myRole)) {
-      data.wolfAllies = [...this.assignments.entries()]
-        .filter(([id, r]) => isWolf(r) && id !== playerId)
-        .map(([id]) => id);
+    if (isWolf(role)) {
+      d.pack = this.seats.filter((id) => isWolf(this.assignments.get(id)) && id !== playerId);
+      if (step === 'WOLVES') {
+        d.wolfVotes = Object.fromEntries(this.wolfVotes);
+        d.wolfChat = this.wolfChat;
+        d.spied = this.spying;
+      }
     }
-    if (this.loverIds.includes(playerId)) {
-      data.loverPartnerId = this.loverIds.find(x => x !== playerId);
+    if (this.lovers.includes(playerId)) d.lover = this.lovers.find((x) => x !== playerId);
+    if (role === 'cupidon') { d.cupidDone = this.cupidDone; d.lovers = this.lovers; }
+    if (role === 'voyante') d.seerHistory = this.seerHistory;
+    if (role === 'garde') { d.guardLast = this.guardLast; d.guardDone = this.guardDone; d.guardTarget = this.guardTarget; }
+    if (role === 'sorciere') {
+      d.potions = this.potions;
+      if (step === 'WITCH') { d.victim = this.wolfTarget && this.alive.has(this.wolfTarget) ? this.wolfTarget : null; d.witchDone = this.witchDone; }
     }
-    if (myRole === 'voyante') {
-      data.seerHistory = this.seerHistory;
-      data.iSawThisTurn = this.seerHistory.some(h => h.day === this.day);
+    if (role === 'loup_blanc' && step === 'WHITE_WOLF') d.wwDone = this.wwDone;
+    if (role === 'petite_fille' && step === 'WOLVES' && alive) {
+      d.spying = this.spying;
+      if (this.spying) {
+        // Messages anonymes : « Loup A », « Loup B »… (ordre d'arrivée dans la nuit)
+        const letters = new Map();
+        const tag = (id) => { if (!letters.has(id)) letters.set(id, String.fromCharCode(65 + letters.size)); return letters.get(id); };
+        d.spyChat = this.wolfChat.map((m) => ({ who: tag(m.from), text: m.text, at: m.at }));
+        const tally = {};
+        for (const t of this.wolfVotes.values()) tally[t] = (tally[t] || 0) + 1;
+        d.spyTargets = tally;
+      }
     }
-    if (myRole === 'sorciere' && this.phase === P.NIGHT_WITCH) {
-      data.witchTarget = this.witchTarget;
-      data.healAvailable = !this.witchHealUsed;
-      data.killAvailable = !this.witchKillUsed;
+    if (this.phase === 'DEBATE' || this.phase === 'RUNOFF') d.myVote = this.votes.get(playerId) ?? null;
+    if (this.phase === 'MAYOR_ELECTION') d.myVote = this.mayorVotes.get(playerId) ?? null;
+    if (!alive && this.options.deadSeeAll) {
+      d.ghost = {
+        roles: Object.fromEntries(this.assignments),
+        lovers: this.lovers,
+        secret: this.secret,
+        wolfVotes: step === 'WOLVES' ? Object.fromEntries(this.wolfVotes) : null,
+      };
     }
-    if (myRole === 'garde' && this.phase === P.NIGHT_GUARD) {
-      data.guardLastTarget = this.guardLastTarget;
-    }
-    if (isWolf(myRole) && this.phase === P.NIGHT_WEREWOLVES) {
-      data.myWolfVote = this.werewolfVotes.get(playerId) || null;
-    }
-    if (myRole === 'cupidon' && this.phase === P.NIGHT_CUPIDON) {
-      data.cupidonChosen = this.loverIds.length === 2;
-    }
-    return data;
+    return d;
   }
 
+  _notHost(playerId) { return this._error(playerId, 'NOT_HOST', "Seul l'hôte peut faire ça."); }
   _error(playerId, code, message) {
     this.room.emitToPlayer(playerId, 'error', { code, message: message || code });
   }

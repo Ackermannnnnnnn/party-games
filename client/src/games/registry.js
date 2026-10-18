@@ -47,7 +47,7 @@ export const GAMES = {
     id: 'werewolf',
     label: 'Loup-Garou',
     icon: '🐺',
-    description: 'Le village contre les loups, avec voyante, sorcière, chasseur…',
+    description: 'Le grand classique, avec un meneur de jeu : nuits rôle par rôle, narrateur vocal, votes en direct.',
     minPlayers: 5,
     Component: WerewolfGame,
     OptionsComp: WerewolfOptions,

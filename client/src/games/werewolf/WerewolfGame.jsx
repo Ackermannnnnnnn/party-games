@@ -1,117 +1,146 @@
-import { useEffect } from 'react';
-import { useGameStore } from '../../store/gameStore.js';
-import { useSounds } from '../../hooks/useSounds.js';
-import { socket } from '../../lib/socket.js';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import PhaseDealRoles from './PhaseDealRoles.jsx';
-import PhaseMayorElection from './PhaseMayorElection.jsx';
-import PhaseCupidon from './PhaseCupidon.jsx';
-import PhaseLovers from './PhaseLovers.jsx';
-import PhaseGuard from './PhaseGuard.jsx';
-import PhaseWolves from './PhaseWolves.jsx';
-import PhaseWhiteWolf from './PhaseWhiteWolf.jsx';
-import PhaseSeer from './PhaseSeer.jsx';
-import PhaseWitch from './PhaseWitch.jsx';
-import PhaseDayReveal from './PhaseDayReveal.jsx';
-import PhaseHunter from './PhaseHunter.jsx';
-import PhaseDayVote from './PhaseDayVote.jsx';
-import PhaseLynch from './PhaseLynch.jsx';
-import PhaseGameOver from './PhaseGameOver.jsx';
-import MyRoleBadge from './MyRoleBadge.jsx';
+import '@fontsource/cinzel/600.css';
+import '@fontsource/cinzel/800.css';
+import { socket } from '../../lib/socket.js';
+import { playTurnChime, useSounds } from '../../hooks/useSounds.js';
+import Scene from './Scene.jsx';
+import { MyCard, NarratorToggle, TimerRing } from './Hud.jsx';
+import { Deal, Night } from './Night.jsx';
+import { Debate, Execution, Hunter, MayorElected, MayorElection, Morning, Succession, Tiebreak } from './Day.jsx';
+import GameOver from './GameOver.jsx';
+import Chronicle from './Chronicle.jsx';
+import { narrate, narrationKey, speak, stopSpeaking } from './narration.js';
+import { useWerewolf } from './useWerewolf.js';
 
-const phaseComponents = {
-  DEAL_ROLES:        PhaseDealRoles,
-  MAYOR_ELECTION:    PhaseMayorElection,
-  NIGHT_CUPIDON:     PhaseCupidon,
-  NIGHT_LOVERS:      PhaseLovers,
-  NIGHT_GUARD:       PhaseGuard,
-  NIGHT_WEREWOLVES:  PhaseWolves,
-  NIGHT_WHITE_WOLF:  PhaseWhiteWolf,
-  NIGHT_SEER:        PhaseSeer,
-  NIGHT_WITCH:       PhaseWitch,
-  DAY_REVEAL:        PhaseDayReveal,
-  DAY_HUNTER:        PhaseHunter,
-  DAY_VOTE:          PhaseDayVote,
-  DAY_LYNCH:         PhaseLynch,
-  GAME_OVER:         PhaseGameOver,
-};
+const STEP_SOUND = { CUPIDON: 'ww_cupid', LOVERS: 'ww_cupid', GUARD: 'ww_guard', WOLVES: 'ww_wolves', WHITE_WOLF: 'ww_wolves', SEER: 'ww_seer', WITCH: 'ww_witch', DUSK: 'ww_night' };
 
-const NIGHT_PHASES = ['NIGHT_CUPIDON','NIGHT_LOVERS','NIGHT_GUARD','NIGHT_WEREWOLVES','NIGHT_WHITE_WOLF','NIGHT_SEER','NIGHT_WITCH'];
-const DAY_PHASES   = ['DAY_REVEAL','DAY_HUNTER','DAY_VOTE','DAY_LYNCH'];
+function skyFor(s) {
+  if (s.phase === 'DEAL' || s.phase === 'NIGHT') return 'night';
+  if (s.phase === 'MORNING') return 'dawn';
+  if (s.phase === 'GAME_OVER') return { wolves: 'blood', village: 'gold', lovers: 'rose', white_wolf: 'night' }[s.result?.winner] || 'night';
+  return 'day';
+}
+
+function isMyTurn(ctx) {
+  const { s, priv, playerId, alive } = ctx;
+  if (s.phase === 'HUNTER') return s.hunterId === playerId;
+  if (s.phase === 'SUCCESSION') return s.successionFrom === playerId;
+  if (s.phase === 'TIEBREAK') return s.mayorId === playerId;
+  if (s.phase !== 'NIGHT' || !alive) return false;
+  const r = priv.role;
+  return (s.step === 'CUPIDON' && r === 'cupidon') || (s.step === 'LOVERS' && !!priv.lover) || (s.step === 'GUARD' && r === 'garde')
+    || (s.step === 'WOLVES' && (r === 'loup_garou' || r === 'loup_blanc' || r === 'petite_fille'))
+    || (s.step === 'WHITE_WOLF' && r === 'loup_blanc') || (s.step === 'SEER' && r === 'voyante') || (s.step === 'WITCH' && r === 'sorciere');
+}
 
 export default function WerewolfGame() {
-  const gameState = useGameStore((s) => s.gameState);
+  const ctx = useWerewolf();
   const { play } = useSounds();
-  const phase = gameState?.public?.phase;
-  const myRole = gameState?.private?.role;
-  const isNight = NIGHT_PHASES.includes(phase);
-  const isDay   = DAY_PHASES.includes(phase);
+  const [narrator, setNarratorState] = useState(() => {
+    try { const v = localStorage.getItem('lg-narrator'); return v === null ? null : v === '1'; } catch { return null; }
+  });
+  const narratorOn = narrator ?? !!ctx?.isHost;
+  const setNarrator = (v) => { setNarratorState(v); try { localStorage.setItem('lg-narrator', v ? '1' : '0'); } catch {} };
+  const [flash, setFlash] = useState(0);
 
-  // Sons d'événements liés à la phase
-  useEffect(() => {
-    switch (phase) {
-      case 'DEAL_ROLES':       play('reveal'); break;
-      case 'MAYOR_ELECTION':   play('ww_day'); break;
-      case 'NIGHT_CUPIDON':    play('ww_cupid'); break;
-      case 'NIGHT_GUARD':      play('ww_guard'); break;          // SON DISTINCT
-      case 'NIGHT_WEREWOLVES': play('ww_wolves'); break;
-      case 'NIGHT_WHITE_WOLF': play('ww_wolves'); break;
-      case 'NIGHT_SEER':       play('ww_seer'); break;
-      case 'NIGHT_WITCH':      play('ww_witch'); break;
-      case 'DAY_REVEAL':       play('ww_day'); setTimeout(() => play('ww_death'), 600); break;
-      // pas de son auto au DAY_HUNTER : le tir résonne quand le chasseur tire
-      case 'DAY_VOTE':         play('vote'); break;
-      case 'DAY_LYNCH':        play('ww_lynch'); break;
-      case 'GAME_OVER': {
-        const winner = gameState?.public?.result?.winner;
-        if (winner === 'wolves' || winner === 'white_wolf') play('ww_wolves_win');
-        else play('ww_village_win');
-        break;
-      }
-    }
-  }, [phase]);
+  const s = ctx?.s;
+  const key = narrationKey(s);
+  const lines = s ? narrate(s, ctx.name) : { title: '', text: '' };
+  const myTurn = ctx ? isMyTurn(ctx) : false;
 
-  // Son du tir : déclenché par l'event serveur quand le chasseur valide
+  // Annonces : voix du narrateur + ambiance sonore
+  const lastKey = useRef(null);
   useEffect(() => {
-    const onEvent = (e) => {
-      if (e?.type === 'hunterShot') play('ww_hunter');
-    };
+    if (!s || lastKey.current === key) return;
+    lastKey.current = key;
+    if (narratorOn && lines.text) speak(lines.text);
+    if (s.phase === 'NIGHT') play(STEP_SOUND[s.step] || 'ww_night');
+    else if (s.phase === 'DEAL') play('reveal');
+    else if (s.phase === 'MORNING') { play('ww_day'); if (s.morning?.deaths?.length) setTimeout(() => play('ww_death'), 900); }
+    else if (s.phase === 'EXECUTION') { if (s.execution?.id) play('ww_lynch'); }
+    else if (s.phase === 'DEBATE') play('vote');
+    else if (s.phase === 'MAYOR_ELECTED') play('reveal');
+    else if (s.phase === 'GAME_OVER') play(['wolves', 'white_wolf'].includes(s.result?.winner) ? 'ww_wolves_win' : 'ww_village_win');
+  }, [key]);
+  useEffect(() => () => stopSpeaking(), []);
+
+  // « C'est ton tour » : petit carillon + vibration
+  const wasMyTurn = useRef(false);
+  useEffect(() => {
+    if (myTurn && !wasMyTurn.current) { playTurnChime(); try { navigator.vibrate?.([120, 80, 120]); } catch {} }
+    wasMyTurn.current = myTurn;
+  }, [myTurn]);
+
+  // Coup de feu du chasseur
+  useEffect(() => {
+    const onEvent = (e) => { if (e?.type === 'hunterShot') { play('ww_hunter'); setFlash((f) => f + 1); } };
     socket.on('game:event', onEvent);
     return () => socket.off('game:event', onEvent);
   }, []);
 
-  if (!gameState) return null;
-  const Component = phaseComponents[phase];
-  if (!Component) return <div className="card">Phase inconnue: {phase}</div>;
+  if (!ctx) return null;
+  const phase = s.phase;
+  const dayish = !['DEAL', 'NIGHT', 'GAME_OVER'].includes(phase);
 
-  const bgClass = isNight
-    ? 'bg-gradient-to-br from-indigo-950 via-slate-950 to-purple-950'
-    : isDay
-      ? 'bg-gradient-to-br from-amber-950/60 via-slate-900 to-orange-950/60'
-      : 'bg-slate-900';
+  let stage = null;
+  switch (phase) {
+    case 'DEAL': stage = <Deal ctx={ctx} />; break;
+    case 'NIGHT': stage = <Night ctx={ctx} />; break;
+    case 'MORNING': stage = <Morning ctx={ctx} />; break;
+    case 'HUNTER': stage = <Hunter ctx={ctx} />; break;
+    case 'SUCCESSION': stage = <Succession ctx={ctx} />; break;
+    case 'MAYOR_ELECTION': stage = <MayorElection ctx={ctx} />; break;
+    case 'MAYOR_ELECTED': stage = <MayorElected ctx={ctx} />; break;
+    case 'DEBATE': case 'RUNOFF': stage = <Debate ctx={ctx} />; break;
+    case 'TIEBREAK': stage = <Tiebreak ctx={ctx} />; break;
+    case 'EXECUTION': stage = <Execution ctx={ctx} />; break;
+    case 'GAME_OVER': stage = <GameOver ctx={ctx} />; break;
+    default: stage = <p className="text-center">…</p>;
+  }
 
-  // On affiche le badge "Mon rôle" sauf pendant la phase DEAL (qui montre déjà la carte)
-  // et GAME_OVER (qui révèle tout).
-  const showBadge = myRole && phase !== 'DEAL_ROLES' && phase !== 'GAME_OVER';
+  const subtitle = phase === 'DEAL' ? 'Distribution des cartes' : phase === 'NIGHT' ? `Nuit ${s.night}` : phase === 'GAME_OVER' ? `${s.night} nuit${s.night > 1 ? 's' : ''}` : `Jour ${s.night}`;
 
   return (
-    <div className={`relative rounded-2xl transition-colors duration-700 ${bgClass}`}>
-      {showBadge && (
-        <div className="px-3 pt-3 sm:px-4 sm:pt-4 flex justify-end">
-          <MyRoleBadge roleId={myRole} />
+    <Scene sky={skyFor(s)}>
+      <AnimatePresence>
+        {flash > 0 && (
+          <motion.div key={flash} className="fixed inset-0 z-40 pointer-events-none bg-white" initial={{ opacity: 0.85 }} animate={{ opacity: 0 }} transition={{ duration: 0.7 }} />
+        )}
+      </AnimatePresence>
+      <header className="flex items-start justify-between gap-3 pr-12 sm:pr-24">
+        <div className="min-w-0">
+          <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-amber-100/70">{phase === 'NIGHT' || phase === 'DEAL' ? '🌙' : phase === 'GAME_OVER' ? '📜' : '☀️'} {subtitle}</p>
+          <h2 className="lg-title text-2xl sm:text-4xl font-bold leading-tight truncate">{phase === 'GAME_OVER' ? 'Loup-Garou' : lines.title}</h2>
         </div>
+      </header>
+      <div className="flex items-center justify-end gap-2 mt-2">
+        {phase !== 'GAME_OVER' && <TimerRing endsAt={s.stepEndsAt} k={key} />}
+        <NarratorToggle on={narratorOn} setOn={setNarrator} />
+        {phase !== 'GAME_OVER' && <MyCard ctx={ctx} />}
+      </div>
+
+      {phase !== 'GAME_OVER' && lines.text && (
+        <AnimatePresence mode="wait">
+          <motion.p key={key} initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }}
+            className="lg-narrator text-center text-base sm:text-xl leading-relaxed max-w-2xl mx-auto my-3 sm:my-5 text-amber-50/95">
+            {lines.text}
+          </motion.p>
+        </AnimatePresence>
       )}
+      {myTurn && phase !== 'NIGHT' && <p className="text-center text-[11px] uppercase tracking-[0.3em] text-amber-200 mb-2">C'est à toi</p>}
+
       <AnimatePresence mode="wait">
-        <motion.div
-          key={phase + (gameState.public?.day ?? '')}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.35 }}
-        >
-          <Component />
+        <motion.div key={`${phase}-${s.step || ''}-${s.night}-${s.gameNo}`} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+          {stage}
         </motion.div>
       </AnimatePresence>
-    </div>
+
+      {(dayish || phase === 'NIGHT') && (
+        <div className="mt-5">
+          <Chronicle s={s} name={ctx.name} secret={ctx.ghost?.secret} />
+        </div>
+      )}
+    </Scene>
   );
 }
