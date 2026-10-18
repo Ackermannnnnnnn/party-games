@@ -37,7 +37,13 @@ export class BaseGame {
   setTimer(ms, fn) {
     const t = setTimeout(() => {
       this._timers.delete(t);
-      fn();
+      try {
+        fn();
+      } catch (e) {
+        // Une erreur dans un minuteur ne doit jamais faire tomber le serveur
+        console.error(`[${this.id}] timer error in room ${this.room?.code}:`, e);
+        try { this.room.emitGameState(); } catch {}
+      }
     }, ms);
     this._timers.add(t);
     return t;

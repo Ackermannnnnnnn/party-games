@@ -26,6 +26,8 @@ export default function App() {
   const redirectHome = useGameStore((s) => s.redirectHomeReason);
   const clearRedirect = useGameStore((s) => s.clearRedirect);
   const resetRoom    = useGameStore((s) => s.resetRoom);
+  const notice       = useGameStore((s) => s.notice);
+  const setNotice    = useGameStore((s) => s.setNotice);
 
   // Watcher : si le serveur déclenche un retour au menu, on navigate
   useEffect(() => {
@@ -91,6 +93,23 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
+
+      <AnimatePresence>
+        {notice && !serverError && (
+          <motion.div
+            key={notice.message}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            onAnimationComplete={() => setTimeout(() => setNotice(null), 4000)}
+            className="fixed z-50 top-16 left-3 right-3 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:max-w-md bg-sky-600 text-white px-4 py-3 rounded-xl shadow-2xl text-sm text-center cursor-pointer"
+            onClick={() => setNotice(null)}
+            role="status"
+          >
+            {notice.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {serverError && (

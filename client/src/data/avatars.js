@@ -1,3 +1,4 @@
+import { SERVER_URL } from '../lib/socket.js';
 /**
  * Avatars du jeu — basés sur des emojis avec un gradient de fond.
  * Chaque avatar : { id, label, emoji, bg (gradient tailwind), cat }
@@ -156,6 +157,68 @@ export const AVATARS = [
   { id: 'baguette',    cat: 'food', label: 'Baguette',  emoji: '🥖', bg: 'from-amber-500 to-amber-700' },
   { id: 'croissant',   cat: 'food', label: 'Croissant', emoji: '🥐', bg: 'from-amber-400 to-amber-600' },
 
+  // ───── 🎌 Mangas (suite) ─────
+  { id: 'vegeta',      cat: 'anime', label: 'Vegeta',          emoji: '👑', bg: 'from-blue-700 to-yellow-400' },
+  { id: 'gohan',       cat: 'anime', label: 'Gohan',           emoji: '📚', bg: 'from-purple-600 to-orange-400' },
+  { id: 'zoro',        cat: 'anime', label: 'Zoro',            emoji: '⚔️', bg: 'from-green-700 to-slate-900' },
+  { id: 'sanji',       cat: 'anime', label: 'Sanji',           emoji: '🚬', bg: 'from-yellow-400 to-slate-800' },
+  { id: 'nami',        cat: 'anime', label: 'Nami',            emoji: '🍊', bg: 'from-orange-400 to-sky-500' },
+  { id: 'itachi',      cat: 'anime', label: 'Itachi',          emoji: '🐦‍⬛', bg: 'from-red-700 to-slate-900' },
+  { id: 'gaara',       cat: 'anime', label: 'Gaara',           emoji: '🏜️', bg: 'from-red-600 to-amber-700' },
+  { id: 'eren',        cat: 'anime', label: 'Eren',            emoji: '🗝️', bg: 'from-emerald-700 to-amber-800' },
+  { id: 'levi',        cat: 'anime', label: 'Livaï',           emoji: '🧹', bg: 'from-slate-600 to-emerald-900' },
+  { id: 'mikasa',      cat: 'anime', label: 'Mikasa',          emoji: '🧣', bg: 'from-red-600 to-slate-800' },
+  { id: 'gojo',        cat: 'anime', label: 'Gojo',            emoji: '🕶️', bg: 'from-sky-300 to-indigo-800' },
+  { id: 'sukuna',      cat: 'anime', label: 'Sukuna',          emoji: '👹', bg: 'from-rose-700 to-slate-900' },
+  { id: 'nezuko',      cat: 'anime', label: 'Nezuko',          emoji: '🎋', bg: 'from-pink-500 to-emerald-700' },
+  { id: 'zenitsu',     cat: 'anime', label: 'Zenitsu',         emoji: '⚡', bg: 'from-yellow-400 to-orange-600' },
+  { id: 'inosuke',     cat: 'anime', label: 'Inosuke',         emoji: '🐗', bg: 'from-slate-500 to-sky-700' },
+  { id: 'deku',        cat: 'anime', label: 'Deku',            emoji: '💥', bg: 'from-green-600 to-slate-800' },
+  { id: 'allmight',    cat: 'anime', label: 'All Might',       emoji: '💪', bg: 'from-blue-600 to-yellow-400' },
+  { id: 'light',       cat: 'anime', label: 'Light Yagami',    emoji: '📓', bg: 'from-slate-900 to-red-800' },
+  { id: 'lawliet',     cat: 'anime', label: 'L',               emoji: '🍰', bg: 'from-slate-200 to-slate-600' },
+  { id: 'ryuk',        cat: 'anime', label: 'Ryuk',            emoji: '🍎', bg: 'from-slate-900 to-red-700' },
+  { id: 'gon',         cat: 'anime', label: 'Gon',             emoji: '🎣', bg: 'from-green-600 to-slate-900' },
+  { id: 'killua',      cat: 'anime', label: 'Killua',          emoji: '🛹', bg: 'from-slate-200 to-indigo-600' },
+  { id: 'ichigo',      cat: 'anime', label: 'Ichigo',          emoji: '🍓', bg: 'from-orange-500 to-slate-900' },
+  { id: 'edward',      cat: 'anime', label: 'Edward Elric',    emoji: '⚗️', bg: 'from-red-700 to-yellow-500' },
+  { id: 'natsu',       cat: 'anime', label: 'Natsu',           emoji: '🔥', bg: 'from-rose-500 to-orange-500' },
+  { id: 'denji',       cat: 'anime', label: 'Denji',           emoji: '🪚', bg: 'from-orange-500 to-red-800' },
+  { id: 'jotaro',      cat: 'anime', label: 'Jotaro',          emoji: '⭐', bg: 'from-indigo-900 to-yellow-500' },
+  { id: 'sailormoon',  cat: 'anime', label: 'Sailor Moon',     emoji: '🌙', bg: 'from-pink-400 to-blue-500' },
+  { id: 'onizuka',     cat: 'anime', label: 'Onizuka',         emoji: '🏍️', bg: 'from-yellow-400 to-slate-800' },
+  { id: 'anya',        cat: 'anime', label: 'Anya',            emoji: '🥜', bg: 'from-pink-300 to-slate-700' },
+
+  // ───── 🎮 Jeux vidéo (suite) ─────
+  { id: 'kirby',       cat: 'gaming', label: 'Kirby',          emoji: '🌸', bg: 'from-pink-300 to-pink-500' },
+  { id: 'yoshi',       cat: 'gaming', label: 'Yoshi',          emoji: '🦖', bg: 'from-green-400 to-red-500' },
+  { id: 'dk',          cat: 'gaming', label: 'Donkey Kong',    emoji: '🦍', bg: 'from-amber-700 to-red-600' },
+  { id: 'bowser',      cat: 'gaming', label: 'Bowser',         emoji: '🐢', bg: 'from-green-600 to-orange-500' },
+  { id: 'peach',       cat: 'gaming', label: 'Peach',          emoji: '🍑', bg: 'from-pink-400 to-yellow-400' },
+  { id: 'zelda',       cat: 'gaming', label: 'Zelda',          emoji: '🔺', bg: 'from-yellow-400 to-indigo-600' },
+  { id: 'steve',       cat: 'gaming', label: 'Steve',          emoji: '⛏️', bg: 'from-sky-500 to-emerald-700' },
+  { id: 'geralt',      cat: 'gaming', label: 'Geralt',         emoji: '🐺', bg: 'from-slate-400 to-slate-800' },
+  { id: 'ezio',        cat: 'gaming', label: 'Ezio',           emoji: '🦅', bg: 'from-slate-100 to-red-700' },
+  { id: 'samus',       cat: 'gaming', label: 'Samus',          emoji: '🚀', bg: 'from-orange-500 to-red-700' },
+  { id: 'cloud',       cat: 'gaming', label: 'Cloud',          emoji: '🗡️', bg: 'from-sky-400 to-slate-700' },
+  { id: 'jinx',        cat: 'gaming', label: 'Jinx',           emoji: '💣', bg: 'from-sky-400 to-pink-600' },
+
+  // ───── 🎬 Films & séries (suite) ─────
+  { id: 'harry',       cat: 'cinema', label: 'Harry Potter',   emoji: '⚡', bg: 'from-red-700 to-yellow-500' },
+  { id: 'hermione',    cat: 'cinema', label: 'Hermione',       emoji: '📖', bg: 'from-red-700 to-amber-500' },
+  { id: 'voldemort',   cat: 'cinema', label: 'Voldemort',      emoji: '🐍', bg: 'from-emerald-800 to-slate-900' },
+  { id: 'gandalf',     cat: 'cinema', label: 'Gandalf',        emoji: '🧙‍♂️', bg: 'from-slate-300 to-slate-600' },
+  { id: 'gollum',      cat: 'cinema', label: 'Gollum',         emoji: '💍', bg: 'from-amber-300 to-slate-700' },
+  { id: 'shrek',       cat: 'cinema', label: 'Shrek',          emoji: '🧅', bg: 'from-lime-500 to-amber-800' },
+  { id: 'dobby',       cat: 'cinema', label: 'Dobby',          emoji: '🧦', bg: 'from-amber-200 to-emerald-700' },
+  { id: 'walter',      cat: 'cinema', label: 'Walter White',   emoji: '🧪', bg: 'from-emerald-700 to-yellow-600' },
+  { id: 'eleven',      cat: 'cinema', label: 'Eleven',         emoji: '🧇', bg: 'from-red-700 to-slate-900' },
+  { id: 'wednesday',   cat: 'cinema', label: 'Mercredi',       emoji: '🖤', bg: 'from-slate-800 to-purple-900' },
+  { id: 'shelby',      cat: 'cinema', label: 'Tommy Shelby',   emoji: '🎩', bg: 'from-slate-700 to-slate-900' },
+  { id: 'jonsnow',     cat: 'cinema', label: 'Jon Snow',       emoji: '🐺', bg: 'from-slate-200 to-slate-800' },
+  { id: 'daenerys',    cat: 'cinema', label: 'Daenerys',       emoji: '🐉', bg: 'from-slate-100 to-red-700' },
+  { id: 'ted',         cat: 'cinema', label: 'Ted',            emoji: '🧸', bg: 'from-amber-500 to-amber-800' },
+
   // ───── 😀 Smileys / Autres ─────
   { id: 'face_grin',   cat: 'misc', label: 'Sourire',     emoji: '😀', bg: 'from-yellow-400 to-orange-500' },
   { id: 'face_cool',   cat: 'misc', label: 'Cool',        emoji: '😎', bg: 'from-amber-500 to-amber-700' },
@@ -173,6 +236,15 @@ export const AVATARS = [
 
 /** Avatar par défaut si rien de choisi (le 1er de la liste). */
 export const DEFAULT_AVATAR_ID = 'face_grin';
+
+/** Les photos envoyées par les joueurs : `photo:<hash>` (serveur) ou `photo:local` (pas encore envoyée). */
+export const PHOTO_LOCAL = 'photo:local';
+export function isPhoto(id) { return typeof id === 'string' && id.startsWith('photo:'); }
+export function photoUrl(id) {
+  if (id === PHOTO_LOCAL) { try { return localStorage.getItem('avatarPhoto'); } catch { return null; } }
+  if (!isPhoto(id)) return null;
+  return `${SERVER_URL}/photos/${id.slice(6)}`;
+}
 
 export function getAvatar(id) {
   return AVATARS.find(a => a.id === id) || AVATARS.find(a => a.id === DEFAULT_AVATAR_ID);

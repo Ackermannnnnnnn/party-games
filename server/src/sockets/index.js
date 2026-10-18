@@ -3,23 +3,60 @@ import { Player } from '../core/Player.js';
 import { schemas, validate } from '../utils/schemas.js';
 import { getGameClass, listGames } from '../games/registry.js';
 import { logger } from '../utils/logger.js';
+import { storePhoto } from '../utils/photos.js';
+
+/** Temps laissé à un joueur déconnecté pour revenir (écran verrouillé, réseau qui saute…). */
+const RECONNECT_GRACE_MS = Number(process.env.RECONNECT_GRACE_MS) || 2 * 60_000;
+/** Si l'hôte reste déconnecté aussi longtemps, quelqu'un d'autre devient hôte. */
+const HOST_HANDOVER_MS = Number(process.env.HOST_HANDOVER_MS) || 45_000;
 
 /**
  * Inscrit tous les handlers sur un socket nouvellement connecté.
  *
  * Chaque socket porte une référence au playerId/roomCode pour les opérations rapides.
  *   socket.data = { playerId, roomCode }
+ *
+ * Tous les handlers passent par `on()` : une erreur dans un jeu est journalisée
+ * et signalée au joueur, mais ne fait jamais tomber le serveur.
  */
 export function registerSocketHandlers(io, socket) {
   roomManager.attachIo(io);
 
+  const on = (event, handler) => {
+    socket.on(event, (...args) => {
+      try {
+        handler(...args);
+      } catch (e) {
+        logger.error({ event, socketId: socket.id, err: e?.stack || String(e) }, 'Socket handler error');
+        socket.emit('error', { code: 'SERVER_ERROR', message: 'Oups, petit souci technique… la partie continue.' });
+        // On renvoie l'état à jour pour que l'écran ne reste pas figé
+        try {
+          const { room, player } = _getContext(socket);
+          if (room && player) { room.emitRoomState(); room.emitGameStateTo(player.id); }
+        } catch {}
+      }
+    });
+  };
+
+  /** Avatar choisi : une photo envoyée (stockée) ou un avatar de la liste. */
+  const resolveAvatar = (parsed, fallback = null) => {
+    if (parsed.photo) {
+      const id = storePhoto(parsed.photo);
+      if (id) return id;
+      socket.emit('error', { code: 'BAD_PHOTO', message: 'Photo refusée (format ou taille). Essaie une autre image.' });
+    }
+    if (parsed.avatar && parsed.avatar !== 'photo:local') return parsed.avatar;
+    return fallback;
+  };
+
   // ───────── ROOMS ─────────
-  socket.on('room:create', (data) => {
+  on('room:create', (data) => {
     const parsed = validate(socket, schemas.roomCreate, data);
     if (!parsed) return;
+    _leaveCurrentRoom(socket);
     try {
       const room = roomManager.createRoom();
-      const player = new Player({ pseudo: parsed.pseudo, avatar: parsed.avatar, socketId: socket.id });
+      const player = new Player({ pseudo: parsed.pseudo, avatar: resolveAvatar(parsed), socketId: socket.id });
       room.addPlayer(player);
       _attachSocketToRoom(socket, room, player);
       socket.emit('room:joined', { code: room.code, playerId: player.id });
@@ -29,75 +66,61 @@ export function registerSocketHandlers(io, socket) {
     }
   });
 
-  socket.on('room:join', (data) => {
+  on('room:join', (data) => {
     const parsed = validate(socket, schemas.roomJoin, data);
     if (!parsed) return;
     const room = roomManager.get(parsed.code.toUpperCase());
-    if (!room) return socket.emit('error', { code: 'ROOM_NOT_FOUND' });
-
-    // 1) Si quelqu'un de DECONNECTE avait deja ce pseudo -> reconnexion sur sa place
-    const existing = room.findDisconnectedByPseudo(parsed.pseudo);
-    if (existing) {
-      existing.socketId = socket.id;
-      existing.connected = true;
-      if (parsed.avatar) existing.avatar = parsed.avatar; // MAJ de l'avatar à la reconnexion
-      _attachSocketToRoom(socket, room, existing);
-      socket.emit('room:joined', { code: room.code, playerId: existing.id, reconnected: true });
-      room.emitRoomState();
-      if (room.gameInstance) room.emitGameState();
-      logger.info({ room: room.code, pseudo: existing.pseudo }, 'Player reconnected by pseudo');
-      return;
-    }
-
-    // 2) Si quelqu'un de CONNECTE a deja ce pseudo -> refus
-    if (room.isPseudoTaken(parsed.pseudo)) {
-      return socket.emit('error', { code: 'PSEUDO_TAKEN', message: 'Ce pseudo est deja pris dans la room.' });
-    }
-
-    // 3) Sinon : nouveau joueur (autorise meme en cours de partie -> spectateur ou actif selon jeu)
-    try {
-      const player = new Player({ pseudo: parsed.pseudo, avatar: parsed.avatar, socketId: socket.id });
-      room.addPlayer(player);
-      _attachSocketToRoom(socket, room, player);
-      socket.emit('room:joined', { code: room.code, playerId: player.id });
-      room.emitRoomState();
-      if (room.gameInstance) room.emitGameState(); // late-join : envoyer l'etat courant
-    } catch (e) {
-      socket.emit('error', { code: e.message });
-    }
+    if (!room) return socket.emit('error', { code: 'ROOM_NOT_FOUND', message: "Cette room n'existe pas (ou plus)." });
+    _joinRoom(socket, room, parsed, resolveAvatar(parsed));
   });
 
-  socket.on('room:rejoin', (data) => {
+  on('room:rejoin', (data) => {
     const parsed = validate(socket, schemas.roomRejoin, data);
     if (!parsed) return;
     const room = roomManager.get(parsed.code.toUpperCase());
     if (!room) return socket.emit('error', { code: 'ROOM_NOT_FOUND' });
     const player = room.players.get(parsed.playerId);
-    if (!player) return socket.emit('error', { code: 'PLAYER_NOT_FOUND' });
-
-    // Remap socket
+    if (!player) {
+      // Session expirée mais la room existe toujours : on revient avec le même pseudo
+      if (parsed.pseudo) return _joinRoom(socket, room, parsed, resolveAvatar(parsed));
+      return socket.emit('error', { code: 'PLAYER_NOT_FOUND' });
+    }
+    // Un ancien onglet resté ouvert pour ce joueur ? Il est détaché.
+    if (player.socketId && player.socketId !== socket.id) {
+      const old = io.sockets.sockets.get(player.socketId);
+      if (old) { old.leave(room.code); old.data.roomCode = null; old.data.playerId = null; }
+    }
     player.socketId = socket.id;
     player.connected = true;
+    const avatar = resolveAvatar(parsed);
+    if (avatar) player.avatar = avatar;
     _attachSocketToRoom(socket, room, player);
-    socket.emit('room:joined', { code: room.code, playerId: player.id });
+    socket.emit('room:joined', { code: room.code, playerId: player.id, reconnected: true });
+    // L'hôte était parti trop longtemps et la room est restée sans hôte valide
+    if (!room.players.has(room.hostId)) room.transferHost();
     room.emitRoomState();
-    if (room.gameInstance) room.emitGameState();
+    room.emitGameStateTo(player.id);
+    if (room.gameInstance?.onPlayerReconnected) room.gameInstance.onPlayerReconnected(player.id);
+    logger.info({ room: room.code, pseudo: player.pseudo }, 'Player rejoined');
   });
 
-  socket.on('room:leave', () => _leaveRoom(socket));
+  on('room:leave', () => _leaveRoom(socket));
 
-  // Change l'avatar en cours de partie (broadcast à tous)
-  socket.on('player:setAvatar', (data) => {
+  // Change l'avatar (photo ou avatar de la liste), même en cours de partie
+  on('player:setAvatar', (data) => {
     const parsed = validate(socket, schemas.setAvatar, data);
     if (!parsed) return;
     const { room, player } = _getContext(socket);
     if (!room || !player) return socket.emit('error', { code: 'NOT_IN_ROOM' });
-    player.avatar = parsed.avatar;
+    const avatar = resolveAvatar(parsed);
+    if (!avatar) return;
+    player.avatar = avatar;
     room.emitRoomState();
+    if (room.gameInstance) room.emitGameState(); // les jeux recopient parfois l'avatar dans leur état
   });
 
   // ───────── CHAT ─────────
-  socket.on('chat:send', (data) => {
+  on('chat:send', (data) => {
     const parsed = validate(socket, schemas.chatSend, data);
     if (!parsed) return;
     const { room, player } = _getContext(socket);
@@ -119,9 +142,9 @@ export function registerSocketHandlers(io, socket) {
   });
 
   // ───────── GAME ─────────
-  socket.on('game:list', () => socket.emit('game:list', listGames()));
+  on('game:list', () => socket.emit('game:list', listGames()));
 
-  socket.on('room:setGame', (data) => {
+  on('room:setGame', (data) => {
     const parsed = validate(socket, schemas.setGame, data);
     if (!parsed) return;
     const { room, player } = _getContext(socket);
@@ -134,7 +157,7 @@ export function registerSocketHandlers(io, socket) {
   });
 
   // Synchronisation temps réel des options du jeu sélectionné (lobby uniquement)
-  socket.on('room:setOptions', (data) => {
+  on('room:setOptions', (data) => {
     const parsed = validate(socket, schemas.setOptions, data);
     if (!parsed) return;
     const { room, player } = _getContext(socket);
@@ -145,7 +168,7 @@ export function registerSocketHandlers(io, socket) {
     room.emitRoomState();
   });
 
-  socket.on('game:options', ({ gameId } = {}) => {
+  on('game:options', ({ gameId } = {}) => {
     const GameClass = getGameClass(gameId);
     if (!GameClass || typeof GameClass.getOptionsManifest !== 'function') {
       return socket.emit('game:options', { gameId, manifest: null });
@@ -153,52 +176,71 @@ export function registerSocketHandlers(io, socket) {
     socket.emit('game:options', { gameId, manifest: GameClass.getOptionsManifest() });
   });
 
-  socket.on('game:start', (data) => {
+  on('game:start', (data) => {
     const parsed = validate(socket, schemas.gameStart, data || {});
     if (!parsed) return;
     const { room, player } = _getContext(socket);
     if (!room || !player) return socket.emit('error', { code: 'NOT_IN_ROOM' });
     if (player.id !== room.hostId) return socket.emit('error', { code: 'NOT_HOST' });
+    if (room.gameInstance) return socket.emit('error', { code: 'GAME_IN_PROGRESS', message: 'Une partie est déjà en cours.' });
 
     const gameId = parsed.gameId || 'imposter';
     const GameClass = getGameClass(gameId);
     if (!GameClass) return socket.emit('error', { code: 'UNKNOWN_GAME' });
-    if (room.players.size < GameClass.minPlayers) {
-      return socket.emit('error', { code: 'NOT_ENOUGH_PLAYERS', message: `Minimum ${GameClass.minPlayers} joueurs.` });
+    const connectedCount = [...room.players.values()].filter((p) => p.connected).length;
+    if (connectedCount < GameClass.minPlayers) {
+      return socket.emit('error', { code: 'NOT_ENOUGH_PLAYERS', message: `Minimum ${GameClass.minPlayers} joueurs connectés.` });
     }
     room.startGame(GameClass, parsed.options);
   });
 
-  socket.on('game:action', (data) => {
+  on('game:action', (data) => {
     const parsed = validate(socket, schemas.gameAction, data);
     if (!parsed) return;
     const { room, player } = _getContext(socket);
     if (!room || !player) return socket.emit('error', { code: 'NOT_IN_ROOM' });
     if (!room.gameInstance) return socket.emit('error', { code: 'NO_GAME' });
-    room.gameInstance.handleAction(player.id, parsed.type, parsed.payload);
+    try {
+      room.gameInstance.handleAction(player.id, parsed.type, parsed.payload);
+    } catch (e) {
+      logger.error({ room: room.code, game: room.gameId, type: parsed.type, err: e?.stack || String(e) }, 'Game action error');
+      socket.emit('error', { code: 'SERVER_ERROR', message: 'Action impossible pour le moment, réessaie.' });
+      room.emitGameState();
+    }
+  });
+
+  // Le client demande l'état à jour (retour au premier plan, écran figé…)
+  on('room:sync', () => {
+    const { room, player } = _getContext(socket);
+    if (!room || !player) return socket.emit('error', { code: 'NOT_IN_ROOM' });
+    socket.emit('room:state', room.toPublicState());
+    if (room.gameInstance) room.emitGameStateTo(player.id);
+    else socket.emit('game:end', { sync: true });
   });
 
   // ───────── DISCONNECT ─────────
-  socket.on('disconnect', (reason) => {
+  on('disconnect', (reason) => {
     logger.info({ socketId: socket.id, reason }, 'Socket disconnected');
     const { room, player } = _getContext(socket);
-    if (player) {
-      player.connected = false;
-      // On ne retire PAS tout de suite : on laisse 30s pour reconnexion
-      setTimeout(() => {
-        if (!player.connected && room && room.players.get(player.id) === player) {
-          const wasHost = room.removePlayer(player.id);
-          if (wasHost && room.players.size > 0) {
-            // Hôte définitivement parti -> on ferme la room
-            room.close('HOST_LEFT');
-            roomManager.delete(room.code);
-          } else {
-            _notifyPlayerLeft(room, player.id);
-          }
-        }
-      }, 30_000);
-      if (room) room.emitRoomState(); // immédiat : montre "déconnecté"
-    }
+    if (!player || player.socketId !== socket.id) return; // déjà repris par un autre onglet
+    player.connected = false;
+    const since = Date.now();
+    player.disconnectedAt = since;
+    room.emitRoomState(); // immédiat : montre "déconnecté"
+
+    // L'hôte ne revient pas vite : on passe la main pour que la partie ne bloque pas
+    setTimeout(() => {
+      if (!player.connected && player.disconnectedAt === since && room.hostId === player.id && room.players.get(player.id) === player) {
+        if ([...room.players.values()].some((p) => p.connected)) room.transferHost(player.id);
+      }
+    }, HOST_HANDOVER_MS);
+
+    // Après le délai de grâce, le joueur quitte vraiment la room
+    setTimeout(() => {
+      if (!player.connected && player.disconnectedAt === since && room.players.get(player.id) === player) {
+        _removePlayer(room, player.id);
+      }
+    }, RECONNECT_GRACE_MS);
   });
 }
 
@@ -215,20 +257,66 @@ function _getContext(socket) {
   return { room, player };
 }
 
+/** Rejoint une room : reprise de la place d'un déconnecté du même pseudo, ou nouveau joueur. */
+function _joinRoom(socket, room, parsed, avatar) {
+  _leaveCurrentRoom(socket, room.code);
+  // 1) Quelqu'un de DÉCONNECTÉ avait ce pseudo -> on reprend sa place
+  const existing = room.findDisconnectedByPseudo(parsed.pseudo);
+  if (existing) {
+    existing.socketId = socket.id;
+    existing.connected = true;
+    existing.disconnectedAt = null;
+    if (avatar) existing.avatar = avatar;
+    _attachSocketToRoom(socket, room, existing);
+    socket.emit('room:joined', { code: room.code, playerId: existing.id, reconnected: true });
+    if (!room.players.has(room.hostId)) room.transferHost();
+    room.emitRoomState();
+    room.emitGameStateTo(existing.id);
+    logger.info({ room: room.code, pseudo: existing.pseudo }, 'Player reconnected by pseudo');
+    return;
+  }
+  // 2) Pseudo déjà pris par quelqu'un de connecté -> refus
+  if (room.isPseudoTaken(parsed.pseudo)) {
+    return socket.emit('error', { code: 'PSEUDO_TAKEN', message: 'Ce pseudo est déjà pris dans la room.' });
+  }
+  // 3) Nouveau joueur (même en pleine partie : il joue tout de suite ou à la prochaine manche, selon le jeu)
+  try {
+    const player = new Player({ pseudo: parsed.pseudo, avatar, socketId: socket.id });
+    room.addPlayer(player);
+    _attachSocketToRoom(socket, room, player);
+    socket.emit('room:joined', { code: room.code, playerId: player.id, midGame: !!room.gameInstance });
+    room.emitRoomState();
+    if (room.gameInstance) room.emitGameState();
+  } catch (e) {
+    socket.emit('error', { code: e.message, message: e.message === 'ROOM_FULL' ? 'La room est pleine.' : undefined });
+  }
+}
+
+/** Si ce socket était déjà dans une autre room, il la quitte proprement. */
+function _leaveCurrentRoom(socket, exceptCode = null) {
+  if (socket.data.roomCode && socket.data.roomCode !== exceptCode) _leaveRoom(socket);
+}
+
 function _leaveRoom(socket) {
   const { room, player } = _getContext(socket);
-  if (!room || !player) return;
-  const wasHost = room.removePlayer(player.id);
-  socket.leave(room.code);
   socket.data.roomCode = null;
   socket.data.playerId = null;
-  if (wasHost && room.players.size > 0) {
-    // Hôte quitte volontairement -> on ferme la room
-    room.close('HOST_LEFT');
-    roomManager.delete(room.code);
-  } else {
-    _notifyPlayerLeft(room, player.id);
+  if (!room) return;
+  socket.leave(room.code);
+  if (player) _removePlayer(room, player.id);
+}
+
+/** Retire définitivement un joueur : l'hôte passe la main, le jeu continue sans lui. */
+function _removePlayer(room, playerId) {
+  const wasHost = room.removePlayer(playerId);
+  if (room.players.size === 0) {
+    try { room.gameInstance?.cleanup?.(); } catch {}
+    room.gameInstance = null;
+    room.gameId = null;
+    return;
   }
+  if (wasHost) room.transferHost(playerId);
+  _notifyPlayerLeft(room, playerId);
 }
 
 /**
@@ -238,6 +326,11 @@ function _leaveRoom(socket) {
 function _notifyPlayerLeft(room, playerId) {
   room.emitRoomState();
   if (room.gameInstance && typeof room.gameInstance.onPlayerLeft === 'function') {
-    room.gameInstance.onPlayerLeft(playerId);
+    try {
+      room.gameInstance.onPlayerLeft(playerId);
+    } catch (e) {
+      logger.error({ room: room.code, err: e?.stack || String(e) }, 'onPlayerLeft failed');
+      room.emitGameState();
+    }
   }
 }

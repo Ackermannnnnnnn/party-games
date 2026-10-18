@@ -5,12 +5,17 @@ import { z } from 'zod';
 const pseudoSchema = z.string().trim().min(1).max(20)
   .regex(/^[^<>&"'`\\]+$/, 'Pseudo invalide (caractères spéciaux interdits)');
 const avatarSchema = z.string().min(1).max(40).optional();
+// Photo de profil (data URL déjà réduite côté client, ~10-30 Ko)
+const photoSchema = z.string().max(140_000).optional();
 
 export const schemas = {
-  roomCreate:    z.object({ pseudo: pseudoSchema, avatar: avatarSchema }),
-  roomJoin:      z.object({ code: z.string().length(6), pseudo: pseudoSchema, avatar: avatarSchema }),
-  roomRejoin:    z.object({ code: z.string().length(6), playerId: z.string().min(8) }),
-  setAvatar:     z.object({ avatar: z.string().min(1).max(40) }),
+  roomCreate:    z.object({ pseudo: pseudoSchema, avatar: avatarSchema, photo: photoSchema }),
+  roomJoin:      z.object({ code: z.string().length(6), pseudo: pseudoSchema, avatar: avatarSchema, photo: photoSchema }),
+  roomRejoin:    z.object({
+    code: z.string().length(6), playerId: z.string().min(8),
+    pseudo: pseudoSchema.optional(), avatar: avatarSchema, photo: photoSchema,
+  }),
+  setAvatar:     z.object({ avatar: avatarSchema, photo: photoSchema }),
   chatSend:   z.object({ text: z.string().trim().min(1).max(300) }),
   gameSelect: z.object({ gameId: z.string().min(1).max(40) }),
   setGame:    z.object({ gameId: z.string().min(1).max(40) }),

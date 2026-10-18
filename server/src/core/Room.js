@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger.js';
 
-export const MAX_PLAYERS = 12;
+export const MAX_PLAYERS = 20;
 export const MAX_CHAT_HISTORY = 50;
 
 export class Room {
@@ -50,7 +50,11 @@ export class Room {
     this.emptySince = null;
     // Si une partie est en cours, on notifie le jeu (option pour init scoring etc.)
     if (this.gameInstance && typeof this.gameInstance.onPlayerJoinedMidGame === 'function') {
-      this.gameInstance.onPlayerJoinedMidGame(player.id);
+      try {
+        this.gameInstance.onPlayerJoinedMidGame(player.id);
+      } catch (e) {
+        logger.error({ room: this.code, err: e?.stack || String(e) }, 'onPlayerJoinedMidGame failed');
+      }
     }
   }
 
@@ -90,6 +94,24 @@ export class Room {
    * Ferme la room : notifie tous les sockets et purge l'état.
    * Le caller doit ensuite appeler roomManager.delete(this.code).
    */
+  /**
+   * Donne le rôle d'hôte à un autre joueur (de préférence connecté).
+   * Renvoie le nouvel hôte, ou null s'il n'y a personne.
+   */
+  transferHost(exceptId = null) {
+    const candidates = [...this.players.values()].filter((p) => p.id !== exceptId);
+    const next = candidates.find((p) => p.connected) || candidates[0] || null;
+    this.hostId = next ? next.id : null;
+    if (next) {
+      logger.info({ room: this.code, host: next.pseudo }, 'Host transferred');
+      this.broadcast('room:notice', { code: 'HOST_CHANGED', message: `👑 ${next.pseudo} est maintenant l'hôte.` });
+      this.emitRoomState();
+      // Le jeu en cours renvoie son état (boutons d'hôte, etc.)
+      this.emitGameState();
+    }
+    return next;
+  }
+
   close(reason = 'HOST_LEFT') {
     this.broadcast('room:closed', { reason });
     if (this.gameInstance?.cleanup) this.gameInstance.cleanup();
@@ -153,27 +175,60 @@ export class Room {
   /** Diffuse l'état de jeu, filtré par joueur. */
   emitGameState() {
     if (!this.gameInstance) return;
-    const publicState = this.gameInstance.getPublicState();
+    let publicState;
+    try {
+      publicState = this.gameInstance.getPublicState();
+    } catch (e) {
+      logger.error({ room: this.code, game: this.gameId, err: e?.stack || String(e) }, 'getPublicState failed');
+      return;
+    }
     for (const player of this.players.values()) {
-      const privateState = this.gameInstance.getPrivateStateFor(player.id);
-      this.emitToPlayer(player.id, 'game:state', {
-        public: publicState,
-        private: privateState,
+      if (!player.connected) continue;
+      try {
+        const privateState = this.gameInstance.getPrivateStateFor(player.id);
+        this.emitToPlayer(player.id, 'game:state', { public: publicState, private: privateState });
+      } catch (e) {
+        logger.error({ room: this.code, game: this.gameId, err: e?.stack || String(e) }, 'getPrivateStateFor failed');
+      }
+    }
+  }
+
+  /** Renvoie l'état de jeu à un seul joueur (reconnexion). */
+  emitGameStateTo(playerId) {
+    if (!this.gameInstance) return;
+    try {
+      this.emitToPlayer(playerId, 'game:state', {
+        public: this.gameInstance.getPublicState(),
+        private: this.gameInstance.getPrivateStateFor(playerId),
       });
+    } catch (e) {
+      logger.error({ room: this.code, err: e?.stack || String(e) }, 'emitGameStateTo failed');
     }
   }
 
   // ───────── Game lifecycle ─────────
   startGame(GameClass, options) {
-    this.gameInstance = new GameClass(this, options);
-    this.gameId = this.gameInstance.id;
-    this.gameInstance.start();
+    try {
+      this.gameInstance = new GameClass(this, options);
+      this.gameId = this.gameInstance.id;
+      this.gameInstance.start();
+    } catch (e) {
+      logger.error({ room: this.code, err: e?.stack || String(e) }, 'Game failed to start');
+      try { this.gameInstance?.cleanup?.(); } catch {}
+      this.gameInstance = null;
+      this.gameId = null;
+      this.broadcast('error', { code: 'START_FAILED', message: "Le jeu n'a pas pu démarrer. Réessaie !" });
+      this.emitRoomState();
+      return;
+    }
+    if (!this.gameInstance) return; // le jeu a pu s'arrêter tout seul (composition invalide…)
     this.emitRoomState();
     this.emitGameState();
     logger.info({ room: this.code, game: this.gameId }, 'Game started');
   }
 
   endGame(summary) {
+    try { this.gameInstance?.clearAllTimers?.(); } catch {}
     this.broadcast('game:end', summary);
     this.gameInstance = null;
     this.gameId = null;

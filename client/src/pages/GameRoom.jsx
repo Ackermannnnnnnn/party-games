@@ -1,24 +1,19 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useGameStore } from '../store/gameStore.js';
 import { api } from '../hooks/useSocket.js';
 import PlayerList from '../components/PlayerList.jsx';
 import Chat from '../components/Chat.jsx';
 import { GAMES, GAME_LIST, getGame } from '../games/registry.js';
+import { Identity } from './Home.jsx';
 
 export default function GameRoom() {
   const navigate = useNavigate();
-  const { room, playerId, gameState, resetRoom } = useGameStore();
+  const { room, playerId, gameState, resetRoom, connected } = useGameStore();
   const [copied, setCopied] = useState(false);
   const [mobileTab, setMobileTab] = useState('game');
 
-  if (!room) {
-    return (
-      <div className="card text-center mt-10">
-        <p>Connexion à la room…</p>
-      </div>
-    );
-  }
+  if (!room) return <JoinFromLink />;
 
   const isHost = playerId === room.hostId;
   const inGame = !!gameState;
@@ -30,9 +25,17 @@ export default function GameRoom() {
     navigate('/');
   };
 
+  // Ces jeux ont déjà leur propre écran « spectateur »
+  const spectator = !!gameState?.private?.spectator && !['imposter', 'telephone', 'bombparty', 'petitbac'].includes(room.gameId);
+
   const copyCode = async () => {
+    const link = `${window.location.origin}/room/${room.code}`;
     try {
-      await navigator.clipboard.writeText(room.code);
+      if (navigator.share && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+        await navigator.share({ title: 'Party Games', text: `Rejoins ma room ${room.code} !`, url: link });
+        return;
+      }
+      await navigator.clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -53,7 +56,7 @@ export default function GameRoom() {
               className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-100 px-2 py-1 rounded transition"
               title="Copier le code"
             >
-              {copied ? '✓ copié' : '📋 copier'}
+              {copied ? '✓ lien copié' : '🔗 inviter'}
             </button>
           </div>
         </div>
@@ -61,6 +64,18 @@ export default function GameRoom() {
           Quitter
         </button>
       </div>
+
+      {!connected && (
+        <div className="mb-3 lg:col-span-2 rounded-xl bg-amber-500/15 border border-amber-400/40 px-4 py-2.5 text-sm text-amber-100 flex items-center gap-2" role="status">
+          <span className="inline-block w-3 h-3 rounded-full border-2 border-amber-200 border-t-transparent animate-spin" aria-hidden="true" />
+          Connexion perdue… reconnexion automatique en cours, ta place est gardée.
+        </div>
+      )}
+      {inGame && spectator && (
+        <div className="mb-3 lg:col-span-2 rounded-xl bg-sky-500/15 border border-sky-400/40 px-4 py-2.5 text-sm text-sky-100" role="status">
+          👀 Une partie est en cours : tu la regardes, et tu joueras dès la prochaine manche.
+        </div>
+      )}
 
       {/* Tabs mobile */}
       <div className="flex gap-2 mb-3 lg:hidden">
@@ -178,6 +193,47 @@ function Lobby({ room, isHost }) {
           Minimum {selected?.minPlayers} joueur(s) pour démarrer.
         </p>
       )}
+    </div>
+  );
+}
+
+/** Arrivée par un lien d'invitation (ou session perdue) : on choisit pseudo + avatar et on rejoint. */
+function JoinFromLink() {
+  const { code } = useParams();
+  const navigate = useNavigate();
+  const { pseudo, avatarChosen, connected } = useGameStore();
+  const roomCode = (code || '').toUpperCase();
+  const resuming = localStorage.getItem('roomCode') === roomCode && !!localStorage.getItem('playerId');
+  const [waited, setWaited] = useState(!resuming);
+  useEffect(() => {
+    if (!resuming) return undefined;
+    const t = setTimeout(() => setWaited(true), 6000);
+    return () => clearTimeout(t);
+  }, [resuming]);
+
+  if (!waited) {
+    return (
+      <div className="card text-center mt-10 space-y-2">
+        <span className="inline-block w-6 h-6 rounded-full border-2 border-brand-light border-t-transparent animate-spin" aria-hidden="true" />
+        <p>{connected ? 'Retour dans la room…' : 'Connexion au serveur…'}</p>
+        <p className="text-xs text-slate-400">Si le serveur dormait, ça peut prendre jusqu'à une minute.</p>
+      </div>
+    );
+  }
+  const canJoin = pseudo.trim().length >= 1 && avatarChosen && roomCode.length === 6;
+  return (
+    <div className="max-w-md mx-auto mt-6 sm:mt-10 card space-y-4">
+      <div className="text-center">
+        <p className="text-xs uppercase text-slate-400">Tu es invité dans la room</p>
+        <p className="font-display text-4xl tracking-widest text-brand-light">{roomCode}</p>
+      </div>
+      <Identity compact />
+      <button type="button" className="btn btn-primary w-full disabled:opacity-50" disabled={!canJoin || !connected}
+        onClick={() => api.joinRoom(roomCode, pseudo)}>
+        {connected ? '🎮 Rejoindre la partie' : 'Connexion au serveur…'}
+      </button>
+      <p className="text-[11px] text-slate-500 text-center">Partie déjà lancée ? Tu joueras à la manche suivante.</p>
+      <button type="button" className="text-xs text-slate-400 underline w-full" style={{ minHeight: 0 }} onClick={() => navigate('/')}>Retour à l'accueil</button>
     </div>
   );
 }

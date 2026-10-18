@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { getAvatar } from '../../data/avatars.js';
+import { AvatarFace } from '../../components/Avatar.jsx';
 import { role } from './roles.js';
 
 const R = 40; // rayon du cercle, en % de la largeur
@@ -73,7 +73,6 @@ export default function Village({ players, meId, canPick, onPick, picked = [], p
 
       {players.map((p, i) => {
         const { x, y } = seatPos(i, n);
-        const a = getAvatar(p.avatar);
         const pickable = !!canPick?.(p);
         const isPicked = picked.includes(p.id);
         const roleId = p.role || known[p.id];
@@ -90,10 +89,7 @@ export default function Village({ players, meId, canPick, onPick, picked = [], p
               className={`lg-seat-btn ${pickable ? 'can-pick' : 'cursor-default'} ${isPicked ? (pickTone === 'blood' ? 'is-picked is-wolfpick' : 'is-picked') : ''} ${p.alive ? '' : 'is-dead'}`}
               style={{ width: size, height: size }}
             >
-              <span className={`flex w-full h-full items-center justify-center rounded-full bg-gradient-to-br ${a.bg} ring-2 ${p.id === meId ? 'ring-amber-200' : 'ring-black/50'}`}
-                style={{ fontSize: size * 0.5 }}>
-                {a.emoji}
-              </span>
+              <AvatarFace id={p.avatar} className={`flex w-full h-full ring-2 ${p.id === meId ? 'ring-amber-200' : 'ring-black/50'}`} emojiStyle={{ fontSize: size * 0.5 }} />
               {!p.alive && <span className="absolute inset-0 flex items-center justify-center text-[0.9em]" style={{ fontSize: size * 0.45 }}>💀</span>}
               {p.mayor && <span className="lg-badge -top-1.5 -left-1.5 bg-amber-400 text-black" title="Maire">👑</span>}
               {roleId && (

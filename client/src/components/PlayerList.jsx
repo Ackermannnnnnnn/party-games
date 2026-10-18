@@ -1,19 +1,13 @@
 import { useState } from 'react';
 import { useGameStore } from '../store/gameStore.js';
-import { api } from '../hooks/useSocket.js';
 import Avatar from './Avatar.jsx';
 import AvatarPicker from './AvatarPicker.jsx';
 
 export default function PlayerList() {
-  const { room, playerId, gameState, avatar, setAvatar } = useGameStore();
+  const { room, playerId, gameState } = useGameStore();
   const [pickerOpen, setPickerOpen] = useState(false);
   if (!room) return null;
   const eliminated = new Set(gameState?.public?.eliminatedIds || []);
-
-  const onPickAvatar = (id) => {
-    setAvatar(id);
-    api.setAvatar(id); // sync vers les autres joueurs
-  };
 
   return (
     <>
@@ -52,8 +46,6 @@ export default function PlayerList() {
       </ul>
 
       <AvatarPicker
-        currentId={avatar}
-        onSelect={onPickAvatar}
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
       />
