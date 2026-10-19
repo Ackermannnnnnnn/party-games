@@ -4,6 +4,7 @@ import SOURCES from '../../avatar-photos/sources.json';
 
 const SERVER = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 const DRAFT_KEY = 'avatarCadrageDraft';
+const PHOTO_DRAFT_KEY = 'avatarPhotoDraft';
 const DEFAULT = { zoom: 1, x: 0.5, y: 0.5 };
 const PREVIEW = 160;
 
@@ -18,6 +19,11 @@ function region(w, h, { zoom, x, y }) {
 
 function readDraft() {
   try { return JSON.parse(localStorage.getItem(DRAFT_KEY)) || {}; } catch { return {}; }
+}
+
+/** Photos choisies mais pas encore enregistrées (adresses seulement ; un fichier importé ne tient pas dans le navigateur). */
+function readPhotoDraft() {
+  try { return JSON.parse(localStorage.getItem(PHOTO_DRAFT_KEY)) || {}; } catch { return {}; }
 }
 
 /** Où chercher d'autres photos, selon la catégorie (wikis Fandom). */
@@ -76,7 +82,7 @@ export default function AvatarsAdmin({ password }) {
   ], [persoList]);
   const [tab, setTab] = useState(tabs[0]?.id);
   const [changes, setChanges] = useState(readDraft); // clé → crop | null (= automatique)
-  const [photoChanges, setPhotoChanges] = useState({}); // id → { url?, data?, preview }
+  const [photoChanges, setPhotoChanges] = useState(readPhotoDraft); // id → { url?, data?, preview }
   const [extra, setExtra] = useState({}); // id → propositions trouvées par la recherche
   const [selected, setSelected] = useState(null);
   const [github, setGithub] = useState(null);
@@ -85,10 +91,19 @@ export default function AvatarsAdmin({ password }) {
   const [saved, setSaved] = useState({}); // cadrages enregistrés mais pas encore redéployés
   const [savedPhotos, setSavedPhotos] = useState({}); // id → aperçu des photos enregistrées
 
+  // Le jeton GitHub peut être ajouté sur Render pendant que la page est ouverte : on revérifie au retour sur l'onglet
+  const checkStatus = () => fetch(`${SERVER}/admin/avatars/status`, { headers: { 'X-Admin-Password': password } })
+    .then((r) => r.json()).then((d) => { setGithub(!!d.github); return !!d.github; }).catch(() => { setGithub(false); return false; });
   useEffect(() => {
-    fetch(`${SERVER}/admin/avatars/status`, { headers: { 'X-Admin-Password': password } })
-      .then((r) => r.json()).then((d) => setGithub(!!d.github)).catch(() => setGithub(false));
+    checkStatus();
+    const onFocus = () => checkStatus();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, [password]);
+  useEffect(() => {
+    const urls = Object.fromEntries(Object.entries(photoChanges).filter(([, p]) => p.url && !p.data).map(([id, p]) => [id, { url: p.url, preview: p.url }]));
+    try { localStorage.setItem(PHOTO_DRAFT_KEY, JSON.stringify(urls)); } catch {}
+  }, [photoChanges]);
 
   useEffect(() => { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(changes)); } catch {} }, [changes]);
 
@@ -117,6 +132,11 @@ export default function AvatarsAdmin({ password }) {
   const save = async () => {
     if (!nPending) return;
     setSaving(true); setMessage(null);
+    if (!(await checkStatus())) {
+      setSaving(false);
+      setMessage({ ok: false, text: '❌ GITHUB_TOKEN n\'est pas configuré sur le serveur Render. Tes choix restent gardés ici en attendant.' });
+      return;
+    }
     try {
       // Le navigateur réduit lui-même les images qu'il peut lire ; sinon le serveur les télécharge
       const photos = {};
@@ -210,11 +230,11 @@ export default function AvatarsAdmin({ password }) {
       )}
 
       <div className="card space-y-2">
-        <button type="button" onClick={save} disabled={!nPending || saving || github === false} className="btn btn-primary w-full disabled:opacity-50">
+        <button type="button" onClick={save} disabled={!nPending || saving} className="btn btn-primary w-full disabled:opacity-50">
           {saving ? 'Enregistrement…' : `💾 Enregistrer${nPending ? ` (${nPending})` : ''}`}
         </button>
         {message && <p className={`text-sm ${message.ok ? 'text-emerald-300' : 'text-amber-300'}`}>{message.text}</p>}
-        {nPending > 0 && !message && <p className="text-xs text-slate-400">Pense à enregistrer : les photos choisies ne sont pas gardées si tu quittes la page.</p>}
+        {nPending > 0 && !message && <p className="text-xs text-slate-400">Tes choix sont gardés sur cet appareil jusqu'à l'enregistrement (sauf les fichiers importés).</p>}
       </div>
     </div>
   );

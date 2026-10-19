@@ -3,6 +3,7 @@ import { quizStore, imposterStore } from './stores.js';
 import { listCategories } from '../games/quiz/questions.js';
 import { listThemes } from '../games/imposter/themes.js';
 import { githubEnabled, sanitizeCadrage, sanitizePhotos, saveAvatars } from './avatars.js';
+import { historyStore } from '../history/history.js';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
 
@@ -54,6 +55,17 @@ export function createAdminRouter() {
   };
   router.post('/avatars/save', saveHandler);
   router.post('/avatars/cadrage', saveHandler);
+
+  // ─────── HISTORIQUE des parties ───────
+  router.get('/history', async (req, res) => {
+    try {
+      const months = await historyStore.months();
+      const month = /^\d{4}-\d{2}$/.test(String(req.query.month || '')) ? req.query.month : months[0];
+      res.json({ months, month, storage: githubEnabled() ? 'github' : 'local', records: await historyStore.list(month) });
+    } catch (e) {
+      res.status(e.status || 500).json({ error: e.message || 'Erreur' });
+    }
+  });
 
   // ─────── METADATA (read-only, pour les dropdowns) ───────
   router.get('/quiz/categories', (_req, res) => res.json(listCategories()));

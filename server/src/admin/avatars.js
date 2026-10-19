@@ -15,23 +15,14 @@
  *   GITHUB_REPO    propriétaire/dépôt (défaut : Ackermannnnnnnn/party-games)
  *   GITHUB_BRANCH  branche (défaut : main)
  */
+import { githubEnabled, fail, readText, listDir, commitFiles, http } from '../utils/github.js';
+
+export { githubEnabled, http };
+
 const CADRAGE_FILE = 'client/avatars/cadrage.json';
 const PHOTOS_DIR = 'client/avatar-photos';
 const SOURCES_FILE = `${PHOTOS_DIR}/sources.json`;
 const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
-const repo = () => process.env.GITHUB_REPO || 'Ackermannnnnnnn/party-games';
-const branch = () => process.env.GITHUB_BRANCH || 'main';
-
-/** Remplaçable pour les tests. */
-export const http = { fetch: (...a) => fetch(...a) };
-
-export function githubEnabled() {
-  return !!process.env.GITHUB_TOKEN;
-}
-
-const fail = (message, status = 502) => Object.assign(new Error(message), { status });
-const TOKEN_ERR = 'Jeton GitHub refusé (vérifie GITHUB_TOKEN et ses droits en écriture).';
-
 /** Nettoie ce qu'envoie la page admin : { "Thor.jpg" | "@goku": { zoom, x, y } | null }. */
 export function sanitizeCadrage(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
@@ -61,65 +52,6 @@ export function sanitizePhotos(input) {
     if (url || data) out[id] = { url, data };
   }
   return out;
-}
-
-async function gh(path, opts = {}) {
-  const res = await http.fetch(`https://api.github.com/repos/${repo()}${path}`, {
-    ...opts,
-    headers: {
-      Accept: 'application/vnd.github+json',
-      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-      'User-Agent': 'party-games-admin',
-      'X-GitHub-Api-Version': '2022-11-28',
-      ...(opts.body ? { 'Content-Type': 'application/json' } : {}),
-    },
-  });
-  const body = await res.json().catch(() => ({}));
-  if (res.status === 401 || res.status === 403) throw fail(TOKEN_ERR);
-  return { status: res.status, ok: res.ok, body };
-}
-
-/** Lit un fichier texte du dépôt (null s'il n'existe pas). */
-async function readText(path) {
-  const r = await gh(`/contents/${path}?ref=${encodeURIComponent(branch())}`);
-  if (r.status === 404) return null;
-  if (!r.ok) throw fail(`GitHub a répondu ${r.status}.`);
-  return Buffer.from(r.body.content || '', 'base64').toString('utf8');
-}
-
-async function listDir(path) {
-  const r = await gh(`/contents/${path}?ref=${encodeURIComponent(branch())}`);
-  if (r.status === 404) return [];
-  if (!r.ok || !Array.isArray(r.body)) throw fail(`GitHub a répondu ${r.status}.`);
-  return r.body.map((f) => f.name);
-}
-
-/**
- * Crée UN commit avec plusieurs fichiers (ajout, modification, suppression) via l'API Git.
- * files : [{ path, content: Buffer|string } | { path, remove: true }]
- */
-export async function commitFiles(files, message) {
-  const ref = await gh(`/git/ref/heads/${encodeURIComponent(branch())}`);
-  if (!ref.ok) throw fail(ref.status === 404 ? 'Branche introuvable sur GitHub.' : `GitHub a répondu ${ref.status}.`);
-  const parentSha = ref.body.object.sha;
-  const parent = await gh(`/git/commits/${parentSha}`);
-  if (!parent.ok) throw fail(`GitHub a répondu ${parent.status}.`);
-
-  const tree = [];
-  for (const f of files) {
-    if (f.remove) { tree.push({ path: f.path, mode: '100644', type: 'blob', sha: null }); continue; }
-    const buf = Buffer.isBuffer(f.content) ? f.content : Buffer.from(String(f.content), 'utf8');
-    const blob = await gh('/git/blobs', { method: 'POST', body: JSON.stringify({ content: buf.toString('base64'), encoding: 'base64' }) });
-    if (!blob.ok) throw fail(`Envoi du fichier ${f.path} refusé (${blob.status}).`);
-    tree.push({ path: f.path, mode: '100644', type: 'blob', sha: blob.body.sha });
-  }
-  const t = await gh('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: parent.body.tree.sha, tree }) });
-  if (!t.ok) throw fail(`GitHub a répondu ${t.status} (arbre).`);
-  const c = await gh('/git/commits', { method: 'POST', body: JSON.stringify({ message, tree: t.body.sha, parents: [parentSha] }) });
-  if (!c.ok) throw fail(`GitHub a répondu ${c.status} (commit).`);
-  const upd = await gh(`/git/refs/heads/${encodeURIComponent(branch())}`, { method: 'PATCH', body: JSON.stringify({ sha: c.body.sha }) });
-  if (!upd.ok) throw fail(upd.status === 422 ? 'Le dépôt a changé entre-temps, réessaie.' : `GitHub a répondu ${upd.status}.`);
-  return c.body.sha.slice(0, 7);
 }
 
 const EXT_BY_TYPE = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/avif': 'avif' };

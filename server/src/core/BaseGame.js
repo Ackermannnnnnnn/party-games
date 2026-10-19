@@ -8,6 +8,8 @@
  *   - getPublicState() = données vues par tous
  *   - getPrivateStateFor(playerId) = données privées (rôles, mots secrets...)
  */
+import { onGamePhase, FINAL_PHASES } from '../history/history.js';
+
 export class BaseGame {
   static id = 'base';
   static minPlayers = 2;
@@ -20,6 +22,7 @@ export class BaseGame {
     this.id = this.constructor.id;
     this.phase = 'INIT';
     this._timers = new Set();
+    this._matchStartedAt = Date.now(); // pour la durée dans l'historique
   }
 
   // À surcharger ↓
@@ -30,8 +33,12 @@ export class BaseGame {
 
   // ───────── Helpers FSM ─────────
   setPhase(newPhase) {
+    const prev = this.phase;
     this.phase = newPhase;
+    if (!this._matchStartedAt && FINAL_PHASES[this.id] !== newPhase) this._matchStartedAt = Date.now();
     this.room.emitGameState();
+    // Fin de partie : on l'ajoute à l'historique (admin)
+    if (prev !== newPhase) onGamePhase(this, newPhase);
   }
 
   setTimer(ms, fn) {
