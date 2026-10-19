@@ -708,7 +708,7 @@
   ]
  },
  "spiderman": {
-  "pick": 0,
+  "pick": -1,
   "candidates": [
    "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/620-spider-man.jpg"
   ]
