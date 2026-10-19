@@ -7,7 +7,7 @@ import { SERVER_URL } from '../lib/socket.js';
  * (l'`id` doit rester unique dans toute la liste).
  */
 
-const BUILTIN_CATEGORIES = [
+export const BUILTIN_CATEGORIES = [
   { id: 'marvel',   label: 'Marvel',     icon: '🦸' },
   { id: 'dc',       label: 'DC',         icon: '🦸‍♂️' },
   { id: 'disney',   label: 'Disney',     icon: '🏰' },
@@ -236,14 +236,28 @@ const BUILTIN_AVATARS = [
 
 // ───── Avatars perso : images déposées dans client/avatars/ (voir scripts/avatars.mjs) ─────
 const generated = import.meta.glob('../generated/customAvatars.json', { eager: true, import: 'default' });
-const CUSTOM = Object.values(generated)[0] || { categories: [], avatars: [] };
+const CUSTOM = Object.values(generated)[0] || { categories: [], avatars: [], builtin: {} };
+const PHOTOS = CUSTOM.builtin || {};
 
-/** Onglets : d'abord les dossiers perso, puis les avatars intégrés. */
-export const AVATAR_CATEGORIES = [...CUSTOM.categories, ...BUILTIN_CATEGORIES];
+/** Catégories de personnages : on n'y montre que des photos, jamais d'emoji. */
+export const CHARACTER_CATEGORIES = new Set(['marvel', 'dc', 'disney', 'simpsons', 'starwars', 'anime', 'gaming', 'cinema']);
+
+/** Avatars intégrés, avec leur photo (client/avatar-photos/) quand il y en a une. */
+export const BUILTIN_WITH_PHOTOS = BUILTIN_AVATARS.map((a) => (PHOTOS[a.id] ? { ...a, ...PHOTOS[a.id], builtinPhoto: true } : a));
+
+/** Choisissables : un personnage sans photo n'est pas proposé (il reste affichable pour qui l'a déjà). */
+const PICKABLE_BUILTIN = BUILTIN_WITH_PHOTOS.filter((a) => a.img || !CHARACTER_CATEGORIES.has(a.cat));
+
+/** Onglets : d'abord les dossiers perso, puis les avatars intégrés (onglets vides masqués). */
+export const AVATAR_CATEGORIES = [
+  ...CUSTOM.categories,
+  ...BUILTIN_CATEGORIES.filter((c) => PICKABLE_BUILTIN.some((a) => a.cat === c.id)),
+];
 export const AVATARS = [
   ...CUSTOM.avatars.map((a) => ({ ...a, bg: 'from-slate-600 to-slate-800', emoji: '🖼️' })),
-  ...BUILTIN_AVATARS,
+  ...PICKABLE_BUILTIN,
 ];
+const ALL_AVATARS = [...AVATARS, ...BUILTIN_WITH_PHOTOS.filter((a) => !PICKABLE_BUILTIN.includes(a))];
 
 /** Avatar par défaut si rien de choisi (le 1er de la liste). */
 export const DEFAULT_AVATAR_ID = 'face_grin';
@@ -259,12 +273,12 @@ export function photoUrl(id) {
 
 /** URL de l'image d'un avatar perso (`img:…`), sinon null. */
 export function imageUrl(id) {
-  if (typeof id !== 'string' || !id.startsWith('img:')) return null;
-  return AVATARS.find((a) => a.id === id)?.img || null;
+  if (typeof id !== 'string') return null;
+  return ALL_AVATARS.find((a) => a.id === id)?.img || null;
 }
 
 export function getAvatar(id) {
-  return AVATARS.find(a => a.id === id) || AVATARS.find(a => a.id === DEFAULT_AVATAR_ID);
+  return ALL_AVATARS.find(a => a.id === id) || ALL_AVATARS.find(a => a.id === DEFAULT_AVATAR_ID);
 }
 
 /** Renvoie un avatar aléatoire (utile pour init un nouveau joueur). */

@@ -2,7 +2,7 @@ import express from 'express';
 import { quizStore, imposterStore } from './stores.js';
 import { listCategories } from '../games/quiz/questions.js';
 import { listThemes } from '../games/imposter/themes.js';
-import { githubEnabled, sanitizeCadrage, saveCadrage } from './avatars.js';
+import { githubEnabled, sanitizeCadrage, sanitizePhotos, saveAvatars } from './avatars.js';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
 
@@ -20,7 +20,12 @@ function authMiddleware(req, res, next) {
 
 export function createAdminRouter() {
   const router = express.Router();
-  router.use(express.json({ limit: '500kb' }));
+  // Les photos d'avatars envoyées depuis l'admin peuvent peser plusieurs Mo
+  // (mot de passe vérifié AVANT de lire un gros envoi)
+  router.use((req, res, next) => {
+    if (req.path === '/avatars/save') return authMiddleware(req, res, () => express.json({ limit: '30mb' })(req, res, next));
+    return express.json({ limit: '500kb' })(req, res, next);
+  });
 
   // ─────── Endpoint LOGIN (vérifie le mot de passe) ───────
   router.post('/login', (req, res) => {
@@ -36,16 +41,19 @@ export function createAdminRouter() {
 
   // ─────── AVATARS : cadrage enregistré dans le dépôt GitHub ───────
   router.get('/avatars/status', (_req, res) => res.json({ github: githubEnabled() }));
-  router.post('/avatars/cadrage', async (req, res) => {
-    const changes = sanitizeCadrage(req.body?.cadrage);
-    if (!changes || !Object.keys(changes).length) return res.status(400).json({ error: 'Rien à enregistrer.' });
+  const saveHandler = async (req, res) => {
+    const cadrage = sanitizeCadrage(req.body?.cadrage) || {};
+    const photos = sanitizePhotos(req.body?.photos);
+    if (!Object.keys(cadrage).length && !Object.keys(photos).length) return res.status(400).json({ error: 'Rien à enregistrer.' });
     if (!githubEnabled()) return res.status(501).json({ error: 'GITHUB_TOKEN non configuré sur le serveur.' });
     try {
-      res.json({ ok: true, ...(await saveCadrage(changes)) });
+      res.json({ ok: true, ...(await saveAvatars({ cadrage, photos })) });
     } catch (e) {
-      res.status(e.status || 500).json({ error: e.message || 'Erreur' });
+      res.status(e.status || 500).json({ error: e.message || 'Erreur', failed: e.failed });
     }
-  });
+  };
+  router.post('/avatars/save', saveHandler);
+  router.post('/avatars/cadrage', saveHandler);
 
   // ─────── METADATA (read-only, pour les dropdowns) ───────
   router.get('/quiz/categories', (_req, res) => res.json(listCategories()));

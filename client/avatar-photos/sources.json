@@ -1,0 +1,878 @@
+{
+ "aladdin": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/b/be/Aladdin_Disney_pose.png"
+  ]
+ },
+ "allmight": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b89224-K6KEuQAuYKzq.jpg"
+  ]
+ },
+ "anna": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/disney/images/0/0f/Profile_-_Anna.jpeg/revision/latest"
+  ]
+ },
+ "anya": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b138100-4Li0tWRCa5bQ.png",
+   "https://upload.wikimedia.org/wikipedia/en/e/ec/AnyaForger.png"
+  ]
+ },
+ "aquaman": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/38-aquaman.jpg"
+  ]
+ },
+ "ariel": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/disney/images/8/8a/Profile_-_Ariel.jpg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/7/77/Ariel_disney.png"
+  ]
+ },
+ "baby_yoda": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/starwars/images/0/06/Grogu-BoBFBox.png/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/a/a0/Grogu_%28Star_Wars%29.jpg"
+  ]
+ },
+ "bart": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/simpsons/images/0/0a/Profile_-_Bart_Simpson.png/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/a/aa/Bart_Simpson_200px.png"
+  ]
+ },
+ "batman": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/70-batman.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/c/c7/Batman_Infobox.jpg"
+  ]
+ },
+ "blackpanth": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/106-black-panther.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/f/f7/Black_Panther_%28T%27Challa%29.png"
+  ]
+ },
+ "blackwidow": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/107-black-widow.jpg"
+  ]
+ },
+ "bowser": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/d/d1/Bowser_by_Shigehisa_Nakaue.png"
+  ]
+ },
+ "buzz": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/pixar/images/5/56/Buzz_Profile.jpg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/commons/0/02/Buzz_Lightyear_sculpture_of_Toy_Story_Hotel_Shanghai_%28cropped%29.jpg"
+  ]
+ },
+ "captain": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/149-captain-america.jpg"
+  ]
+ },
+ "chewbacca": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/starwars/images/2/25/Chewbacca-SWBC5cvr.png/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/f/f1/Chewbacca.png"
+  ]
+ },
+ "cloud": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/9/9e/Cloud_Strife.png"
+  ]
+ },
+ "crash": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/a/a3/IAT_Crash_Bandicoot.png"
+  ]
+ },
+ "creeper": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/commons/a/a9/Minecraft_Creeper_%28Crop%29.png"
+  ]
+ },
+ "cyborg": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/194-cyborg.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/5/58/Cyborg_%28Victor_Stone%29.jpg"
+  ]
+ },
+ "daenerys": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/0/0d/Daenerys_Targaryen_with_Dragon-Emilia_Clarke.jpg"
+  ]
+ },
+ "deadpool": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/213-deadpool.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/c/ca/Deadpool.png"
+  ]
+ },
+ "deku": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b89028-8w1I9o1ISHMg.png"
+  ]
+ },
+ "denji": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b130102-FO1VHNnEnLlB.png",
+   "https://upload.wikimedia.org/wikipedia/en/2/2e/Denjichainsawman.png"
+  ]
+ },
+ "dk": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/d/d4/Donkey_Kong_character.png"
+  ]
+ },
+ "dobby": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/harrypotter/images/8/82/Dobby.jpg/revision/latest"
+  ]
+ },
+ "doctorstr": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/226-doctor-strange.jpg"
+  ]
+ },
+ "donald": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/disney/images/a/ab/Donald_Duck_Disney_1.png/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/a/a5/Donald_Duck_angry_transparent_background.png"
+  ]
+ },
+ "edward": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b11-TA5Nuk7EDUZG.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/b/b5/Edward85as.JPG"
+  ]
+ },
+ "eleven": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/strangerthings8338/images/e/e2/Eleven_-_Sorcerer.png/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/3/3f/Eleven_%28Stranger_Things_5%29.png"
+  ]
+ },
+ "elsa": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/disney/images/9/95/Profile_-_Elsa.jpeg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/5/5e/Elsa_from_Disney%27s_Frozen.png"
+  ]
+ },
+ "eren": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b40882-dsj7IP943WFF.jpg"
+  ]
+ },
+ "ezio": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/b/b9/Ezio_Auditore_da_Firenze.png"
+  ]
+ },
+ "flash": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/265-flash-ii.jpg",
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/263-flash.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/b/b7/Flash_%28Barry_Allen%29.png"
+  ]
+ },
+ "gaara": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b1662-4E5J0LX9jZKZ.png",
+   "https://upload.wikimedia.org/wikipedia/en/3/36/GaaraKishimoto.jpg"
+  ]
+ },
+ "gandalf": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/lotr/images/e/e7/Gandalf_the_Grey.jpg/revision/latest",
+   "https://static.wikia.nocookie.net/lotr/images/4/40/Gandalf_the_Grey_profile.jpg/revision/latest"
+  ]
+ },
+ "genie": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/disney/images/9/92/Profile_-_Genie.jpeg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/0/0c/The_Genie_Aladdin.png"
+  ]
+ },
+ "geralt": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/commons/8/87/Geralt.jpg"
+  ]
+ },
+ "gohan": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b2093-kdFZhqcNSsqW.png",
+   "https://upload.wikimedia.org/wikipedia/en/b/bf/AdultSonGohan.jpg"
+  ]
+ },
+ "gojo": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b127691-9zqh1xpIubn7.png",
+   "https://upload.wikimedia.org/wikipedia/en/9/96/SatoruGojomanga.png"
+  ]
+ },
+ "goku": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/246-wsRRr6z1kii8.png",
+   "https://upload.wikimedia.org/wikipedia/en/4/4c/GokumangaToriyama.png"
+  ]
+ },
+ "gollum": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/commons/4/4a/Gollum_at_Wellington_Airport.jpg"
+  ]
+ },
+ "gon": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b30-lyFExKyDhefc.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/a/a1/GonFreecsmanga.png"
+  ]
+ },
+ "goofy": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/disney/images/e/e5/Goofy.png/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/5/50/Goofy_Duckipedia.png"
+  ]
+ },
+ "greenarr": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/298-green-arrow.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/6/61/Green_Arrow_-_Infobox_image.png"
+  ]
+ },
+ "groot": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/303-groot.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/3/3b/Groot.png"
+  ]
+ },
+ "harley": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/309-harley-quinn.jpg"
+  ]
+ },
+ "harry": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/harrypotter/images/c/ce/Harry_Potter_DHF1.jpg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/commons/9/99/Daniel_Radcliffe_as_Harry_Potter.jpg"
+  ]
+ },
+ "hermione": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/harrypotter/images/3/34/Hermione_Granger.jpg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/d/d3/Hermione_Granger_poster.jpg"
+  ]
+ },
+ "homer": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/0/02/Homer_Simpson_2006.png",
+   "https://static.wikia.nocookie.net/simpsons/images/6/67/S34E19_Write_Off_This_Episode_-_Homer.png/revision/latest"
+  ]
+ },
+ "hulk": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/332-hulk.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/a/aa/Hulk_%28circa_2019%29.png"
+  ]
+ },
+ "ichigo": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b5-a7bkJgjhhigE.png",
+   "https://upload.wikimedia.org/wikipedia/en/1/1e/IchigoKurosakiBleach.jpg"
+  ]
+ },
+ "indiana": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/indianajones/images/1/1d/Indiana_Jones_5_Profile.png/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/commons/3/3d/Indianajones4.jpg"
+  ]
+ },
+ "inosuke": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/n129130-SJC0Kn1DU39E.jpg"
+  ]
+ },
+ "ironman": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/346-iron-man.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/4/47/Iron_Man_%28circa_2018%29.png"
+  ]
+ },
+ "itachi": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b14-9Kb1E5oel1ke.png",
+   "https://upload.wikimedia.org/wikipedia/en/e/e5/Itachi_Uchiha.jpg"
+  ]
+ },
+ "jacksparrow": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/pirates/images/e/ea/DMTNT_Jack_Sparrow_cropped.png/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/commons/6/64/Johnny_Depp_as_Captain_Jack_Sparrow_in_Queensland%2C_Australia.jpg"
+  ]
+ },
+ "jamesbond": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/jamesbond/images/8/81/James_Bond_%28Daniel_Craig%29_-_Profile.jpg/revision/latest"
+  ]
+ },
+ "jinx": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/a/ad/Jinx-artwork-lol.png"
+  ]
+ },
+ "joker": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/370-joker.jpg"
+  ]
+ },
+ "jonsnow": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/3/30/Jon_Snow_Season_8.png"
+  ]
+ },
+ "jotaro": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b4003-gWDSEGbeOAll.png",
+   "https://upload.wikimedia.org/wikipedia/en/9/9a/JotaroKujo.png"
+  ]
+ },
+ "kakashi": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b85-mkVBh2yjxjmx.png",
+   "https://upload.wikimedia.org/wikipedia/en/2/2b/Kakashikishimoto.jpg"
+  ]
+ },
+ "killua": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b27-Z5O02kQUydpT.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/9/93/KilluaZoldyckManga.png"
+  ]
+ },
+ "kirby": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/4/4e/Kirby_Nintendo.png"
+  ]
+ },
+ "kratos": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/2/2f/Kratos_PS4.png"
+  ]
+ },
+ "lara": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/a/a8/LaraCroftInfobox.png"
+  ]
+ },
+ "lawliet": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b71-1W4panC53vfs.png",
+   "https://upload.wikimedia.org/wikipedia/en/6/6c/L_from_Death_Note.png"
+  ]
+ },
+ "leia": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/1/1b/Princess_Leia%27s_characteristic_hairstyle.jpg",
+   "https://static.wikia.nocookie.net/starwars/images/f/f1/Leia_Organa_TROS.png/revision/latest"
+  ]
+ },
+ "levi": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b45627-CR68RyZmddGG.png"
+  ]
+ },
+ "light": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b80-26EhwSsSqQ50.png",
+   "https://upload.wikimedia.org/wikipedia/en/0/0c/Light_from_Death_Note.jpg"
+  ]
+ },
+ "link": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/9/9d/Link_%28Hyrule_Historia%29.png"
+  ]
+ },
+ "lisa": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/e/ec/Lisa_Simpson.png",
+   "https://static.wikia.nocookie.net/simpsons/images/2/2a/S35E14_Night_of_the_Living_Wage_-_Lisa.png/revision/latest"
+  ]
+ },
+ "loki": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/414-loki.jpg"
+  ]
+ },
+ "luffy": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b40-MNypXsxSRb1R.png",
+   "https://upload.wikimedia.org/wikipedia/en/c/cb/Monkey_D_Luffy.png"
+  ]
+ },
+ "luigi": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/mario/images/7/76/SMPJ_Luigi.png/revision/latest"
+  ]
+ },
+ "luke": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/418-luke-skywalker.jpg",
+   "https://upload.wikimedia.org/wikipedia/commons/6/67/Luke_Skywalker_-_Welcome_Banner_%28Cropped%29.jpg"
+  ]
+ },
+ "maggie": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/9/9d/Maggie_Simpson.png",
+   "https://static.wikia.nocookie.net/simpsons/images/0/06/S26E07_Blazed_and_Confused_-_Maggie.png/revision/latest"
+  ]
+ },
+ "mando": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/starwars/images/4/46/DinDjarinArmor-CGSWG.png/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/a/a1/TheMandalorian.jpg"
+  ]
+ },
+ "marge": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/simpsons/images/c/c2/Profile_-_Marge_Simpson.png/revision/latest"
+  ]
+ },
+ "mario": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/5/5c/Mario_by_Shigehisa_Nakaue.png"
+  ]
+ },
+ "masterchief": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/4/42/Master_chief_halo_infinite.png"
+  ]
+ },
+ "mickey": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/disney/images/2/2e/Disney_Mickey_Mouse.png/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/commons/4/4f/Mickey_Mouse_%28poster_version%29.svg"
+  ]
+ },
+ "mikasa": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b40881-F3gr1PkreDvj.png",
+   "https://upload.wikimedia.org/wikipedia/en/1/14/MikasaAkerman.png"
+  ]
+ },
+ "nami": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b723-vp5hPptgnNEC.png",
+   "https://upload.wikimedia.org/wikipedia/commons/f/fb/Nami_%28One_Piece_Odyssey%29.jpg"
+  ]
+ },
+ "naruto": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b17-phjcWCkRuIhu.png",
+   "https://upload.wikimedia.org/wikipedia/en/9/9a/NarutoUzumaki.png"
+  ]
+ },
+ "natsu": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b5187-y1OEdRu9sPN2.png",
+   "https://upload.wikimedia.org/wikipedia/en/3/38/NatsuDragneelFairyTail.jpg"
+  ]
+ },
+ "nemo": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/pixar/images/a/aa/Nemo-FN.png/revision/latest"
+  ]
+ },
+ "neo": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/matrix/images/3/32/Neo.jpg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/c/c6/NeoTheMatrix.jpg"
+  ]
+ },
+ "nezuko": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b127518-NRlq1CQ1v1ro.png",
+   "https://upload.wikimedia.org/wikipedia/en/c/c0/NezukoKamado.png"
+  ]
+ },
+ "olaf": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/disney/images/5/53/Profile_-_Olaf.jpeg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/6/6d/Olaf_from_Disney%27s_Frozen.png"
+  ]
+ },
+ "onizuka": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b434-Q0K9e4HukawA.png"
+  ]
+ },
+ "pacman": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/commons/f/fb/Pac-Man_ingame_and_2D_alternative_design.png"
+  ]
+ },
+ "peach": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/1/16/Princess_Peach_Stock_Art.png"
+  ]
+ },
+ "pikachu": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b3891-edgrZOgCJ9do.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/a/a6/Pok%C3%A9mon_Pikachu_art.png"
+  ]
+ },
+ "r2d2": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/starwars/images/9/95/R2-D2-TROSOCE.png/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/commons/6/61/Parents_of_Earth%2C_are_your_children_fully_immunized_%284647268251%29_%28cropped%29_auto_color_%28cropped_to_R2-D2%29.jpg"
+  ]
+ },
+ "rocket": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/566-rocket-raccoon.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/1/1b/Rocketraccoon.png"
+  ]
+ },
+ "rocky": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/rocky/images/2/2a/Sylvester-Stallone-Rocky-II-Color-8x10-Photo.webp/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/5/53/Rocky_balboa.jpeg"
+  ]
+ },
+ "ryuk": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b75-IkEpzO21LgFy.jpg"
+  ]
+ },
+ "sailormoon": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b2030-GQvVYPEYkXCy.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/2/2b/Sailor_Moon_01.jpg"
+  ]
+ },
+ "saitama": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b73935-ON5d0mAcrItd.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/9/98/SaitamaWikipediapage.png"
+  ]
+ },
+ "samus": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/d/d6/Samus_Aran.png"
+  ]
+ },
+ "sanji": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b305-6lisPmHtCnLT.png",
+   "https://upload.wikimedia.org/wikipedia/en/a/aa/Sanji_%28One_Piece%29.jpg"
+  ]
+ },
+ "sasuke": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b13-SISLEw1oAD7a.png",
+   "https://upload.wikimedia.org/wikipedia/en/4/42/SasukeKishimoto.jpg"
+  ]
+ },
+ "shelby": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/f/fd/Tommy_Shelby.jpg"
+  ]
+ },
+ "shrek": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/4/4d/Shrek_%28character%29.png"
+  ]
+ },
+ "simba": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/disney/images/3/37/Profile_-_Simba.jpeg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/9/94/Simba_%28_Disney_character_-_adult%29.png"
+  ]
+ },
+ "sonic": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/f/f4/Sonic_modern_and_classic_designs.png"
+  ]
+ },
+ "spiderman": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/620-spider-man.jpg"
+  ]
+ },
+ "steve": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/e/e7/Steve_%28Minecraft%29.png"
+  ]
+ },
+ "stitch": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/disney/images/b/b7/Profile_-_Stitch.jpg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/en/d/d2/Stitch_%28Lilo_%26_Stitch%29.svg"
+  ]
+ },
+ "sukuna": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b133701-rCQuDpHr3UZL.png"
+  ]
+ },
+ "superman": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/644-superman.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/3/35/Supermanflying.png"
+  ]
+ },
+ "tanjiro": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b126071-BTNEc1nRIv68.png",
+   "https://upload.wikimedia.org/wikipedia/en/e/ea/Tanjirou_manga.png"
+  ]
+ },
+ "ted": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/tedmovie/images/6/6c/Ted_Movie_Young_Ted.png/revision/latest"
+  ]
+ },
+ "terminator": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/terminator/images/1/1c/Tg-t800-bts-170543-100.jpeg/revision/latest"
+  ]
+ },
+ "thanos": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/655-thanos.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/b/b7/Thanos_%28Infobox_image%29.png"
+  ]
+ },
+ "thor": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/659-thor.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/1/1a/Thor_%28Marvel_Comics%29.png"
+  ]
+ },
+ "totoro": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/studio-ghibli/images/d/df/Totoro_in_the_rain.png/revision/latest"
+  ]
+ },
+ "vader": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/208-darth-vader.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/0/0b/Darth_Vader_in_The_Empire_Strikes_Back.jpg"
+  ]
+ },
+ "vegeta": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b913-NIFkKazWM8VO.png",
+   "https://upload.wikimedia.org/wikipedia/en/8/88/Vegeta_Dragon_Ball.jpg"
+  ]
+ },
+ "venom": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/687-venom.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/b/b0/Venom_%28Marvel_Comics_character%29.png"
+  ]
+ },
+ "voldemort": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/harrypotter/images/9/97/Voldemort_Headshot_DHF1.png/revision/latest"
+  ]
+ },
+ "wall_e": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/6/68/WALL-E_%28character%29.png"
+  ]
+ },
+ "walter": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/0/03/Walter_White_S5B.png"
+  ]
+ },
+ "wednesday": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/addamsfamily/images/8/88/Wednesday_Addams_-_Character_Poster_%282022%29_002.jpg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/commons/6/61/Wednesday_Addams_1964.jpg"
+  ]
+ },
+ "wolverine": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/717-wolverine.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/d/d3/Wolverine_%28circa_2024%29.jpg"
+  ]
+ },
+ "wonderwoman": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/720-wonder-woman.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/6/6b/Wonder_Woman_750.jpg"
+  ]
+ },
+ "woody": {
+  "pick": 0,
+  "candidates": [
+   "https://static.wikia.nocookie.net/pixar/images/e/ef/Woody_profile.jpg/revision/latest",
+   "https://upload.wikimedia.org/wikipedia/commons/0/03/Woody_at_Toy_Story_Land%2C_Hong_Kong.jpg"
+  ]
+ },
+ "yoda": {
+  "pick": 0,
+  "candidates": [
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/729-yoda.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/9/9b/Yoda_Empire_Strikes_Back.png"
+  ]
+ },
+ "yoshi": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/d/db/Yoshi_%28Nintendo_character%29.png"
+  ]
+ },
+ "zelda": {
+  "pick": 0,
+  "candidates": [
+   "https://upload.wikimedia.org/wikipedia/en/6/6e/Link_to_the_Past_Zelda.png"
+  ]
+ },
+ "zenitsu": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b129131-FZrQ7lSlxmEr.png"
+  ]
+ },
+ "zoro": {
+  "pick": 0,
+  "candidates": [
+   "https://s4.anilist.co/file/anilistcdn/character/large/b62-S7oAeA9WInjV.png",
+   "https://upload.wikimedia.org/wikipedia/en/a/a4/Roronoa_Zoro.jpg"
+  ]
+ }
+}

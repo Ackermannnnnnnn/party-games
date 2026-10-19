@@ -3,6 +3,7 @@
 //   client/avatars/Hulk.png                → avatar « Hulk » dans l'onglet « ⭐ Perso »
 //   client/avatars/Marvel/Iron-Man.jpg     → avatar « Iron Man » dans l'onglet « Marvel »
 //   client/avatars/🎌 Mangas/goku.webp     → avatar « Goku » dans l'onglet « 🎌 Mangas »
+//   client/avatar-photos/goku.webp          → photo de l'avatar intégré « goku » (remplace l'emoji)
 //
 // Chaque image est recadrée en carré et réduite (256 px, WebP) dans public/avatars-gen/,
 // et la liste est écrite dans src/generated/customAvatars.json.
@@ -16,6 +17,7 @@ const SRC = path.join(ROOT, 'avatars');
 const OUT = path.join(ROOT, 'public', 'avatars-gen');
 const LIST = path.join(ROOT, 'src', 'generated', 'customAvatars.json');
 const CADRAGE = path.join(SRC, 'cadrage.json'); // { "Thor.jpg": { zoom, x, y } } — réglé depuis la page admin
+const PHOTOS = path.join(ROOT, 'avatar-photos'); // photos des avatars intégrés (voir plus bas)
 const SRC_PREVIEW = 640; // image entière (non recadrée) pour l'outil de cadrage
 const EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.avif']);
 const SIZE = 256;
@@ -84,16 +86,14 @@ const categories = [];
 const avatars = [];
 const usedIds = new Set();
 
-async function addImage(file, cat) {
-  const label = pretty(path.basename(file));
-  const rel = path.relative(SRC, file).split(path.sep).join('/');
-  const crop = validCrop(cadrage[rel]);
-  let srcName = null;
+/**
+ * Recadre une image (cadrage manuel `key` dans cadrage.json, sinon automatique) en `${name}.webp`
+ * et produit l'aperçu non recadré pour l'outil admin. Renvoie null si l'image est inutilisable.
+ */
+async function processImage(file, name, key) {
+  const crop = validCrop(cadrage[key]);
   let auto = null; // cadrage calculé automatiquement (point de départ dans l'outil admin)
-  let id = `img:${cat.id}/${slug(label)}`.slice(0, 70);
-  while (usedIds.has(id)) id += 'x';
-  usedIds.add(id);
-  const name = id.slice(4).replace('/', '__');
+  let srcName = null;
   let outName;
   try {
     if (!sharp) throw new Error('no sharp');
@@ -103,7 +103,7 @@ async function addImage(file, cat) {
     if (!anim) {
       const { data, info } = await sharp(file).rotate().toBuffer({ resolveWithObject: true });
       used = crop;
-      if (!used) { try { auto = await autoCrop(data, info.width, info.height); used = auto; } catch (err) { console.warn(`[avatars] cadrage auto impossible (${rel}) : ${err.message}`); } }
+      if (!used) { try { auto = await autoCrop(data, info.width, info.height); used = auto; } catch (err) { console.warn(`[avatars] cadrage auto impossible (${key}) : ${err.message}`); } }
       if (used) await sharp(data).extract(cropRegion(info.width, info.height, used)).resize(SIZE, SIZE).webp({ quality: 82 }).toFile(path.join(OUT, outName));
     }
     if (!used) {
@@ -119,14 +119,23 @@ async function addImage(file, cat) {
     }
   } catch (e) {
     const size = fs.statSync(file).size;
-    if (size > 1_500_000) { console.warn(`[avatars] ignoré (trop lourd, ${Math.round(size / 1024)} Ko) : ${file}`); usedIds.delete(id); return; }
+    if (size > 1_500_000) { console.warn(`[avatars] ignoré (trop lourd, ${Math.round(size / 1024)} Ko) : ${file}`); return null; }
     outName = `${name}${path.extname(file).toLowerCase()}`;
     fs.copyFileSync(file, path.join(OUT, outName));
   }
-  avatars.push({
-    id, cat: cat.id, label, img: `/avatars-gen/${encodeURIComponent(outName)}`,
-    file: rel, crop, auto, src: srcName ? `/avatars-gen/${encodeURIComponent(srcName)}` : null,
-  });
+  return { img: `/avatars-gen/${encodeURIComponent(outName)}`, src: srcName ? `/avatars-gen/${encodeURIComponent(srcName)}` : null, crop, auto, file: key };
+}
+
+async function addImage(file, cat) {
+  const label = pretty(path.basename(file));
+  const rel = path.relative(SRC, file).split(path.sep).join('/');
+  let id = `img:${cat.id}/${slug(label)}`.slice(0, 70);
+  while (usedIds.has(id)) id += 'x';
+  usedIds.add(id);
+  const name = id.slice(4).replace('/', '__');
+  const done = await processImage(file, name, rel);
+  if (!done) { usedIds.delete(id); return; }
+  avatars.push({ id, cat: cat.id, label, ...done });
 }
 
 async function scanDir(dir, cat) {
@@ -151,6 +160,20 @@ if (fs.existsSync(SRC)) {
   categories.push(perso);
   await scanDir(SRC, perso);
 }
+// ───── Photos des avatars intégrés (Iron Man, Goku…) : client/avatar-photos/<id>.<ext> ─────
+// La photo remplace l'emoji. Cadrage manuel sous la clé « @<id> » dans cadrage.json.
+const builtin = {};
+if (fs.existsSync(PHOTOS)) {
+  for (const f of fs.readdirSync(PHOTOS).sort()) {
+    const ext = path.extname(f).toLowerCase();
+    if (!EXT.has(ext)) continue;
+    const id = path.basename(f, path.extname(f));
+    if (builtin[id] || !/^[a-z0-9_-]+$/i.test(id)) continue;
+    const done = await processImage(path.join(PHOTOS, f), `b__${id}`, `@${id}`);
+    if (done) builtin[id] = done;
+  }
+}
+
 const used = categories.filter((c) => avatars.some((a) => a.cat === c.id));
-fs.writeFileSync(LIST, JSON.stringify({ categories: used, avatars }, null, 1));
-console.log(`[avatars] ${avatars.length} avatar(s) perso dans ${used.length} onglet(s).`);
+fs.writeFileSync(LIST, JSON.stringify({ categories: used, avatars, builtin }, null, 1));
+console.log(`[avatars] ${avatars.length} avatar(s) perso dans ${used.length} onglet(s), ${Object.keys(builtin).length} photo(s) de personnages.`);

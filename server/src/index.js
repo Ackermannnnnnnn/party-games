@@ -14,7 +14,9 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://partygrid.click';
 
 const app = express();
 app.use(cors({ origin: CORS_ORIGIN }));
-app.use(express.json());
+// Les photos d'avatars (admin) ont leur propre limite de taille, voir admin/router.js
+const jsonDefault = express.json();
+app.use((req, res, next) => (req.path === '/admin/avatars/save' ? next() : jsonDefault(req, res, next)));
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true, rooms: roomManager.size(), uptime: process.uptime() });

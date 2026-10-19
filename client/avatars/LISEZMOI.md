@@ -19,3 +19,11 @@ que tous les joueurs peuvent choisir.
   Render reconstruit le site et les avatars apparaissent pour tout le monde.
 
 En local, `npm run dev` (ou `npm run avatars`) régénère la liste.
+
+## Photos des personnages (Iron Man, Goku, Mario…)
+
+Les avatars intégrés utilisent une vraie photo au lieu d'un emoji : `client/avatar-photos/<id>.webp`
+(`goku.webp`, `ironman.webp`…). Un personnage sans photo n'est pas proposé aux joueurs.
+Pour changer une photo : `/admin` → « 🖼️ Avatars » → choisis le personnage → clique une proposition,
+« Chercher d'autres photos », colle l'adresse d'une image ou importe un fichier → « Enregistrer ».
+Les propositions sont listées dans `client/avatar-photos/sources.json`.
