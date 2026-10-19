@@ -24,3 +24,4 @@ logs/
 # divers
 .cache/
 coverage/
+tools/blindtest/report.json

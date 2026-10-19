@@ -6,6 +6,7 @@ import { TelephoneGame } from './telephone/TelephoneGame.js';
 import { BombPartyGame } from './bombparty/BombPartyGame.js';
 import { CemantixGame } from './cemantix/CemantixGame.js';
 import { CodenamesGame } from './codenames/CodenamesGame.js';
+import { BlindTestGame } from './blindtest/BlindTestGame.js';
 
 export const GAMES = {
   [ImposterGame.id]: ImposterGame,
@@ -16,6 +17,7 @@ export const GAMES = {
   [BombPartyGame.id]: BombPartyGame,
   [CemantixGame.id]: CemantixGame,
   [CodenamesGame.id]: CodenamesGame,
+  [BlindTestGame.id]: BlindTestGame,
 };
 
 export function getGameClass(gameId) {

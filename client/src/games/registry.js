@@ -14,6 +14,8 @@ import CemantixGame     from './cemantix/CemantixGame.jsx';
 import CemantixOptions  from './cemantix/CemantixOptions.jsx';
 import CodenamesGame    from './codenames/CodenamesGame.jsx';
 import CodenamesOptions from './codenames/CodenamesOptions.jsx';
+import BlindTestGame    from './blindtest/BlindTestGame.jsx';
+import BlindTestOptions from './blindtest/BlindTestOptions.jsx';
 
 export const GAMES = {
   imposter: {
@@ -87,6 +89,15 @@ export const GAMES = {
     minPlayers: 4,
     Component: CodenamesGame,
     OptionsComp: CodenamesOptions,
+  },
+  blindtest: {
+    id: 'blindtest',
+    label: 'Blind Test',
+    icon: '🎧',
+    description: 'Films, séries, anime et musique : reconnais l\'extrait le plus vite possible. Saisie libre, QCM, buzzer ou maître du jeu.',
+    minPlayers: 1,
+    Component: BlindTestGame,
+    OptionsComp: BlindTestOptions,
   },
 };
 

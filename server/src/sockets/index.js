@@ -144,6 +144,9 @@ export function registerSocketHandlers(io, socket) {
   // ───────── GAME ─────────
   on('game:list', () => socket.emit('game:list', listGames()));
 
+  // Horloge du serveur : sert à lancer les extraits audio au même moment sur tous les appareils
+  on('time:sync', (_data, ack) => { if (typeof ack === 'function') ack(Date.now()); });
+
   on('room:setGame', (data) => {
     const parsed = validate(socket, schemas.setGame, data);
     if (!parsed) return;
