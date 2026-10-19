@@ -708,9 +708,10 @@
   ]
  },
  "spiderman": {
-  "pick": -1,
+  "pick": 1,
   "candidates": [
-   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/620-spider-man.jpg"
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/620-spider-man.jpg",
+   "https://static.wikia.nocookie.net/marveldatabase/images/3/3a/Peter_Parker_%28Earth-96283%29_from_Spider-Man_3_%28film%29_poster_001.jpg/revision/latest"
   ]
  },
  "steve": {
