@@ -385,9 +385,10 @@
   ]
  },
  "joker": {
-  "pick": 0,
+  "pick": 1,
   "candidates": [
-   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/370-joker.jpg"
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/370-joker.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/2/2b/Heath_Ledger_as_the_Joker_in_The_Dark_Knight.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
   ]
  },
  "jonsnow": {
