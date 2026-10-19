@@ -351,7 +351,7 @@
   ]
  },
  "ironman": {
-  "pick": 0,
+  "pick": 1,
   "candidates": [
    "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/346-iron-man.jpg",
    "https://upload.wikimedia.org/wikipedia/en/4/47/Iron_Man_%28circa_2018%29.png"
