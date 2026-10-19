@@ -18,6 +18,8 @@ services:
         value: production
       - key: CORS_ORIGIN
         sync: false             # à remplir manuellement avec l'URL du client après déploiement
+      - key: GITHUB_TOKEN
+        sync: false             # jeton GitHub (Contents: read/write) : cadrage des avatars depuis /admin
 
   # ─── CLIENT (React buildé en static) ───
   - type: web

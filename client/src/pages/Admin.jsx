@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import AvatarsAdmin from './AvatarsAdmin.jsx';
 
 const SERVER = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
@@ -87,10 +88,15 @@ export default function Admin() {
           onClick={() => setTab('imposter')}
           className={`flex-1 px-3 py-2 rounded-lg font-medium ${tab === 'imposter' ? 'bg-brand text-white' : 'bg-slate-800 text-slate-300'}`}
         >🎭 Imposter</button>
+        <button
+          onClick={() => setTab('avatars')}
+          className={`flex-1 px-3 py-2 rounded-lg font-medium ${tab === 'avatars' ? 'bg-brand text-white' : 'bg-slate-800 text-slate-300'}`}
+        >🖼️ Avatars</button>
       </div>
 
       {tab === 'quiz' && <QuizAdmin password={password} />}
       {tab === 'imposter' && <ImposterAdmin password={password} />}
+      {tab === 'avatars' && <AvatarsAdmin password={password} />}
     </div>
   );
 }

@@ -15,6 +15,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'avatars');
 const OUT = path.join(ROOT, 'public', 'avatars-gen');
 const LIST = path.join(ROOT, 'src', 'generated', 'customAvatars.json');
+const CADRAGE = path.join(SRC, 'cadrage.json'); // { "Thor.jpg": { zoom, x, y } } — réglé depuis la page admin
+const SRC_PREVIEW = 640; // image entière (non recadrée) pour l'outil de cadrage
 const EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.avif']);
 const SIZE = 256;
 
@@ -37,12 +39,29 @@ fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 fs.mkdirSync(path.dirname(LIST), { recursive: true });
 
+/** Cadrages choisis à la main (zoom 1–4, x/y 0–1 = position du carré dans l'image). */
+let cadrage = {};
+try { cadrage = JSON.parse(fs.readFileSync(CADRAGE, 'utf8')) || {}; } catch {}
+const validCrop = (c) => c && Number.isFinite(c.zoom) && Number.isFinite(c.x) && Number.isFinite(c.y)
+  ? { zoom: Math.max(1, Math.min(4, c.zoom)), x: Math.max(0, Math.min(1, c.x)), y: Math.max(0, Math.min(1, c.y)) } : null;
+
+/** Même calcul que l'outil de cadrage (et que les photos perso) : un carré de côté min(L, H) / zoom. */
+function cropRegion(w, h, { zoom, x, y }) {
+  const side = Math.max(1, Math.floor(Math.min(w, h) / zoom));
+  const left = Math.round(Math.max(0, Math.min(w - side, (w - side) * x)));
+  const top = Math.round(Math.max(0, Math.min(h - side, (h - side) * y)));
+  return { left, top, width: side, height: side };
+}
+
 const categories = [];
 const avatars = [];
 const usedIds = new Set();
 
 async function addImage(file, cat) {
   const label = pretty(path.basename(file));
+  const rel = path.relative(SRC, file).split(path.sep).join('/');
+  const crop = validCrop(cadrage[rel]);
+  let srcName = null;
   let id = `img:${cat.id}/${slug(label)}`.slice(0, 70);
   while (usedIds.has(id)) id += 'x';
   usedIds.add(id);
@@ -52,18 +71,30 @@ async function addImage(file, cat) {
     if (!sharp) throw new Error('no sharp');
     const anim = path.extname(file).toLowerCase() === '.gif';
     outName = `${name}.webp`;
-    await sharp(file, { animated: anim })
-      .rotate()
-      .resize(SIZE, SIZE, { fit: 'cover', position: 'attention' })
-      .webp({ quality: 82 })
-      .toFile(path.join(OUT, outName));
+    if (crop && !anim) {
+      const { data, info } = await sharp(file).rotate().toBuffer({ resolveWithObject: true });
+      await sharp(data).extract(cropRegion(info.width, info.height, crop)).resize(SIZE, SIZE).webp({ quality: 82 }).toFile(path.join(OUT, outName));
+    } else {
+      await sharp(file, { animated: anim })
+        .rotate()
+        .resize(SIZE, SIZE, { fit: 'cover', position: 'attention' })
+        .webp({ quality: 82 })
+        .toFile(path.join(OUT, outName));
+    }
+    if (!anim) {
+      srcName = `src__${name}.webp`;
+      await sharp(file).rotate().resize(SRC_PREVIEW, SRC_PREVIEW, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 80 }).toFile(path.join(OUT, srcName));
+    }
   } catch (e) {
     const size = fs.statSync(file).size;
     if (size > 1_500_000) { console.warn(`[avatars] ignoré (trop lourd, ${Math.round(size / 1024)} Ko) : ${file}`); usedIds.delete(id); return; }
     outName = `${name}${path.extname(file).toLowerCase()}`;
     fs.copyFileSync(file, path.join(OUT, outName));
   }
-  avatars.push({ id, cat: cat.id, label, img: `/avatars-gen/${encodeURIComponent(outName)}` });
+  avatars.push({
+    id, cat: cat.id, label, img: `/avatars-gen/${encodeURIComponent(outName)}`,
+    file: rel, crop, src: srcName ? `/avatars-gen/${encodeURIComponent(srcName)}` : null,
+  });
 }
 
 async function scanDir(dir, cat) {

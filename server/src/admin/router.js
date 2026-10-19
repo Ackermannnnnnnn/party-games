@@ -2,6 +2,7 @@ import express from 'express';
 import { quizStore, imposterStore } from './stores.js';
 import { listCategories } from '../games/quiz/questions.js';
 import { listThemes } from '../games/imposter/themes.js';
+import { githubEnabled, sanitizeCadrage, saveCadrage } from './avatars.js';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
 
@@ -32,6 +33,19 @@ export function createAdminRouter() {
 
   // Toutes les routes /admin/* (sauf /login) demandent l'auth
   router.use(authMiddleware);
+
+  // ─────── AVATARS : cadrage enregistré dans le dépôt GitHub ───────
+  router.get('/avatars/status', (_req, res) => res.json({ github: githubEnabled() }));
+  router.post('/avatars/cadrage', async (req, res) => {
+    const changes = sanitizeCadrage(req.body?.cadrage);
+    if (!changes || !Object.keys(changes).length) return res.status(400).json({ error: 'Rien à enregistrer.' });
+    if (!githubEnabled()) return res.status(501).json({ error: 'GITHUB_TOKEN non configuré sur le serveur.' });
+    try {
+      res.json({ ok: true, ...(await saveCadrage(changes)) });
+    } catch (e) {
+      res.status(e.status || 500).json({ error: e.message || 'Erreur' });
+    }
+  });
 
   // ─────── METADATA (read-only, pour les dropdowns) ───────
   router.get('/quiz/categories', (_req, res) => res.json(listCategories()));
