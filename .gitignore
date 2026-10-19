@@ -25,3 +25,7 @@ logs/
 .cache/
 coverage/
 tools/blindtest/report.json
+
+# générés par client/scripts/avatars.mjs à chaque dev/build
+client/public/avatars-gen/
+client/src/generated/
