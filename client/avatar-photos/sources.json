@@ -236,9 +236,10 @@
   ]
  },
  "geralt": {
-  "pick": 0,
+  "pick": 1,
   "candidates": [
-   "https://upload.wikimedia.org/wikipedia/commons/8/87/Geralt.jpg"
+   "https://upload.wikimedia.org/wikipedia/commons/8/87/Geralt.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/4/40/Witcher_2_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
   ]
  },
  "gohan": {
