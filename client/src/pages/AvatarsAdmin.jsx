@@ -109,7 +109,7 @@ export default function AvatarsAdmin({ password }) {
         })}
       </div>
 
-      <Editor key={current.file} avatar={current} crop={cropOf(current) || DEFAULT} isAuto={!cropOf(current)}
+      <Editor key={current.file} avatar={current} crop={cropOf(current) || current.auto || DEFAULT} isAuto={!cropOf(current)}
         onChange={(c) => setCrop(current.file, c)} onAuto={() => setCrop(current.file, null)}
         onReset={() => setChanges((ch) => { const n = { ...ch }; delete n[current.file]; return n; })}
         dirty={pending.some(([f]) => f === current.file)} />
@@ -207,7 +207,7 @@ function Editor({ avatar, crop, isAuto, onChange, onAuto, onReset, dirty }) {
     <div className="card">
       <div className="flex items-center justify-between mb-3">
         <h4 className="font-semibold">{avatar.label} <span className="text-xs text-slate-400 font-normal">· {avatar.file}</span></h4>
-        <span className="text-xs text-slate-400">{isAuto ? 'Cadrage automatique' : dirty ? 'Modifié' : 'Cadré'}</span>
+        <span className="text-xs text-slate-400">{isAuto ? 'Cadrage automatique (déplace pour ajuster)' : dirty ? 'Modifié' : 'Cadré à la main'}</span>
       </div>
       <div className="grid sm:grid-cols-[1fr_auto] gap-4 items-start">
         <div ref={boxRef} className="relative mx-auto overflow-hidden rounded-xl bg-slate-900 select-none touch-none" style={{ aspectRatio: `${W} / ${H}`, width: `min(100%, ${Math.round((480 * W) / H)}px)` }}

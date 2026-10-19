@@ -8,8 +8,8 @@ que tous les joueurs peuvent choisir.
   - `Marvel/Hulk.png` → onglet « Marvel »
   - `🎌 Mangas/Goku.jpg` → onglet « Mangas » avec l'icône 🎌
   - une image posée directement ici → onglet « ⭐ Perso »
-- Pas besoin de redimensionner : chaque image est recadrée en carré (en gardant la partie
-  la plus intéressante) et réduite automatiquement au moment du build.
+- Pas besoin de redimensionner : chaque image est recadrée automatiquement au moment du build
+  (smartcrop repère le personnage / le visage et zoome un peu dessus), puis réduite.
 - **Cadrage à la main** : page `/admin` → onglet « 🖼️ Avatars ». On déplace le carré, on zoome,
   puis « Enregistrer » : le cadrage est écrit dans `cadrage.json` (ici) sur GitHub et Render
   redéploie tout seul. Il faut pour ça la variable `GITHUB_TOKEN` sur le serveur Render

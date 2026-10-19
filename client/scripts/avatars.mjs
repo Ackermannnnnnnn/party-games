@@ -22,6 +22,33 @@ const SIZE = 256;
 
 let sharp = null;
 try { sharp = (await import('sharp')).default; } catch { console.warn('[avatars] sharp indisponible : images copiées sans réduction.'); }
+let smartcrop = null;
+try { smartcrop = (await import('smartcrop')).default; } catch { console.warn('[avatars] smartcrop indisponible : cadrage automatique simple.'); }
+
+/**
+ * Cadrage automatique : smartcrop repère la zone la plus intéressante (visage, détails, contraste)
+ * et on autorise un léger zoom (MIN_SCALE) pour que le sujet remplisse bien le petit rond.
+ * Renvoie un cadrage { zoom, x, y } au même format que le cadrage manuel.
+ */
+const MIN_SCALE = 0.7;
+async function autoCrop(data, w, h) {
+  if (!smartcrop) return null;
+  const iop = {
+    open: async (buf) => ({ width: w, height: h, _buf: buf }),
+    resample: async (img, width, height) => ({ width: ~~width, height: ~~height, _buf: img._buf }),
+    getData: async (img) => {
+      const raw = await sharp(img._buf).resize(img.width, img.height, { fit: 'fill' }).ensureAlpha().raw().toBuffer();
+      return new smartcrop.ImgData(img.width, img.height, raw);
+    },
+  };
+  const { topCrop: c } = await smartcrop.crop(data, { width: 100, height: 100, minScale: MIN_SCALE, imageOperations: iop });
+  const side = Math.min(c.width, c.height);
+  const zoom = Math.min(w, h) / side;
+  const fx = w - side > 0 ? c.x / (w - side) : 0.5;
+  const fy = h - side > 0 ? c.y / (h - side) : 0.5;
+  const r3 = (v) => Math.round(v * 1000) / 1000;
+  return { zoom: r3(Math.max(1, Math.min(4, zoom))), x: r3(Math.max(0, Math.min(1, fx))), y: r3(Math.max(0, Math.min(1, fy))) };
+}
 
 const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
   .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || crypto.createHash('md5').update(s).digest('hex').slice(0, 8);
@@ -62,6 +89,7 @@ async function addImage(file, cat) {
   const rel = path.relative(SRC, file).split(path.sep).join('/');
   const crop = validCrop(cadrage[rel]);
   let srcName = null;
+  let auto = null; // cadrage calculé automatiquement (point de départ dans l'outil admin)
   let id = `img:${cat.id}/${slug(label)}`.slice(0, 70);
   while (usedIds.has(id)) id += 'x';
   usedIds.add(id);
@@ -71,10 +99,14 @@ async function addImage(file, cat) {
     if (!sharp) throw new Error('no sharp');
     const anim = path.extname(file).toLowerCase() === '.gif';
     outName = `${name}.webp`;
-    if (crop && !anim) {
+    let used = null;
+    if (!anim) {
       const { data, info } = await sharp(file).rotate().toBuffer({ resolveWithObject: true });
-      await sharp(data).extract(cropRegion(info.width, info.height, crop)).resize(SIZE, SIZE).webp({ quality: 82 }).toFile(path.join(OUT, outName));
-    } else {
+      used = crop;
+      if (!used) { try { auto = await autoCrop(data, info.width, info.height); used = auto; } catch (err) { console.warn(`[avatars] cadrage auto impossible (${rel}) : ${err.message}`); } }
+      if (used) await sharp(data).extract(cropRegion(info.width, info.height, used)).resize(SIZE, SIZE).webp({ quality: 82 }).toFile(path.join(OUT, outName));
+    }
+    if (!used) {
       await sharp(file, { animated: anim })
         .rotate()
         .resize(SIZE, SIZE, { fit: 'cover', position: 'attention' })
@@ -93,7 +125,7 @@ async function addImage(file, cat) {
   }
   avatars.push({
     id, cat: cat.id, label, img: `/avatars-gen/${encodeURIComponent(outName)}`,
-    file: rel, crop, src: srcName ? `/avatars-gen/${encodeURIComponent(srcName)}` : null,
+    file: rel, crop, auto, src: srcName ? `/avatars-gen/${encodeURIComponent(srcName)}` : null,
   });
 }
 
