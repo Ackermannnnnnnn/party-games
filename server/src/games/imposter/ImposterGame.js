@@ -1,5 +1,5 @@
 import { BaseGame } from '../../core/BaseGame.js';
-import { pickRandomPair, isValidTheme, listThemes } from './themes.js';
+import { pickPair, isValidTheme, listThemes, THEMES } from './themes.js';
 import { sameWord } from './wordRules.js';
 import { logger } from '../../utils/logger.js';
 
@@ -13,6 +13,8 @@ import { logger } from '../../utils/logger.js';
  *   RESULTS        -> fin de la partie : rôles, mots et gagnant ; l'hôte relance ou revient au lobby
  *
  * Une partie = un seul vote. Après le vote on révèle toujours les rôles.
+ * Les points s'additionnent de partie en partie (classement affiché aux résultats) :
+ *   +1 par vote juste · civils gagnants +2 · imposteurs gagnants +3 · Mr White qui devine +5.
  *   - Sans Mr White : 1 vote par joueur ("qui est l'imposteur ?").
  *   - Avec Mr White : 2 votes par joueur (imposteur + Mr White), donc jusqu'à 2 éliminés.
  * Les civils gagnent si chaque vote élimine un méchant. Égalité ou civil éliminé
@@ -27,20 +29,30 @@ const PHASES = {
   RESULTS: 'RESULTS',
 };
 
-const REVEAL_DURATION_MS = 6000;
+/** Révélation du mot : on attend que chacun ait vu son mot (« Prêt »), au plus ce délai. */
+const REVEAL_MAX_MS = 25_000;
+const REVEAL_ALL_READY_MS = 1200;
 const MR_WHITE_GUESS_DURATION_MS = 45_000;
 /** Mr White s'ajoute aux imposteurs : il faut 1 imposteur + Mr White + 2 civils. */
 const MR_WHITE_MIN_PLAYERS = 4;
 /** Marqueur affiché quand un joueur a été passé (timeout ou skip de l'hôte). */
 const SKIPPED = '—';
+/** Marqueur d'un indice donné à voix haute (mode oral). */
+const SPOKEN = '🗣️';
+const LEVELS = ['facile', 'mixte', 'difficile'];
+const CLUE_MODES = ['ecrit', 'oral'];
+const POINTS = { goodVote: 1, civilWin: 2, imposterWin: 3, mrWhiteGuess: 5 };
 
 const DEFAULT_OPTIONS = {
-  theme: 'random',
+  themes: [],             // thèmes choisis ([] = tous)
+  level: 'mixte',         // facile | mixte | difficile
   imposterCount: 1,
   imposterKnows: true,    // l'imposteur sait qu'il est imposteur ?
-  voteDurationSec: 45,
+  voteDurationSec: 60,
   turnDurationSec: 0,     // 0 = pas de timer par tour
   mrWhiteEnabled: false,  // Si true : un joueur EN PLUS des imposteurs est "Mr White" (sans mot)
+  clueMode: 'ecrit',      // ecrit : on tape son indice · oral : on le dit à voix haute
+  showTheme: true,        // le thème du mot est affiché à tout le monde
 };
 
 /** Joueur le plus voté d'un décompte. `id` vaut null s'il y a égalité ou aucun vote. */
@@ -64,10 +76,13 @@ export class ImposterGame extends BaseGame {
   static getOptionsManifest() {
     return {
       themes: listThemes(),
+      levels: LEVELS,
+      clueModes: CLUE_MODES,
+      points: POINTS,
       defaults: DEFAULT_OPTIONS,
       limits: {
         imposterCount: { min: 1, max: 3 },
-        voteDurationSec: { min: 15, max: 180 },
+        voteDurationSec: { min: 20, max: 180 },
         turnDurationSec: { min: 0, max: 120 },
         mrWhiteMinPlayers: MR_WHITE_MIN_PLAYERS,
       },
@@ -88,6 +103,10 @@ export class ImposterGame extends BaseGame {
     this.guessEndsAt = null;
     this.civilWord = null;
     this.imposterWord = null;
+    this.pairThemeId = null;
+    this.recentPairs = [];          // paires déjà jouées dans cette room (pas de répétition)
+    this.readyIds = new Set();      // joueurs qui ont vu leur mot (phase REVEAL)
+    this.scores = new Map();        // points cumulés sur toutes les parties
 
     this.descriptions = new Map();  // playerId -> [mot1, mot2, ...]
     // Joueurs qui ont cliqué "je ne connais pas ce mot" pendant le REVEAL
@@ -108,13 +127,42 @@ export class ImposterGame extends BaseGame {
 
   _sanitizeOptions(raw) {
     const o = { ...DEFAULT_OPTIONS, ...(raw || {}) };
-    if (!isValidTheme(o.theme)) o.theme = 'random';
+    // Ancien format : un seul thème `theme`
+    let themes = Array.isArray(o.themes) ? o.themes : [];
+    if (!themes.length && typeof raw?.theme === 'string' && raw.theme !== 'random') themes = [raw.theme];
+    o.themes = [...new Set(themes.filter((t) => isValidTheme(t)))];
+    delete o.theme;
+    if (!LEVELS.includes(o.level)) o.level = 'mixte';
+    if (!CLUE_MODES.includes(o.clueMode)) o.clueMode = 'ecrit';
     o.imposterCount   = Math.max(1, Math.min(3, parseInt(o.imposterCount, 10) || 1));
-    o.imposterKnows   = !!o.imposterKnows;
-    o.voteDurationSec = Math.max(15, Math.min(180, parseInt(o.voteDurationSec, 10) || 45));
+    o.imposterKnows   = o.imposterKnows !== false;
+    o.voteDurationSec = Math.max(20, Math.min(180, parseInt(o.voteDurationSec, 10) || 60));
     o.turnDurationSec = Math.max(0, Math.min(120, parseInt(o.turnDurationSec, 10) || 0));
     o.mrWhiteEnabled  = !!o.mrWhiteEnabled;
+    o.showTheme       = o.showTheme !== false;
     return o;
+  }
+
+  _drawPair() {
+    const pair = pickPair({ themes: this.options.themes, level: this.options.level, recent: this.recentPairs });
+    this.civilWord = pair.civil;
+    this.imposterWord = pair.imposter;
+    this.pairThemeId = pair.themeId;
+    this.recentPairs = [pair.id, ...this.recentPairs.filter((x) => x !== pair.id)].slice(0, 120);
+  }
+
+  _startReveal() {
+    this.readyIds.clear();
+    this.revealEndsAt = Date.now() + REVEAL_MAX_MS;
+    this.setPhase(PHASES.REVEAL);
+    this.setTimer(REVEAL_MAX_MS, () => {
+      if (this.phase === PHASES.REVEAL) this._startSpeakingRound();
+    });
+  }
+
+  /** Nombre de « je ne connais pas » pour changer de mot : 2, ou un tiers des joueurs dans les grands groupes. */
+  _dontKnowThreshold() {
+    return Math.max(2, Math.ceil(this._activeIds().length / 3));
   }
 
   // ───────── Helpers ─────────
@@ -160,6 +208,7 @@ export class ImposterGame extends BaseGame {
     this.speakingRound = 0;
     this.currentSpeakerIdx = 0;
     this.turnEndsAt = null;
+    for (const id of ids) if (!this.scores.has(id)) this.scores.set(id, 0);
 
     this.snapshot = new Map(ids.map(id => {
       const p = this.room.players.get(id);
@@ -182,26 +231,23 @@ export class ImposterGame extends BaseGame {
     }
     this.speakingOrder = order;
 
-    const [civilWord, imposterWord] = pickRandomPair(this.options.theme);
-    this.civilWord = civilWord;
-    this.imposterWord = imposterWord;
+    this._drawPair();
 
     logger.info({
       room: this.room.code,
       round: this.round,
-      theme: this.options.theme,
+      theme: this.pairThemeId,
       imposters: [...this.imposterIds],
       mrWhite: this.mrWhiteId,
     }, 'New match');
 
-    this.setPhase(PHASES.REVEAL);
-    this.setTimer(REVEAL_DURATION_MS, () => {
-      if (this.phase === PHASES.REVEAL) this._startSpeakingRound();
-    });
+    this._startReveal();
     return true;
   }
 
   _startSpeakingRound() {
+    this.clearAllTimers();
+    this.revealEndsAt = null;
     this.speakingRound += 1;
     this.currentSpeakerIdx = 0;
     if (!this._isCurrentSpeakerActionable()) {
@@ -300,6 +346,7 @@ export class ImposterGame extends BaseGame {
       return;
     }
 
+    if (this.phase === PHASES.REVEAL) { this._checkAllReady(); return this.room.emitGameState(); }
     if (this.phase === PHASES.DESCRIBE && this.speakingOrder[this.currentSpeakerIdx] === playerId) {
       this._advanceSpeaker();
       return;
@@ -311,12 +358,15 @@ export class ImposterGame extends BaseGame {
   // ───────── Actions joueurs ─────────
   handleAction(playerId, type, payload) {
     // Spectateurs (rejoint en cours) : aucune action en jeu, sauf actions host
-    const hostOnly = ['skipSpeaker', 'nextSpeakingRound', 'startVote', 'nextMatch', 'endGame'];
+    const hostOnly = ['skipSpeaker', 'nextSpeakingRound', 'startVote', 'nextMatch', 'endGame', 'resetScores'];
     if (this.isSpectator(playerId) && !hostOnly.includes(type)) {
       return this._error(playerId, 'SPECTATOR', 'Tu es spectateur, attends la prochaine partie.');
     }
 
     switch (type) {
+      case 'ready':              return this._onReady(playerId);
+      case 'spoke':              return this._onSpoke(playerId);
+      case 'resetScores':        return this._onResetScores(playerId);
       case 'submitWord':         return this._onSubmitWord(playerId, payload);
       case 'dontKnowWord':       return this._onDontKnowWord(playerId);
       case 'skipSpeaker':        return this._onSkipSpeaker(playerId);
@@ -331,8 +381,41 @@ export class ImposterGame extends BaseGame {
     }
   }
 
+  _onReady(playerId) {
+    if (this.phase !== PHASES.REVEAL) return;
+    this.readyIds.add(playerId);
+    this._checkAllReady();
+    this.room.emitGameState();
+  }
+
+  _checkAllReady() {
+    const waiting = this._activeIds().filter((id) => this.room.players.get(id)?.connected && !this.readyIds.has(id));
+    if (waiting.length === 0) {
+      this.clearAllTimers();
+      this.setTimer(REVEAL_ALL_READY_MS, () => { if (this.phase === PHASES.REVEAL) this._startSpeakingRound(); });
+    }
+  }
+
+  /** Mode oral : le joueur a dit son indice à voix haute (ou l'hôte valide pour lui). */
+  _onSpoke(playerId) {
+    if (this.phase !== PHASES.DESCRIBE || this.options.clueMode !== 'oral') return;
+    const current = this.speakingOrder[this.currentSpeakerIdx];
+    if (playerId !== current && playerId !== this.room.hostId) return this._error(playerId, 'NOT_YOUR_TURN', "Ce n'est pas ton tour.");
+    const list = this.descriptions.get(current) || [];
+    list.push(SPOKEN);
+    this.descriptions.set(current, list);
+    this._advanceSpeaker();
+  }
+
+  _onResetScores(playerId) {
+    if (playerId !== this.room.hostId) return this._error(playerId, 'NOT_HOST');
+    for (const id of this.scores.keys()) this.scores.set(id, 0);
+    this.room.emitGameState();
+  }
+
   _onSubmitWord(playerId, payload) {
     if (this.phase !== PHASES.DESCRIBE) return this._error(playerId, 'BAD_PHASE');
+    if (this.options.clueMode === 'oral') return this._onSpoke(playerId);
     const currentSpeakerId = this.speakingOrder[this.currentSpeakerIdx];
     if (playerId !== currentSpeakerId) return this._error(playerId, 'NOT_YOUR_TURN', "Ce n'est pas ton tour.");
 
@@ -346,7 +429,7 @@ export class ImposterGame extends BaseGame {
     }
     // Interdit : un mot déjà donné par quelqu'un (soi-même compris) dans cette partie.
     for (const words of this.descriptions.values()) {
-      if (words.some(w => w !== SKIPPED && sameWord(w, text))) {
+      if (words.some(w => w !== SKIPPED && w !== SPOKEN && sameWord(w, text))) {
         return this._error(playerId, 'WORD_TAKEN', 'Ce mot a déjà été donné, trouves-en un autre.');
       }
     }
@@ -367,18 +450,13 @@ export class ImposterGame extends BaseGame {
     if (this.dontKnowIds.has(playerId)) return; // déjà voté, no-op
     this.dontKnowIds.add(playerId);
 
-    if (this.dontKnowIds.size >= 2) {
-      // Reroll : nouveau mot, on reset le timer du REVEAL
-      const [civilWord, imposterWord] = pickRandomPair(this.options.theme);
-      this.civilWord = civilWord;
-      this.imposterWord = imposterWord;
+    if (this.dontKnowIds.size >= this._dontKnowThreshold()) {
+      // Reroll : nouveau mot, chacun doit le revoir
+      this._drawPair();
       this.dontKnowIds.clear();
       this.clearAllTimers();
       this.room.broadcast('game:event', { type: 'wordRerolled' });
-      this.setPhase(PHASES.REVEAL); // ré-emit le state avec le nouveau mot
-      this.setTimer(REVEAL_DURATION_MS, () => {
-        if (this.phase === PHASES.REVEAL) this._startSpeakingRound();
-      });
+      this._startReveal();
     } else {
       this.room.emitGameState();
     }
@@ -537,11 +615,32 @@ export class ImposterGame extends BaseGame {
       }
     }
 
+    // Points de la partie
+    const gained = new Map(this.speakingOrder.map((id) => [id, 0]));
+    const add = (id, n) => { if (gained.has(id)) gained.set(id, gained.get(id) + n); };
+    if (!aborted) {
+      for (const [voter, v] of this.votes) {
+        if (v.imposter && this.imposterIds.has(v.imposter)) add(voter, POINTS.goodVote);
+        if (v.mrWhite && v.mrWhite === this.mrWhiteId) add(voter, POINTS.goodVote);
+      }
+      for (const id of this.speakingOrder) {
+        const role = this._roleOf(id);
+        if (winner === 'civils' && role === 'civil') add(id, POINTS.civilWin);
+        if (winner === 'imposter' && role !== 'civil') add(id, POINTS.imposterWin);
+        if (winner === 'mr_white' && role === 'mr_white') add(id, POINTS.mrWhiteGuess);
+      }
+      for (const [id, n] of gained) this.scores.set(id, (this.scores.get(id) || 0) + n);
+    }
+
     this.lastResult = {
       aborted,
       winner,
       reason,
       gameOver: true,
+      themeId: this.pairThemeId,
+      themeLabel: THEMES[this.pairThemeId]?.label || null,
+      votesBy: Object.fromEntries(this.votes),
+      points: Object.fromEntries(gained),
       // Tous les participants avec leur rôle (y compris ceux qui ont quitté)
       roles: this.speakingOrder.map(id => ({
         id,
@@ -598,8 +697,13 @@ export class ImposterGame extends BaseGame {
       speakingOrder: this.speakingOrder,
       speakingRound: this.speakingRound,
       descriptions: Object.fromEntries(this.descriptions),
+      theme: this.options.showTheme && this.pairThemeId ? { id: this.pairThemeId, label: THEMES[this.pairThemeId]?.label } : null,
+      scores: this._scoreboard(),
       options: {
-        theme: this.options.theme,
+        themes: this.options.themes,
+        level: this.options.level,
+        clueMode: this.options.clueMode,
+        showTheme: this.options.showTheme,
         imposterCount: this.imposterCount,
         imposterKnows: this.options.imposterKnows,
         turnDurationSec: this.options.turnDurationSec,
@@ -613,8 +717,10 @@ export class ImposterGame extends BaseGame {
       case PHASES.REVEAL:
         return {
           ...base,
-          revealMs: REVEAL_DURATION_MS,
+          revealEndsAt: this.revealEndsAt,
+          readyIds: [...this.readyIds],
           dontKnowIds: [...this.dontKnowIds],
+          dontKnowThreshold: this._dontKnowThreshold(),
         };
 
       case PHASES.DESCRIBE:
@@ -683,6 +789,17 @@ export class ImposterGame extends BaseGame {
       return { role, wasImposter: role === 'imposter', wasMrWhite: isMrWhite };
     }
     return {};
+  }
+
+  /** Classement cumulé (joueurs encore là, ou qui ont marqué). */
+  _scoreboard() {
+    return [...this.scores.entries()]
+      .filter(([id, pts]) => this._inRoom(id) || pts > 0)
+      .map(([id, points]) => {
+        const p = this.room.players.get(id) || this.snapshot.get(id) || {};
+        return { id, pseudo: p.pseudo || '?', avatar: p.avatar || null, points, left: !this._inRoom(id) };
+      })
+      .sort((a, b) => b.points - a.points);
   }
 
   _error(playerId, code, message) {

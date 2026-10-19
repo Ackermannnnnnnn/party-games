@@ -17,14 +17,16 @@ export default function PhasePodium() {
   const isHardcore = !!p.options?.hardcoreMode;
   const isBR = !!p.options?.battleRoyaleMode;
 
-  const ranking = (p.ranking || []).map(({ playerId: pid, points, eliminated }) => {
+  const ranking = (p.ranking || []).map(({ playerId: pid, points, eliminated, pseudo, avatar, correct, bestStreak }) => {
     const pl = room.players.find(x => x.id === pid);
     return {
-      pseudo: pl?.pseudo || '?',
-      avatar: pl?.avatar,
+      pseudo: pl?.pseudo || pseudo || '?',
+      avatar: pl?.avatar || avatar,
       points,
       isMe: pid === playerId,
       eliminated,
+      correct,
+      bestStreak,
       pid,
     };
   });
@@ -38,7 +40,7 @@ export default function PhasePodium() {
   useEffect(() => {
     if (totalToReveal === 0) return;
     const t1 = setTimeout(() => {
-      setRevealedFromBottom(1);
+      setRevealedFromBottom((n) => Math.max(n, 1));
       play('tick');
     }, INITIAL_DELAY_MS);
     return () => clearTimeout(t1);
@@ -87,8 +89,8 @@ export default function PhasePodium() {
   };
 
   return (
-    <div className="card text-center space-y-6 py-6 sm:py-10">
-      <h2 className="font-display text-3xl sm:text-4xl text-brand-light">
+    <div className="text-center space-y-6 py-4 sm:py-6">
+      <h2 className="qz-title text-4xl sm:text-5xl">
         🏆 Résultats finaux
         {isBR && <span className="block text-base sm:text-lg text-purple-300 mt-1">⚔️ Battle Royale</span>}
       </h2>
@@ -148,9 +150,10 @@ export default function PhasePodium() {
                         <p className={`font-bold truncate ${pl.isMe ? 'text-brand-light' : ''}`}>
                           {pl.pseudo}{pl.isMe && ' (toi)'}
                         </p>
-                        {pl.eliminated && (
-                          <p className="text-xs text-rose-300">💀 éliminé</p>
-                        )}
+                        <p className="text-[11px] text-slate-300">
+                          ✅ {pl.correct ?? 0} bonne{(pl.correct ?? 0) > 1 ? 's' : ''}{pl.bestStreak >= 2 ? ` · 🔥 série de ${pl.bestStreak}` : ''}
+                          {pl.eliminated && <span className="text-rose-300"> · 💀 éliminé</span>}
+                        </p>
                       </div>
                     </div>
                     <motion.span
@@ -188,9 +191,14 @@ export default function PhasePodium() {
               {showRecap ? '🔼 Cacher le récap' : '🔍 Voir le récap des questions'}
             </button>
             {isHost ? (
-              <button className="btn btn-primary" onClick={() => api.gameAction('endGame', {})}>
-                🔄 Retour au lobby (mêmes joueurs)
-              </button>
+              <>
+                <button className="btn btn-primary" onClick={() => api.gameAction('restart', {})}>
+                  🔁 Rejouer (nouvelles questions)
+                </button>
+                <button className="btn btn-ghost" onClick={() => api.gameAction('endGame', {})}>
+                  🏠 Retour au salon
+                </button>
+              </>
             ) : (
               <p className="text-slate-400 italic text-sm self-center">En attente de l'hôte…</p>
             )}
@@ -203,7 +211,7 @@ export default function PhasePodium() {
           {history.map((h, i) => {
             const my = h.perPlayer?.[playerId];
             return (
-              <div key={i} className="bg-slate-900/40 rounded-lg p-3">
+              <div key={i} className="bg-white/[0.05] rounded-lg p-3">
                 <p className="text-sm font-semibold mb-2">
                   <span className="text-slate-400 mr-2">Q{i + 1}.</span>
                   {h.question}

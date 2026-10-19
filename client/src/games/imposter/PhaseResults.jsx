@@ -1,11 +1,13 @@
+import { motion } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore.js';
 import { api } from '../../hooks/useSocket.js';
 import Avatar from '../../components/Avatar.jsx';
+import { Scoreboard } from './ImposterGame.jsx';
 
 const ROLES = {
-  civil:    { label: 'Civil',     icon: '✅', cls: 'bg-emerald-500/20 text-emerald-300' },
-  imposter: { label: 'Imposteur', icon: '😈', cls: 'bg-rose-500/20 text-rose-300' },
-  mr_white: { label: 'Mr White',  icon: '🎩', cls: 'bg-amber-500/20 text-amber-300' },
+  civil:    { label: 'Civil',     icon: '✅', cls: 'bg-emerald-500/20 text-emerald-200' },
+  imposter: { label: 'Imposteur', icon: '😈', cls: 'bg-rose-500/25 text-rose-200' },
+  mr_white: { label: 'Mr White',  icon: '🎩', cls: 'bg-amber-500/25 text-amber-200' },
 };
 
 const REASONS = {
@@ -25,139 +27,121 @@ function hasWon(role, winner) {
   return false;
 }
 
-/**
- * Fin de partie : on montre toujours le gagnant, le détail du vote,
- * les mots et le rôle de chaque joueur (même en cas d'égalité).
- */
 export default function PhaseResults() {
   const { gameState, room, playerId } = useGameStore();
-  const r = gameState?.public?.result;
+  const pub = gameState?.public || {};
+  const r = pub.result;
   if (!r) return null;
 
   const isHost = playerId === room.hostId;
   const roles = r.roles || [];
   const byId = (id) => roles.find((x) => x.id === id);
+  const name = (id) => byId(id)?.pseudo || '?';
   const badCount = roles.filter((x) => x.role !== 'civil').length;
   const myRole = gameState?.private?.role;
+  const won = !r.aborted && myRole && hasWon(myRole, r.winner);
 
-  const winnerLabel = r.winner === 'civils'   ? '🎉 Les civils ont gagné !'
-                    : r.winner === 'mr_white' ? '🎩 Mr White gagne SEUL !'
-                    : r.winner === 'imposter' ? (badCount > 1 ? '😈 Les imposteurs ont gagné !' : "😈 L'imposteur a gagné !")
-                    : '🚪 Partie interrompue';
+  const banner = r.winner === 'civils' ? { icon: '🎉', title: 'Les civils gagnent !', color: 'from-emerald-500/30 to-emerald-900/10 border-emerald-400/50' }
+    : r.winner === 'mr_white' ? { icon: '🎩', title: 'Mr White gagne seul !', color: 'from-amber-500/30 to-amber-900/10 border-amber-400/50' }
+    : r.winner === 'imposter' ? { icon: '😈', title: badCount > 1 ? 'Les imposteurs gagnent !' : "L'imposteur gagne !", color: 'from-rose-500/30 to-rose-900/10 border-rose-400/50' }
+    : { icon: '🚪', title: 'Partie interrompue', color: 'from-slate-500/20 to-slate-900/10 border-slate-400/40' };
 
-  /** Une ligne par vote : qui a été éliminé, ou pourquoi personne ne l'a été. */
   const voteLine = (label, eliminatedId, tied) => {
     const e = byId(eliminatedId);
     return (
       <p>
         <span className="text-slate-400">{label} : </span>
         {e ? (
-          <>
-            <strong>{e.pseudo}</strong> est éliminé —{' '}
-            <span className={e.role === 'civil' ? 'text-emerald-300' : 'text-rose-300'}>
+          <><strong>{e.pseudo}</strong> est éliminé —{' '}
+            <span className={e.role === 'civil' ? 'text-rose-300' : 'text-emerald-300'}>
               c'était {e.role === 'civil' ? 'un civil 😱' : e.role === 'mr_white' ? 'Mr White 🎯' : 'un imposteur 🎯'}
-            </span>
-          </>
-        ) : (
-          <span className="text-slate-200">{tied ? "égalité, personne n'est éliminé ⚖️" : "aucun vote, personne n'est éliminé"}</span>
-        )}
+            </span></>
+        ) : <span>{tied ? "égalité, personne n'est éliminé ⚖️" : "personne n'est éliminé"}</span>}
       </p>
     );
   };
 
   return (
-    <div className="card text-center space-y-6 py-8">
-      <h2 className="font-display text-3xl text-brand-light">Résultats</h2>
-
-      {/* Gagnant */}
-      <div className="bg-slate-900/60 rounded-xl p-5 space-y-2">
-        <p className="text-2xl font-bold">{winnerLabel}</p>
-        <p className="text-slate-300">
-          {r.aborted ? 'Un joueur a quitté la partie : elle ne peut pas continuer.' : REASONS[r.reason]}
-        </p>
+    <div className="space-y-5">
+      <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 120 }}
+        className={`rounded-2xl border bg-gradient-to-b ${banner.color} p-5 text-center space-y-2`}>
+        <div className="text-6xl" aria-hidden="true">{banner.icon}</div>
+        <p className="imp-title text-4xl sm:text-5xl leading-none">{banner.title}</p>
+        <p className="text-slate-200 text-sm">{r.aborted ? 'Un joueur indispensable a quitté la partie.' : REASONS[r.reason]}</p>
         {!r.aborted && myRole && (
-          <p className={`text-sm font-semibold ${hasWon(myRole, r.winner) ? 'text-emerald-300' : 'text-rose-300'}`}>
-            {hasWon(myRole, r.winner) ? 'Tu as gagné 🏆' : 'Tu as perdu'}
+          <p className={`inline-block rounded-full px-4 py-1 text-sm font-bold ${won ? 'bg-emerald-400/20 text-emerald-200' : 'bg-rose-500/20 text-rose-200'}`}>
+            {won ? '🏆 Tu as gagné' : '💀 Tu as perdu'}{r.points?.[playerId] ? ` · +${r.points[playerId]} pt${r.points[playerId] > 1 ? 's' : ''}` : ''}
           </p>
         )}
-      </div>
+      </motion.div>
 
-      {/* Détail du vote */}
+      {/* Les deux mots */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl bg-emerald-500/10 border border-emerald-400/30 p-3 text-center">
+          <p className="text-[11px] uppercase tracking-wider text-emerald-300">Mot des civils</p>
+          <p className="imp-title text-3xl sm:text-4xl break-words">{r.civilWord}</p>
+        </div>
+        <div className="rounded-2xl bg-rose-500/10 border border-rose-400/30 p-3 text-center">
+          <p className="text-[11px] uppercase tracking-wider text-rose-300">Mot de l'imposteur</p>
+          <p className="imp-title text-3xl sm:text-4xl break-words">{r.imposterWord}</p>
+        </div>
+      </div>
+      {r.themeLabel && <p className="text-center text-xs text-slate-400 -mt-2">Thème : {r.themeLabel}</p>}
+
       {!r.aborted && (
-        <div className="space-y-1 text-lg">
+        <div className="imp-panel p-4 space-y-1 text-sm sm:text-base">
           {voteLine(r.mrWhiteActive ? 'Vote imposteur' : 'Vote', r.eliminatedAsImposter, r.tiedImposter)}
           {r.mrWhiteActive && voteLine('Vote Mr White', r.eliminatedAsMrWhite, r.tiedMrWhite)}
           {r.mrWhiteGuess !== undefined && (
-            <p className="text-base pt-1">
-              🎩 Devinette de Mr White :{' '}
-              <strong className={r.mrWhiteGuessCorrect ? 'text-emerald-300' : 'text-rose-300'}>
-                « {r.mrWhiteGuess || '(pas de réponse)'} »
-              </strong>
-              {r.mrWhiteGuessCorrect ? ' ✅ Correct' : ' ❌ Faux'}
+            <p>🎩 Mr White propose{' '}
+              <strong className={r.mrWhiteGuessCorrect ? 'text-emerald-300' : 'text-rose-300'}>« {r.mrWhiteGuess || '(rien)'} »</strong>
+              {r.mrWhiteGuessCorrect ? ' ✅' : ' ❌'}
             </p>
           )}
         </div>
       )}
 
-      {/* Mots */}
-      <p className="text-slate-300">
-        Mot des civils : <span className="font-mono text-emerald-300">{r.civilWord}</span><br />
-        Mot des imposteurs : <span className="font-mono text-rose-300">{r.imposterWord}</span>
-      </p>
-
-      {/* Rôles de tous les joueurs */}
-      <div className="text-left">
-        <h3 className="font-semibold mb-2 text-center">Qui était qui ?</h3>
-        <ul className="space-y-1.5">
-          {roles.map((p) => {
+      {/* Qui était qui, et qui a voté contre qui */}
+      <div className="space-y-2">
+        <p className="imp-title text-2xl text-center">Qui était qui ?</p>
+        <ul className="grid sm:grid-cols-2 gap-2">
+          {roles.map((p, i) => {
             const role = ROLES[p.role] || ROLES.civil;
+            const vote = r.votesBy?.[p.id];
             return (
-              <li
-                key={p.id}
-                className={`flex items-center gap-2 rounded-lg px-3 py-2 bg-slate-900/40 ${p.left ? 'opacity-50' : ''}`}
-              >
-                <Avatar id={p.avatar} size="sm" />
-                <span className="font-medium truncate min-w-0 flex-1">
-                  {p.pseudo}{p.id === playerId && ' (toi)'}
-                  {p.left && <span className="text-xs text-slate-400 font-normal"> · a quitté</span>}
-                </span>
-                {p.eliminated && (
-                  <span className="text-xs bg-slate-700 text-slate-200 px-2 py-0.5 rounded-full shrink-0">éliminé</span>
-                )}
+              <motion.li key={p.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.05 }}
+                className={`rounded-2xl px-3 py-2 border ${p.role === 'civil' ? 'border-white/10 bg-white/[0.04]' : 'border-rose-400/40 bg-rose-500/10'} ${p.left ? 'opacity-50' : ''}`}>
+                <div className="flex items-center gap-2">
+                  <Avatar id={p.avatar} size="sm" />
+                  <span className="font-semibold truncate flex-1">{p.pseudo}{p.id === playerId ? ' (toi)' : ''}</span>
+                  {p.eliminated && <span className="text-[10px] bg-slate-700 px-2 py-0.5 rounded-full">éliminé</span>}
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${role.cls}`}>{role.icon} {role.label}</span>
+                </div>
                 {!r.aborted && (
-                  <span className="text-xs text-slate-400 shrink-0 tabular-nums" title="Votes reçus">
-                    🗳️ {p.votesImposter}{r.mrWhiteActive && <> · 🎩 {p.votesMrWhite}</>}
-                  </span>
+                  <p className="text-[11px] text-slate-400 mt-1 pl-10">
+                    {vote ? <>a voté 😈 {name(vote.imposter)}{vote.mrWhite ? <> · 🎩 {name(vote.mrWhite)}</> : null}</> : "n'a pas voté"}
+                    {' · '}reçu {p.votesImposter + (p.votesMrWhite || 0)} vote{p.votesImposter + (p.votesMrWhite || 0) > 1 ? 's' : ''}
+                    {r.points?.[p.id] > 0 && <span className="text-emerald-300 font-bold"> · +{r.points[p.id]} pt{r.points[p.id] > 1 ? 's' : ''}</span>}
+                  </p>
                 )}
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full shrink-0 ${role.cls}`}>
-                  {role.icon} {role.label}
-                </span>
-              </li>
+              </motion.li>
             );
           })}
         </ul>
-        {!r.aborted && r.mrWhiteActive && (
-          <p className="text-xs text-slate-500 text-center mt-2">
-            🗳️ votes reçus comme imposteur · 🎩 votes reçus comme Mr White
-          </p>
-        )}
       </div>
 
-      {/* Suite : nouvelle partie ou retour au lobby */}
-      <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
-        {isHost ? (
-          <>
-            <button className="btn btn-primary" onClick={() => api.gameAction('nextMatch', {})}>
-              ▶ Nouvelle partie
-            </button>
-            <button className="btn btn-ghost" onClick={() => api.gameAction('endGame', {})}>
-              🏠 Retour au lobby
-            </button>
-          </>
-        ) : (
-          <p className="text-slate-400 italic text-sm self-center">En attente de l'hôte…</p>
-        )}
+      <div className="imp-panel p-4">
+        <p className="imp-title text-2xl text-center mb-2">🏆 Classement</p>
+        <Scoreboard scores={pub.scores} playerId={playerId} gained={r.points || {}} />
+        <p className="text-[11px] text-slate-500 text-center mt-2">+1 par vote juste · civils gagnants +2 · imposteurs gagnants +3 · Mr White qui devine +5</p>
       </div>
+
+      {isHost ? (
+        <div className="flex flex-col sm:flex-row justify-center gap-3">
+          <button type="button" className="btn btn-primary text-lg" onClick={() => api.gameAction('nextMatch', {})}>▶ Partie suivante</button>
+          <button type="button" className="btn btn-ghost" onClick={() => api.gameAction('endGame', {})}>🏠 Retour au salon</button>
+        </div>
+      ) : <p className="text-center text-slate-400 italic text-sm">L'hôte lance la partie suivante…</p>}
     </div>
   );
 }

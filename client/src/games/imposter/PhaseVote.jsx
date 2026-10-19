@@ -48,16 +48,16 @@ export default function PhaseVote() {
   };
 
   return (
-    <div className="card space-y-5">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-2xl text-brand-light">🗳️ Vote</h2>
+        <p className="imp-title text-3xl">🗳️ Qui est l'imposteur ?</p>
         {pub.voteEndsAt && <Timer endsAt={pub.voteEndsAt} />}
       </div>
 
-      <p className="text-slate-300">
+      <p className="text-slate-300 text-sm">
         {mrWhiteMode
           ? <>Désigne <strong className="text-rose-300">😈 l'imposteur</strong> et <strong className="text-amber-300">🎩 Mr White</strong> (deux joueurs différents).</>
-          : "Qui pensez-vous est l'imposteur ?"}
+          : 'Relis les indices et touche le joueur que tu soupçonnes.'}
       </p>
 
       <div className="grid sm:grid-cols-2 gap-3">
@@ -71,7 +71,7 @@ export default function PhaseVote() {
             <>
               <div className="flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2 min-w-0">
-                  <Avatar id={p.avatar} size="sm" />
+                  <Avatar id={p.avatar} size="md" />
                   <span className="font-semibold truncate">{p.pseudo}{isMe && ' (toi)'}</span>
                 </span>
                 {votedIds.has(p.id) && <span className="text-xs text-slate-400 shrink-0">a voté</span>}
@@ -80,7 +80,7 @@ export default function PhaseVote() {
                 {words.length === 0
                   ? <span className="text-sm italic text-slate-500">aucun mot</span>
                   : words.map((w, i) => (
-                      <span key={i} className="text-xs bg-slate-800 px-2 py-0.5 rounded">
+                      <span key={i} className="text-xs bg-violet-500/25 text-violet-100 px-2 py-0.5 rounded-lg font-semibold">
                         {w}
                       </span>
                     ))
@@ -98,8 +98,8 @@ export default function PhaseVote() {
                 onClick={() => api.gameAction('castVote', { targetId: p.id })}
                 className={`text-left rounded-xl p-4 border transition-all ${
                   disabled
-                    ? 'bg-slate-900/40 border-slate-800 opacity-50 cursor-not-allowed'
-                    : 'bg-slate-900 border-slate-700 hover:border-brand hover:bg-slate-800'
+                    ? 'bg-white/[0.03] border-white/5 opacity-50 cursor-not-allowed'
+                    : 'bg-white/[0.05] border-white/10 hover:border-rose-300 hover:bg-rose-500/10'
                 }`}
               >
                 {header}
@@ -114,7 +114,7 @@ export default function PhaseVote() {
               className={`rounded-xl p-4 border transition-all ${
                 selectedAs === 'imp' ? 'bg-rose-500/10 border-rose-400'
                 : selectedAs === 'mw' ? 'bg-amber-500/10 border-amber-400'
-                : 'bg-slate-900 border-slate-700'
+                : 'bg-white/[0.05] border-white/10'
               } ${disabled ? 'opacity-50' : ''}`}
             >
               {header}

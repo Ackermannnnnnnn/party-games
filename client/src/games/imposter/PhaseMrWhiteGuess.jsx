@@ -16,7 +16,7 @@ export default function PhaseMrWhiteGuess() {
 
   if (!isMe) {
     return (
-      <div className="card text-center py-12 space-y-4">
+      <div className="text-center py-10 space-y-4">
         <motion.div
           animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
           className="text-6xl"
@@ -37,7 +37,7 @@ export default function PhaseMrWhiteGuess() {
   };
 
   return (
-    <div className="card text-center py-10 space-y-5">
+    <div className="text-center py-8 space-y-5">
       <div className="text-6xl">🎩</div>
       <h2 className="font-display text-2xl sm:text-3xl text-rose-300">Tu es éliminé, Mr White !</h2>
       <p className="text-slate-300">

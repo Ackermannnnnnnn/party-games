@@ -1,491 +1,412 @@
 /**
- * Thèmes de mots pour le jeu de l'imposteur.
- * Chaque thème = liste de paires [motCivils, motImposteur].
+ * Banque de mots du jeu de l'imposteur.
  *
- * Règle d'or pour les paires : les deux mots doivent être PROCHES
- * (sinon trop facile à démasquer en 1 indice).
+ * Chaque thème a deux niveaux :
+ *   - facile    : deux mots proches mais bien distincts (on peut donner des indices sans se griller tout de suite)
+ *   - difficile : deux mots très proches (l'imposteur peut se fondre dans la masse… et les civils doutent)
+ *
+ * Une paire s'écrit 'Mot A|Mot B'. Au tirage, on choisit au hasard lequel des deux est le mot des civils.
  */
+import { imposterStore } from '../../admin/stores.js';
+
+const T = (label, facile, difficile) => ({ label, facile, difficile });
 
 export const THEMES = {
-  random: {
-    label: '🎲 Aléatoire (mélange tous les thèmes)',
-    pairs: [],
-  },
+  maison: T('🏠 Maison & objets', [
+    'Fourchette|Cuillère', 'Lit|Canapé', 'Table|Bureau', 'Lampe|Bougie', 'Frigo|Congélateur',
+    'Douche|Baignoire', 'Brosse à dents|Peigne', 'Oreiller|Couverture', 'Miroir|Fenêtre', 'Tapis|Rideau',
+    'Four|Micro-ondes', 'Casserole|Poêle', 'Verre|Tasse', 'Assiette|Bol', 'Clé|Cadenas',
+    'Parapluie|Imperméable', 'Horloge|Montre', 'Ciseaux|Couteau', 'Savon|Shampoing', 'Balai|Aspirateur',
+    'Chaise|Tabouret', 'Étagère|Armoire', 'Escalier|Ascenseur', 'Porte|Portail', 'Sonnette|Interphone',
+    'Télécommande|Manette', 'Radiateur|Cheminée', 'Robinet|Lavabo', 'Poubelle|Bac à linge', 'Ventilateur|Climatiseur',
+    'Stylo|Crayon', 'Agrafeuse|Trombone', 'Bouilloire|Cafetière', 'Grille-pain|Gaufrier', 'Sèche-cheveux|Fer à lisser',
+  ], [
+    'Couette|Plaid', 'Tasse|Mug', 'Casserole|Marmite', 'Serviette|Peignoir', 'Commode|Buffet',
+    'Lampadaire|Applique', 'Rideau|Store', 'Coussin|Oreiller', 'Bouteille|Gourde', 'Carafe|Pichet',
+    'Gant de toilette|Éponge', 'Torchon|Serpillière', 'Saladier|Bol', 'Louche|Écumoire', 'Râpe|Économe',
+    'Fauteuil|Pouf', 'Clé USB|Disque dur', 'Chargeur|Câble', 'Ampoule|Néon', 'Lave-linge|Sèche-linge',
+    'Lave-vaisselle|Évier', 'Paillasson|Tapis', 'Cintre|Portemanteau', 'Boîte aux lettres|Colis', 'Dentifrice|Bain de bouche',
+    'Trousse|Cartable', 'Scotch|Colle', 'Gomme|Correcteur', 'Calendrier|Agenda', 'Réveil|Minuteur',
+  ]),
 
-  superheros: {
-    label: '🦸 Super-héros',
-    pairs: [
-      ['Batman', 'Superman'], ['Spider-Man', 'Daredevil'], ['Iron Man', 'Captain America'],
-      ['Hulk', 'Thor'], ['Wolverine', 'Deadpool'], ['Wonder Woman', 'Catwoman'],
-      ['Flash', 'Quicksilver'], ['Aquaman', 'Namor'], ['Green Lantern', 'Doctor Strange'],
-      ['Black Panther', 'Vision'], ['Joker', 'Lex Luthor'], ['Thanos', 'Darkseid'],
-      ['Loki', 'Mystique'], ['Magneto', 'Doctor Doom'], ['Hawkeye', 'Green Arrow'],
-      ['Black Widow', 'Catwoman'], ['Storm', 'Jean Grey'], ['Cyclops', 'Nightcrawler'],
-      ['Robin', 'Bucky'], ['Captain Marvel', 'Supergirl'], ['Hulk', 'Thing'],
-      ['Daredevil', 'Punisher'], ['Iron Man', 'War Machine'], ['Cyclops', 'Havok'],
-      ['Wolverine', 'Sabretooth'], ['Doctor Strange', 'Scarlet Witch'], ['Vision', 'Ultron'],
-      ['Drax', 'Gamora'], ['Star-Lord', 'Rocket'], ['Groot', 'Mantis'],
-      ['Black Widow', 'Hawkeye'], ['Captain America', 'Falcon'], ['Bucky', 'Falcon'],
-      ['Spider-Man', 'Venom'], ['Spider-Man', 'Carnage'], ['Goblin', 'Doc Ock'],
-      ['Mysterio', 'Vautour'], ['Kingpin', 'Bullseye'], ['Hulk', 'Abomination'],
-      ['Iron Man', 'Iron Patriot'], ['Hulk', 'She-Hulk'], ['Spider-Man', 'Spider-Woman'],
-      ['Cyclops', 'Storm'], ['Rogue', 'Mystique'], ['Beast', 'Hank McCoy'],
-      ['Professor X', 'Magneto'], ['Doctor Strange', 'Wong'], ['Ant-Man', 'Wasp'],
-      ['Black Bolt', 'Medusa'], ['Silver Surfer', 'Galactus'], ['Nick Fury', 'Maria Hill'],
-      ['Batman', 'Robin'], ['Batgirl', 'Batwoman'], ['Nightwing', 'Red Hood'],
-      ['Joker', 'Harley Quinn'], ['Penguin', 'Riddler'], ['Catwoman', 'Poison Ivy'],
-      ['Bane', 'Killer Croc'], ['Mr. Freeze', 'Clayface'], ['Two-Face', 'Scarecrow'],
-      ['Wonder Woman', 'Hippolyta'], ['Aquaman', 'Mera'], ['Cyborg', 'Vic Stone'],
-      ['Green Arrow', 'Black Canary'], ['Flash', 'Reverse-Flash'], ['Zoom', 'Reverse-Flash'],
-      ['Black Manta', 'Ocean Master'], ['Darkseid', 'Steppenwolf'], ['Mongul', 'Darkseid'],
-      ['Brainiac', 'Lex Luthor'], ['Doomsday', 'Darkseid'], ['Atom', 'Ant-Man'],
-      ['Hawkgirl', 'Hawkman'], ['Constantine', 'Zatanna'], ['Swamp Thing', 'Man-Thing'],
-      ['Deadshot', 'Deathstroke'], ['Ras al Ghul', 'Talia al Ghul'], ['Hawkeye', 'Mockingbird'],
-    ],
-  },
+  nourriture: T('🍕 Nourriture', [
+    'Pizza|Quiche', 'Pomme|Poire', 'Fraise|Framboise', 'Banane|Mangue', 'Carotte|Navet',
+    'Fromage|Beurre', 'Pain|Brioche', 'Croissant|Pain au chocolat', 'Crêpe|Gaufre', 'Riz|Pâtes',
+    'Steak|Côtelette', 'Poulet|Dinde', 'Saumon|Thon', 'Chocolat|Caramel', 'Glace|Sorbet',
+    'Tomate|Poivron', 'Salade|Épinard', 'Orange|Clémentine', 'Citron|Pamplemousse', 'Cerise|Prune',
+    'Raisin|Myrtille', 'Melon|Pastèque', 'Ananas|Noix de coco', 'Soupe|Velouté', 'Omelette|Œuf au plat',
+    'Lasagnes|Gratin', 'Spaghetti|Tagliatelles', 'Couscous|Tajine', 'Sushi|Maki', 'Crevette|Homard',
+    'Miel|Confiture', 'Yaourt|Fromage blanc', 'Cookie|Muffin', 'Tarte|Gâteau', 'Champignon|Truffe',
+    'Ketchup|Mayonnaise', 'Moutarde|Wasabi', 'Sel|Poivre', 'Sucre|Édulcorant', 'Popcorn|Chips',
+  ], [
+    'Clémentine|Mandarine', 'Pain au chocolat|Pain aux raisins', 'Crêpe|Pancake', 'Moule|Huître', 'Courgette|Concombre',
+    'Brownie|Fondant', 'Éclair|Religieuse', 'Macaron|Meringue', 'Tiramisu|Panna cotta', 'Croque-monsieur|Panini',
+    'Ravioli|Tortellini', 'Penne|Rigatoni', 'Gnocchi|Ravioli', 'Risotto|Paella', 'Burrata|Mozzarella',
+    'Camembert|Brie', 'Emmental|Gruyère', 'Comté|Beaufort', 'Roquefort|Bleu', 'Chèvre|Feta',
+    'Abricot|Pêche', 'Nectarine|Pêche', 'Mûre|Myrtille', 'Groseille|Cassis', 'Pistache|Cacahuète',
+    'Amande|Noisette', 'Noix|Noix de cajou', 'Lardons|Bacon', 'Jambon|Bacon', 'Saucisse|Merguez',
+    'Chorizo|Salami', 'Pâté|Rillettes', 'Pesto|Sauce tomate', 'Béchamel|Crème fraîche', 'Vinaigre|Citron',
+    'Crumble|Cheesecake', 'Flan|Crème brûlée', 'Crème brûlée|Crème catalane', 'Mousse au chocolat|Fondant', 'Smoothie|Milkshake',
+  ]),
 
-  pays: {
-    label: '🌍 Pays',
-    pairs: [
-      ['France', 'Belgique'], ['Japon', 'Chine'], ['Brésil', 'Argentine'],
-      ['Espagne', 'Portugal'], ['USA', 'Canada'], ['Allemagne', 'Autriche'],
-      ['Norvège', 'Suède'], ['Maroc', 'Algérie'], ['Inde', 'Pakistan'],
-      ['Russie', 'Ukraine'], ['Mexique', 'Cuba'], ['Italie', 'Grèce'],
-      ['Vietnam', 'Thaïlande'], ['Égypte', 'Tunisie'], ['Corée du Sud', 'Corée du Nord'],
-      ['Australie', 'Nouvelle-Zélande'], ['Suisse', 'Liechtenstein'], ['Pays-Bas', 'Danemark'],
-      ['Turquie', 'Iran'], ['Pérou', 'Colombie'], ['Sénégal', 'Côte d\'Ivoire'],
-      ['Kenya', 'Tanzanie'], ['Afrique du Sud', 'Botswana'], ['Nigeria', 'Ghana'],
-      ['Madagascar', 'Maurice'], ['Cambodge', 'Laos'], ['Birmanie', 'Bangladesh'],
-      ['Indonésie', 'Philippines'], ['Malaisie', 'Singapour'], ['Mongolie', 'Kazakhstan'],
-      ['Ouzbékistan', 'Turkménistan'], ['Géorgie', 'Arménie'], ['Azerbaïdjan', 'Iran'],
-      ['Israël', 'Liban'], ['Syrie', 'Jordanie'], ['Iraq', 'Yémen'],
-      ['Arabie Saoudite', 'Émirats Arabes Unis'], ['Qatar', 'Bahreïn'], ['Oman', 'Yémen'],
-      ['Soudan', 'Éthiopie'], ['Somalie', 'Kenya'], ['Tchad', 'Niger'],
-      ['Mali', 'Burkina Faso'], ['Mauritanie', 'Sénégal'], ['Libye', 'Tunisie'],
-      ['Cuba', 'Jamaïque'], ['Haïti', 'République Dominicaine'], ['Vénézuela', 'Colombie'],
-      ['Chili', 'Bolivie'], ['Paraguay', 'Uruguay'], ['Équateur', 'Pérou'],
-      ['Guatemala', 'Honduras'], ['Nicaragua', 'Costa Rica'], ['Panama', 'Costa Rica'],
-      ['Islande', 'Groenland'], ['Finlande', 'Estonie'], ['Lettonie', 'Lituanie'],
-      ['Pologne', 'Tchéquie'], ['Slovaquie', 'Hongrie'], ['Roumanie', 'Bulgarie'],
-      ['Albanie', 'Macédoine'], ['Serbie', 'Croatie'], ['Bosnie', 'Slovénie'],
-      ['Monaco', 'Andorre'], ['Vatican', 'Saint-Marin'], ['Malte', 'Chypre'],
-      ['Sri Lanka', 'Maldives'], ['Bhoutan', 'Népal'], ['Nouvelle-Calédonie', 'Polynésie'],
-      ['Fidji', 'Samoa'], ['Papouasie-Nouvelle-Guinée', 'Indonésie'],
-    ],
-  },
+  fastfood: T('🍟 Fast-food & snacks', [
+    'Burger|Sandwich', 'Frites|Potatoes', 'Hot-dog|Kebab', 'Nuggets|Tenders', 'Pizza|Calzone',
+    'Tacos|Burrito', 'Milkshake|Sundae', 'Ketchup|Sauce barbecue', 'Donut|Beignet', 'Chips|Cacahuètes',
+    'McDonald\'s|Burger King', 'KFC|Popeyes', 'Subway|Pomme de pain', 'Domino\'s|Pizza Hut', 'Starbucks|Columbus Café',
+    'Kebab|Shawarma', 'Bagel|Wrap', 'Glace|Granité', 'Barbe à papa|Pomme d\'amour', 'Churros|Beignet',
+  ], [
+    'Big Mac|Whopper', 'McFlurry|Sundae', 'Cheeseburger|Hamburger', 'Wrap|Burrito', 'Quesadilla|Tacos',
+    'Tacos français|Kebab', 'Nachos|Tortilla chips', 'Wings|Nuggets', 'Onion rings|Frites', 'Croque-monsieur|Croque-madame',
+    'Sauce samouraï|Sauce algérienne', 'Sauce andalouse|Sauce cocktail', 'Mayonnaise|Sauce tartare', 'Coca|Pepsi', 'Fanta|Orangina',
+    'Hot-dog|Saucisse frites', 'Panini|Wrap', 'Sandwich|Baguette', 'Mitraillette|Kebab', 'Fricadelle|Saucisse',
+  ]),
 
-  nourriture: {
-    label: '🍕 Nourriture',
-    pairs: [
-      ['Pizza', 'Tarte'], ['Hamburger', 'Sandwich'], ['Sushi', 'Maki'],
-      ['Salade', 'Soupe'], ['Pâtes', 'Riz'], ['Crêpe', 'Gaufre'],
-      ['Fromage', 'Beurre'], ['Pain', 'Brioche'], ['Tomate', 'Poivron'],
-      ['Pomme', 'Poire'], ['Bière', 'Vin'], ['Café', 'Thé'],
-      ['Chocolat', 'Caramel'], ['Glace', 'Sorbet'], ['Croissant', 'Pain au chocolat'],
-      ['Lasagne', 'Cannelloni'], ['Couscous', 'Tajine'], ['Steak', 'Filet mignon'],
-      ['Carotte', 'Navet'], ['Yaourt', 'Fromage blanc'], ['Curry', 'Tikka masala'],
-      ['Frites', 'Chips'], ['Quiche', 'Tarte salée'], ['Soupe à l\'oignon', 'Velouté'],
-      ['Cassoulet', 'Choucroute'], ['Raclette', 'Tartiflette'], ['Fondue', 'Raclette'],
-      ['Pot-au-feu', 'Bœuf bourguignon'], ['Ratatouille', 'Caponata'], ['Quiche', 'Pissaladière'],
-      ['Tomate', 'Poivron'], ['Concombre', 'Courgette'], ['Aubergine', 'Courgette'],
-      ['Salade', 'Crudités'], ['Vinaigrette', 'Sauce'], ['Mayonnaise', 'Aïoli'],
-      ['Ketchup', 'Moutarde'], ['Tabasco', 'Sriracha'], ['Soja', 'Worcestershire'],
-      ['Pesto', 'Tapenade'], ['Houmous', 'Tzatziki'], ['Guacamole', 'Salsa'],
-      ['Sushi', 'Sashimi'], ['Dim sum', 'Bao'], ['Ramen', 'Soba'],
-      ['Pad thaï', 'Phở'], ['Tempura', 'Beignet'], ['Wonton', 'Raviolis'],
-      ['Tortilla', 'Burrito'], ['Taco', 'Quesadilla'], ['Enchilada', 'Tamale'],
-      ['Croissant', 'Chausson'], ['Brioche', 'Pain de mie'], ['Macaron', 'Macaroon'],
-      ['Eclair', 'Chouquette'], ['Mille-feuille', 'Religieuse'], ['Tarte tatin', 'Crumble'],
-      ['Crème brûlée', 'Crème caramel'], ['Île flottante', 'Œufs à la neige'],
-      ['Mousse au chocolat', 'Tiramisu'], ['Cheesecake', 'Tiramisu'], ['Pomme', 'Coing'],
-      ['Cerise', 'Griotte'], ['Fraise', 'Framboise'], ['Banane', 'Plantain'],
-      ['Mangue', 'Papaye'], ['Litchi', 'Longane'], ['Pastèque', 'Melon'],
-      ['Citron', 'Citron vert'], ['Orange', 'Mandarine'], ['Pamplemousse', 'Pomelo'],
-      ['Avocat', 'Pistache'], ['Noix', 'Noisette'], ['Amande', 'Cacahuète'],
-    ],
-  },
+  boissons: T('🍷 Boissons', [
+    'Café|Thé', 'Eau|Jus', 'Vin|Bière', 'Lait|Chocolat chaud', 'Coca|Limonade',
+    'Champagne|Prosecco', 'Whisky|Rhum', 'Vodka|Gin', 'Jus d\'orange|Jus de pomme', 'Smoothie|Jus pressé',
+    'Sirop|Jus', 'Cappuccino|Latte', 'Mojito|Piña colada', 'Thé glacé|Limonade', 'Red Bull|Café',
+    'Tisane|Thé', 'Cidre|Bière', 'Sangria|Vin rouge', 'Eau gazeuse|Eau plate', 'Expresso|Café allongé',
+  ], [
+    'Champagne|Crémant', 'Vin rouge|Vin rosé', 'Bière blonde|Bière blanche', 'Rhum|Cognac', 'Whisky|Bourbon',
+    'Tequila|Mezcal', 'Pastis|Ricard', 'Spritz|Mojito', 'Cappuccino|Macchiato', 'Latte|Flat white',
+    'Thé vert|Thé noir', 'Chaï|Matcha', 'Ice tea|Thé glacé', 'Schweppes|Sprite', 'Perrier|San Pellegrino',
+    'Coca|Coca Zéro', 'Pepsi|Dr Pepper', 'Margarita|Daiquiri', 'Kir|Kir royal', 'Jägermeister|Get 27',
+  ]),
 
-  fastfood: {
-    label: '🍟 Fast-food',
-    pairs: [
-      ["McDonald's", 'Burger King'], ['KFC', "Popeye's"], ['Subway', 'Quick'],
-      ["Domino's", 'Pizza Hut'], ['Starbucks', 'Costa Coffee'], ['Chipotle', 'Taco Bell'],
-      ['Five Guys', 'Shake Shack'], ["O'Tacos", 'Berliner'], ['Sushi Shop', 'Planet Sushi'],
-      ['Brioche Dorée', 'Paul'], ['Big Mac', 'Whopper'], ['Nuggets', 'Tenders'],
-      ['Wrap', 'Burrito'], ['Milkshake', 'Smoothie'], ['Coca', 'Pepsi'],
-      ['Frites McDo', 'Frites BK'], ['Happy Meal', 'King Junior'], ['McFlurry', 'Sundae'],
-      ['Tacos français', 'Kebab'], ['Hot-dog', 'Bratwurst'], ['Cheeseburger', 'Double Cheeseburger'],
-      ['Salade', 'Wrap salade'], ['McNuggets', 'Chicken Wings'], ['Filet-O-Fish', 'Fish Burger'],
-      ['McChicken', 'Crispy Chicken'], ['McMuffin', 'McGriddle'], ['Iced coffee', 'Frappuccino'],
-      ['Cookie', 'Brownie'], ['Donut', 'Beignet'], ['Pretzel', 'Gressin'],
-      ['Pizza margherita', 'Pizza reine'], ['Pizza 4 fromages', 'Pizza calzone'], ['Pizza pepperoni', 'Pizza chorizo'],
-      ['Coca Zero', 'Coca Light'], ['Sprite', '7up'], ['Fanta', 'Mirinda'],
-      ['Snickers', 'Mars'], ['Twix', 'Bounty'], ['Kit Kat', 'Lion'],
-      ['Oreo', 'Prince'], ['BN', 'Pims'], ['Pim\'s', 'Granola'],
-    ],
-  },
+  animaux: T('🐾 Animaux', [
+    'Chat|Chien', 'Lion|Tigre', 'Loup|Renard', 'Cheval|Âne', 'Vache|Mouton',
+    'Poule|Canard', 'Aigle|Faucon', 'Requin|Dauphin', 'Baleine|Orque', 'Serpent|Lézard',
+    'Grenouille|Crapaud', 'Souris|Rat', 'Lapin|Lièvre', 'Ours|Panda', 'Singe|Gorille',
+    'Girafe|Zèbre', 'Éléphant|Rhinocéros', 'Hibou|Chouette', 'Abeille|Guêpe', 'Papillon|Libellule',
+    'Fourmi|Termite', 'Araignée|Scorpion', 'Escargot|Limace', 'Tortue|Crocodile', 'Pingouin|Manchot',
+    'Perroquet|Toucan', 'Kangourou|Koala', 'Hamster|Cochon d\'Inde', 'Écureuil|Hérisson', 'Pieuvre|Méduse',
+    'Cerf|Élan', 'Chameau|Dromadaire', 'Poisson rouge|Carpe', 'Mouche|Moustique', 'Pigeon|Corbeau',
+  ], [
+    'Guépard|Léopard', 'Léopard|Jaguar', 'Crocodile|Alligator', 'Lapin|Chinchilla', 'Corbeau|Corneille',
+    'Phoque|Otarie', 'Otarie|Morse', 'Lama|Alpaga', 'Chèvre|Bouc', 'Taureau|Bœuf',
+    'Âne|Mule', 'Poney|Cheval', 'Furet|Belette', 'Loutre|Castor', 'Rat|Hamster',
+    'Huître|Coquille Saint-Jacques', 'Crevette|Écrevisse', 'Homard|Langouste', 'Calamar|Seiche', 'Truite|Saumon',
+    'Moineau|Mésange', 'Hirondelle|Martinet', 'Cygne|Oie', 'Flamant rose|Ibis', 'Paon|Faisan',
+    'Hyène|Chacal', 'Puma|Lynx', 'Bison|Buffle', 'Gazelle|Antilope', 'Chimpanzé|Orang-outan',
+    'Frelon|Guêpe', 'Bourdon|Abeille', 'Grillon|Sauterelle', 'Coccinelle|Scarabée', 'Ver de terre|Asticot',
+  ]),
 
-  animaux: {
-    label: '🐾 Animaux',
-    pairs: [
-      ['Chien', 'Loup'], ['Chat', 'Lion'], ['Cheval', 'Âne'],
-      ['Vache', 'Bison'], ['Tigre', 'Léopard'], ['Aigle', 'Faucon'],
-      ['Requin', 'Dauphin'], ['Crocodile', 'Alligator'], ['Souris', 'Rat'],
-      ['Pigeon', 'Mouette'], ['Poule', 'Canard'], ['Chameau', 'Dromadaire'],
-      ['Lapin', 'Lièvre'], ['Éléphant', 'Mammouth'], ['Mouton', 'Chèvre'],
-      ['Serpent', 'Lézard'], ['Ours', 'Panda'], ['Singe', 'Gorille'],
-      ['Tortue', 'Iguane'], ['Pingouin', 'Manchot'], ['Abeille', 'Guêpe'],
-      ['Papillon', 'Libellule'], ['Renard', 'Coyote'], ['Hyène', 'Chacal'],
-      ['Buffle', 'Bison'], ['Antilope', 'Gazelle'], ['Zèbre', 'Cheval'],
-      ['Hippopotame', 'Rhinocéros'], ['Girafe', 'Okapi'], ['Koala', 'Kangourou'],
-      ['Wallaby', 'Kangourou'], ['Quokka', 'Wombat'], ['Tasmanien', 'Wombat'],
-      ['Ouistiti', 'Tamarin'], ['Babouin', 'Mandrill'], ['Chimpanzé', 'Bonobo'],
-      ['Orang-outan', 'Gorille'], ['Lémurien', 'Maki'], ['Loutre', 'Castor'],
-      ['Phoque', 'Otarie'], ['Morse', 'Phoque'], ['Lamantin', 'Dugong'],
-      ['Béluga', 'Narval'], ['Orque', 'Cachalot'], ['Espadon', 'Marlin'],
-      ['Thon', 'Bonite'], ['Sardine', 'Anchois'], ['Saumon', 'Truite'],
-      ['Brochet', 'Sandre'], ['Carpe', 'Tanche'], ['Anguille', 'Murène'],
-      ['Pieuvre', 'Calmar'], ['Seiche', 'Calmar'], ['Méduse', 'Anémone'],
-      ['Étoile de mer', 'Oursin'], ['Crabe', 'Homard'], ['Langouste', 'Langoustine'],
-      ['Crevette', 'Gambas'], ['Moule', 'Huître'], ['Coquille Saint-Jacques', 'Pétoncle'],
-      ['Escargot', 'Bulot'], ['Hibou', 'Chouette'], ['Pic-vert', 'Pic épeiche'],
-      ['Mésange', 'Pinson'], ['Hirondelle', 'Martinet'], ['Moineau', 'Étourneau'],
-      ['Corbeau', 'Corneille'], ['Pie', 'Geai'], ['Toucan', 'Calao'],
-      ['Perroquet', 'Perruche'], ['Cacatoès', 'Ara'], ['Flamant rose', 'Spatule'],
-      ['Cigogne', 'Héron'], ['Pélican', 'Cormoran'], ['Aigle royal', 'Vautour'],
-      ['Cobra', 'Vipère'], ['Boa', 'Python'], ['Mamba noir', 'Cobra'],
-      ['Caméléon', 'Iguane'], ['Gecko', 'Caméléon'], ['Crocodile', 'Caïman'],
-      ['Tortue marine', 'Tortue terrestre'], ['Salamandre', 'Triton'], ['Grenouille', 'Crapaud'],
-    ],
-  },
+  metiers: T('👨‍🍳 Métiers', [
+    'Médecin|Infirmier', 'Boulanger|Pâtissier', 'Policier|Gendarme', 'Pompier|Secouriste', 'Professeur|Directeur',
+    'Pilote|Hôtesse de l\'air', 'Cuisinier|Serveur', 'Avocat|Juge', 'Dentiste|Chirurgien', 'Plombier|Électricien',
+    'Coiffeur|Barbier', 'Facteur|Livreur', 'Agriculteur|Éleveur', 'Architecte|Ingénieur', 'Acteur|Chanteur',
+    'Journaliste|Écrivain', 'Peintre|Sculpteur', 'Vétérinaire|Pharmacien', 'Mécanicien|Garagiste', 'Caissier|Vendeur',
+    'Banquier|Comptable', 'Photographe|Caméraman', 'Astronaute|Pilote de chasse', 'Militaire|Policier', 'Chauffeur de taxi|Chauffeur de bus',
+  ], [
+    'Boucher|Charcutier', 'Kiné|Ostéopathe', 'Psychologue|Psychiatre', 'Notaire|Avocat', 'Pharmacien|Préparateur',
+    'Maçon|Carreleur', 'Menuisier|Charpentier', 'Couvreur|Charpentier', 'Peintre en bâtiment|Plaquiste', 'Fleuriste|Jardinier',
+    'Sage-femme|Infirmière', 'Aide-soignant|Infirmier', 'Chef cuisinier|Commis', 'Barman|Serveur', 'Sommelier|Caviste',
+    'Influenceur|Youtubeur', 'Streamer|Youtubeur', 'Développeur|Informaticien', 'Graphiste|Designer', 'Huissier|Notaire',
+    'Contrôleur|Conducteur de train', 'Steward|Pilote', 'Maître-nageur|Surveillant de plage', 'Moniteur d\'auto-école|Professeur', 'Agent immobilier|Banquier',
+  ]),
 
-  metiers: {
-    label: '👨‍🍳 Métiers',
-    pairs: [
-      ['Médecin', 'Infirmier'], ['Boulanger', 'Pâtissier'], ['Pompier', 'Policier'],
-      ['Avocat', 'Juge'], ['Acteur', 'Chanteur'], ['Pilote', 'Hôtesse de l\'air'],
-      ['Cuisinier', 'Serveur'], ['Architecte', 'Ingénieur'], ['Journaliste', 'Écrivain'],
-      ['Coiffeur', 'Barbier'], ['Mécanicien', 'Garagiste'], ['Plombier', 'Électricien'],
-      ['Professeur', 'Instituteur'], ['Vétérinaire', 'Médecin'], ['Photographe', 'Cinéaste'],
-      ['DJ', 'Musicien'], ['Boucher', 'Charcutier'], ['Jardinier', 'Paysagiste'],
-      ['Pêcheur', 'Marin'], ['Astronaute', 'Pilote de chasse'], ['Dentiste', 'Orthodontiste'],
-      ['Kinésithérapeute', 'Ostéopathe'], ['Psychologue', 'Psychiatre'], ['Notaire', 'Avocat'],
-      ['Comptable', 'Gestionnaire'], ['Banquier', 'Trader'], ['Commercial', 'Vendeur'],
-      ['Caissier', 'Vendeur'], ['Boulanger', 'Pâtissier'], ['Cuisinier', 'Chef'],
-      ['Sommelier', 'Œnologue'], ['Pâtissier', 'Chocolatier'], ['Fleuriste', 'Jardinier'],
-      ['Couturier', 'Tailleur'], ['Styliste', 'Couturier'], ['Designer', 'Graphiste'],
-      ['Peintre', 'Sculpteur'], ['Musicien', 'Compositeur'], ['Acteur', 'Comédien'],
-      ['Chanteur', 'Chanteuse'], ['Danseur', 'Chorégraphe'], ['Réalisateur', 'Producteur'],
-      ['Romancier', 'Poète'], ['Journaliste', 'Reporter'], ['Présentateur', 'Animateur'],
-      ['Programmeur', 'Développeur'], ['Hacker', 'Pirate'], ['Webdesigner', 'UX designer'],
-      ['Ingénieur', 'Technicien'], ['Architecte', 'Urbaniste'], ['Géomètre', 'Topographe'],
-      ['Maçon', 'Charpentier'], ['Couvreur', 'Toitureur'], ['Menuisier', 'Ébéniste'],
-      ['Carrossier', 'Peintre auto'], ['Marin', 'Pêcheur'], ['Capitaine', 'Marin'],
-      ['Pilote', 'Copilote'], ['Steward', 'Hôtesse'], ['Contrôleur aérien', 'Pilote'],
-      ['Chauffeur', 'Routier'], ['Taxi', 'VTC'], ['Cheminot', 'Conducteur de train'],
-      ['Soldat', 'Officier'], ['Général', 'Colonel'], ['Marine', 'Soldat'],
-      ['Diplomate', 'Ambassadeur'], ['Politique', 'Ministre'], ['Maire', 'Conseiller'],
-    ],
-  },
+  sports: T('⚽ Sports', [
+    'Football|Rugby', 'Tennis|Badminton', 'Basket|Handball', 'Natation|Plongée', 'Ski|Snowboard',
+    'Boxe|Judo', 'Golf|Mini-golf', 'Vélo|Course à pied', 'Volley|Beach-volley', 'Surf|Planche à voile',
+    'Escalade|Randonnée', 'Patinage|Roller', 'Skateboard|Trottinette', 'Équitation|Polo', 'Bowling|Pétanque',
+    'Karaté|Taekwondo', 'Ping-pong|Tennis', 'Formule 1|Rallye', 'Hockey sur glace|Hockey sur gazon', 'Gymnastique|Danse',
+    'Musculation|CrossFit', 'Yoga|Pilates', 'Fléchettes|Billard', 'Escrime|Kendo', 'Aviron|Kayak',
+  ], [
+    'Squash|Padel', 'Padel|Tennis', 'Badminton|Squash', 'Judo|Lutte', 'Boxe|MMA',
+    'Boxe thaï|Kickboxing', 'Rugby|Football américain', 'Baseball|Cricket', 'Water-polo|Handball', 'Canoë|Kayak',
+    'Kitesurf|Windsurf', 'Ski de fond|Biathlon', 'Saut à ski|Ski alpin', 'Bobsleigh|Luge', 'Curling|Pétanque',
+    'Marathon|Semi-marathon', 'Sprint|Relais', 'Triathlon|Duathlon', 'BMX|VTT', 'Trail|Course à pied',
+    'Ligue des champions|Ligue Europa', 'Coupe du monde|Euro', 'Roland-Garros|Wimbledon', 'Tour de France|Giro', 'JO d\'été|JO d\'hiver',
+  ]),
 
-  sports: {
-    label: '⚽ Sports',
-    pairs: [
-      ['Football', 'Rugby'], ['Tennis', 'Badminton'], ['Basket', 'Handball'],
-      ['Ski', 'Snowboard'], ['Natation', 'Plongée'], ['Boxe', 'Karaté'],
-      ['Cyclisme', 'Triathlon'], ['Volley', 'Beach-volley'], ['Golf', 'Mini-golf'],
-      ['Athlétisme', 'Marathon'], ['Échecs', 'Dames'], ['Surf', 'Kitesurf'],
-      ['Escalade', 'Alpinisme'], ['Hockey', 'Crosse'], ['Baseball', 'Cricket'],
-      ['Judo', 'Lutte'], ['F1', 'MotoGP'], ['Pétanque', 'Curling'],
-      ['Aviron', 'Canoë'], ['Patinage', 'Roller'], ['Karaté', 'Taekwondo'],
-      ['Aïkido', 'Jiu-jitsu'], ['Krav Maga', 'MMA'], ['Boxe française', 'Savate'],
-      ['Boxe', 'Kickboxing'], ['Muay-thaï', 'Kickboxing'], ['Sumo', 'Lutte'],
-      ['Course à pied', 'Marathon'], ['Sprint', 'Course de haies'], ['Saut en hauteur', 'Saut en longueur'],
-      ['Lancer de javelot', 'Lancer de poids'], ['Lancer de marteau', 'Lancer de disque'],
-      ['Décathlon', 'Heptathlon'], ['Pentathlon', 'Triathlon'], ['Orienteering', 'Trail'],
-      ['Ski alpin', 'Ski de fond'], ['Saut à ski', 'Combiné nordique'], ['Slalom', 'Descente'],
-      ['Bobsleigh', 'Luge'], ['Biathlon', 'Combiné nordique'], ['Patin de vitesse', 'Patinage artistique'],
-      ['Hockey sur glace', 'Hockey sur gazon'], ['Cricket', 'Baseball'], ['Softball', 'Baseball'],
-      ['Polo', 'Hockey'], ['Polo aquatique', 'Water-polo'], ['Plongeon', 'Natation synchronisée'],
-      ['Plongée sous-marine', 'Apnée'], ['Voile', 'Aviron'], ['Surf', 'Bodyboard'],
-      ['Wakeboard', 'Ski nautique'], ['Kayak', 'Canoë'], ['Rafting', 'Hydrospeed'],
-      ['Skateboard', 'Roller'], ['BMX', 'VTT'], ['Trial', 'Cross'],
-      ['Motocross', 'Enduro'], ['Rallye', 'F1'], ['Karting', 'F1'],
-      ['Bowling', 'Quilles'], ['Billard américain', 'Snooker'], ['Snooker', 'Pool'],
-      ['Fléchettes', 'Tir à l\'arc'], ['Tir au pistolet', 'Tir à la carabine'],
-      ['Escrime', 'Sabre'], ['Fleuret', 'Épée'], ['Judo', 'Aïkido'],
-      ['Cheerleading', 'Pom-pom girls'], ['Gymnastique', 'Acrobatie'], ['Trampoline', 'Tumbling'],
-    ],
-  },
+  pays: T('🌍 Pays & villes', [
+    'France|Belgique', 'Espagne|Portugal', 'Italie|Grèce', 'Japon|Chine', 'Brésil|Argentine',
+    'États-Unis|Canada', 'Allemagne|Autriche', 'Maroc|Algérie', 'Mexique|Colombie', 'Inde|Pakistan',
+    'Australie|Nouvelle-Zélande', 'Suède|Norvège', 'Égypte|Tunisie', 'Russie|Ukraine', 'Turquie|Grèce',
+    'Sénégal|Côte d\'Ivoire', 'Thaïlande|Vietnam', 'Corée du Sud|Japon', 'Suisse|Luxembourg', 'Irlande|Écosse',
+    'Paris|Londres', 'New York|Los Angeles', 'Rome|Venise', 'Tokyo|Séoul', 'Barcelone|Madrid',
+    'Marseille|Lyon', 'Bruxelles|Amsterdam', 'Dubaï|Abou Dabi', 'Istanbul|Athènes', 'Rio|São Paulo',
+  ], [
+    'Belgique|Pays-Bas', 'Suède|Finlande', 'Norvège|Danemark', 'Autriche|Suisse', 'Slovaquie|Slovénie',
+    'Croatie|Serbie', 'Pérou|Bolivie', 'Chili|Argentine', 'Kenya|Tanzanie', 'Cambodge|Laos',
+    'Malaisie|Indonésie', 'Islande|Groenland', 'Écosse|Pays de Galles', 'Angleterre|Royaume-Uni', 'Monaco|Andorre',
+    'Lyon|Bordeaux', 'Nice|Cannes', 'Lille|Strasbourg', 'Toulouse|Montpellier', 'Nantes|Rennes',
+    'Milan|Turin', 'Munich|Berlin', 'Porto|Lisbonne', 'Séville|Valence', 'Genève|Lausanne',
+    'Montréal|Québec', 'Miami|Las Vegas', 'Chicago|Boston', 'Marrakech|Casablanca', 'Alger|Tunis',
+  ]),
 
-  films: {
-    label: '🎬 Films & séries',
-    pairs: [
-      ['Star Wars', 'Star Trek'], ['Harry Potter', 'Le Seigneur des Anneaux'],
-      ['Avengers', 'Justice League'], ['Friends', 'How I Met Your Mother'],
-      ['Game of Thrones', 'The Witcher'], ['Breaking Bad', 'Better Call Saul'],
-      ['Stranger Things', 'Dark'], ['Peaky Blinders', 'The Sopranos'],
-      ['La Casa de Papel', 'Lupin'], ['Lost', 'Westworld'],
-      ['Spider-Man', 'Batman'], ['Le Roi Lion', 'Madagascar'],
-      ['Titanic', 'Avatar'], ['Jurassic Park', 'King Kong'],
-      ['Indiana Jones', 'Tomb Raider'], ['Matrix', 'Inception'],
-      ['Pirates des Caraïbes', 'Capitaine Crochet'], ['Le Parrain', 'Scarface'],
-      ['Toy Story', 'Monstres et Cie'], ['Shrek', 'Madagascar'],
-      ['Le Hobbit', 'Le Seigneur des Anneaux'], ['Marvel', 'DC'],
-      ['Iron Man', 'Captain America'], ['Thor', 'Hulk'],
-      ['Wonder Woman', 'Aquaman'], ['Black Panther', 'Black Widow'],
-      ['The Mandalorian', 'Boba Fett'], ['Squid Game', 'Alice in Borderland'],
-      ['Prison Break', 'Money Heist'], ['Vikings', 'The Last Kingdom'],
-      ['House of Cards', 'Designated Survivor'], ['Suits', 'How to Get Away with Murder'],
-      ['Sex and the City', 'Gossip Girl'], ['Modern Family', 'Brooklyn Nine-Nine'],
-      ['The Office', 'Parks and Recreation'], ['Ted Lasso', 'Schitt\'s Creek'],
-      ['Black Mirror', 'The Twilight Zone'], ['American Horror Story', 'The Haunting'],
-      ['Walking Dead', 'Z Nation'], ['Money Heist', 'Lupin'],
-      ['Ozark', 'Bloodline'], ['Narcos', 'El Chapo'],
-      ['Mr. Robot', 'Westworld'], ['Mindhunter', 'True Detective'],
-      ['Sherlock', 'Elementary'], ['Doctor Who', 'Torchwood'],
-      ['Big Bang Theory', 'Young Sheldon'], ['Friends', 'Seinfeld'],
-      ['Two and a Half Men', 'Big Bang Theory'], ['Lost', 'The 100'],
-      ['Heroes', 'Misfits'], ['The Office UK', 'The Office US'],
-      ['Parks & Rec', 'The Office'], ['Arrested Development', 'It\'s Always Sunny'],
-      ['Avatar', 'Avatar 2'], ['Mad Max', 'Fury Road'],
-      ['Le Hobbit', 'Bilbo'], ['Star Wars', 'The Mandalorian'],
-      ['Mission Impossible', 'James Bond'], ['Jason Bourne', 'James Bond'],
-      ['Rocky', 'Creed'], ['Karate Kid', 'Cobra Kai'],
-      ['Top Gun', 'Top Gun Maverick'], ['Fast & Furious', 'Tokyo Drift'],
-    ],
-  },
+  lieux: T('🏖️ Lieux', [
+    'Plage|Piscine', 'Montagne|Colline', 'Forêt|Jungle', 'Désert|Savane', 'Hôpital|Clinique',
+    'École|Université', 'Restaurant|Cantine', 'Cinéma|Théâtre', 'Musée|Galerie', 'Bibliothèque|Librairie',
+    'Supermarché|Épicerie', 'Gare|Aéroport', 'Église|Mosquée', 'Château|Palais', 'Stade|Gymnase',
+    'Zoo|Aquarium', 'Parc|Jardin', 'Prison|Commissariat', 'Hôtel|Camping', 'Boulangerie|Pâtisserie',
+    'Discothèque|Bar', 'Fête foraine|Parc d\'attractions', 'Port|Plage', 'Banque|Poste', 'Mairie|Préfecture',
+    'Grotte|Tunnel', 'Île|Presqu\'île', 'Lac|Étang', 'Rivière|Fleuve', 'Volcan|Montagne',
+  ], [
+    'Collège|Lycée', 'Hôtel|Auberge', 'Motel|Hôtel', 'Gîte|Chambre d\'hôte', 'Brasserie|Bistrot',
+    'Pub|Bar', 'Café|Salon de thé', 'Cathédrale|Basilique', 'Synagogue|Temple', 'Château fort|Citadelle',
+    'Mer|Océan', 'Golfe|Baie', 'Falaise|Dune', 'Vallée|Canyon', 'Glacier|Banquise',
+    'Hypermarché|Supermarché', 'Centre commercial|Galerie marchande', 'Marché|Brocante', 'Station-service|Garage', 'Parking|Garage',
+    'Métro|RER', 'Tramway|Métro', 'Salle de sport|Gymnase', 'Spa|Hammam', 'Sauna|Hammam',
+    'Crèche|Maternelle', 'Internat|Colonie de vacances', 'Ferme|Ranch', 'Vignoble|Verger', 'Phare|Port',
+  ]),
 
-  objets: {
-    label: '📱 Objets du quotidien',
-    pairs: [
-      ['Téléphone', 'Tablette'], ['Stylo', 'Crayon'], ['Vélo', 'Trottinette'],
-      ['Voiture', 'Moto'], ['Ordinateur', 'Console'], ['Télévision', 'Projecteur'],
-      ['Lit', 'Canapé'], ['Chaise', 'Tabouret'], ['Lampe', 'Bougie'],
-      ['Frigo', 'Congélateur'], ['Four', 'Micro-ondes'], ['Aspirateur', 'Balai'],
-      ['Sac à dos', 'Valise'], ['Lunettes', 'Loupe'], ['Montre', 'Bracelet'],
-      ['Casque', 'Écouteurs'], ['Parapluie', 'Imperméable'], ['Couteau', 'Fourchette'],
-      ['Livre', 'Magazine'], ['Clavier', 'Souris'], ['Imprimante', 'Scanner'],
-      ['Téléphone fixe', 'Talkie-walkie'], ['Caméra', 'Appareil photo'], ['GPS', 'Boussole'],
-      ['Calculatrice', 'Abaque'], ['Cahier', 'Carnet'], ['Agenda', 'Planning'],
-      ['Trousse', 'Pochette'], ['Cartable', 'Sac à dos'], ['Sac à main', 'Pochette'],
-      ['Portefeuille', 'Porte-monnaie'], ['Carte bleue', 'Chèque'], ['Clé', 'Cadenas'],
-      ['Porte-clés', 'Trousseau'], ['Tournevis', 'Marteau'], ['Scie', 'Cutter'],
-      ['Mètre', 'Réglet'], ['Niveau', 'Équerre'], ['Perceuse', 'Visseuse'],
-      ['Pelle', 'Râteau'], ['Bêche', 'Houe'], ['Sécateur', 'Cisaille'],
-      ['Tondeuse', 'Tronçonneuse'], ['Échelle', 'Escabeau'], ['Tabouret', 'Chaise'],
-      ['Banc', 'Banquette'], ['Fauteuil', 'Canapé'], ['Hamac', 'Transat'],
-      ['Coussin', 'Oreiller'], ['Couette', 'Couverture'], ['Drap', 'Housse'],
-      ['Serviette', 'Drap de bain'], ['Gant de toilette', 'Éponge'], ['Brosse à dents', 'Cure-dent'],
-      ['Peigne', 'Brosse'], ['Sèche-cheveux', 'Lisseur'], ['Rasoir', 'Tondeuse'],
-      ['Miroir', 'Glace'], ['Pince à épiler', 'Coupe-ongle'], ['Pansement', 'Bandage'],
-      ['Thermomètre', 'Tensiomètre'], ['Stéthoscope', 'Otoscope'], ['Seringue', 'Aiguille'],
-      ['Couteau de cuisine', 'Couteau à pain'], ['Cuillère', 'Louche'], ['Spatule', 'Maryse'],
-      ['Casserole', 'Poêle'], ['Cocotte', 'Marmite'], ['Saladier', 'Bol'],
-      ['Assiette', 'Coupelle'], ['Verre', 'Tasse'], ['Mug', 'Tasse'],
-      ['Carafe', 'Bouteille'], ['Ouvre-boîte', 'Décapsuleur'], ['Tire-bouchon', 'Limonadier'],
-    ],
-  },
+  transports: T('🚗 Transports', [
+    'Voiture|Moto', 'Avion|Hélicoptère', 'Train|Métro', 'Bus|Tramway', 'Bateau|Sous-marin',
+    'Vélo|Trottinette', 'Taxi|Uber', 'Camion|Camionnette', 'Fusée|Navette spatiale', 'Montgolfière|Dirigeable',
+    'Scooter|Moto', 'Paquebot|Voilier', 'Tracteur|Moissonneuse', 'Ambulance|Camion de pompiers', 'Planche à roulettes|Rollers',
+    'Jet-ski|Bateau à moteur', 'Téléphérique|Télésiège', 'TGV|Thalys', 'Cheval|Calèche', 'Kayak|Pédalo',
+  ], [
+    'Scooter|Mobylette', 'Quad|Buggy', 'Voilier|Catamaran', 'Yacht|Hors-bord', 'Ferry|Paquebot',
+    'Monospace|SUV', 'Cabriolet|Coupé', 'Limousine|Berline', 'Trottinette électrique|Hoverboard', 'Vélo électrique|Scooter',
+    'Tramway|Trolleybus', 'RER|Train', 'Avion de ligne|Jet privé', 'Planeur|ULM', 'Hydravion|Avion',
+    'Péniche|Barge', 'Canoë|Barque', 'Remorque|Caravane', 'Camping-car|Caravane', 'Dépanneuse|Grue',
+  ]),
 
-  lieux: {
-    label: '🏖️ Lieux',
-    pairs: [
-      ['Plage', 'Piscine'], ['Forêt', 'Jungle'], ['Montagne', 'Colline'],
-      ['Restaurant', 'Cantine'], ['Bibliothèque', 'Librairie'], ['École', 'Université'],
-      ['Hôpital', 'Clinique'], ['Hôtel', 'Auberge'], ['Musée', 'Galerie'],
-      ['Cinéma', 'Théâtre'], ['Parc', 'Jardin'], ['Désert', 'Toundra'],
-      ['Zoo', 'Aquarium'], ['Aéroport', 'Gare'], ['Église', 'Cathédrale'],
-      ['Marché', 'Supermarché'], ['Stade', 'Gymnase'], ['Pharmacie', 'Parapharmacie'],
-      ['Banque', 'Poste'], ['Boîte de nuit', 'Bar'], ['Mosquée', 'Synagogue'],
-      ['Temple', 'Pagode'], ['Chapelle', 'Église'], ['Cimetière', 'Catacombes'],
-      ['Crypte', 'Caveau'], ['Château', 'Palais'], ['Donjon', 'Tour'],
-      ['Prison', 'Donjon'], ['Tribunal', 'Palais de justice'], ['Mairie', 'Préfecture'],
-      ['Ambassade', 'Consulat'], ['Gare TGV', 'Métro'], ['Tramway', 'Bus'],
-      ['Téléphérique', 'Funiculaire'], ['Port', 'Marina'], ['Phare', 'Sémaphore'],
-      ['Plage', 'Crique'], ['Lagon', 'Atoll'], ['Île', 'Archipel'],
-      ['Falaise', 'Précipice'], ['Vallée', 'Gorge'], ['Canyon', 'Ravin'],
-      ['Glacier', 'Iceberg'], ['Volcan', 'Cratère'], ['Geyser', 'Source chaude'],
-      ['Caverne', 'Grotte'], ['Mine', 'Carrière'], ['Souterrain', 'Tunnel'],
-      ['Pont', 'Viaduc'], ['Aqueduc', 'Pont'], ['Barrage', 'Digue'],
-      ['Canal', 'Rivière'], ['Fleuve', 'Affluent'], ['Lac', 'Étang'],
-      ['Marais', 'Bayou'], ['Mangrove', 'Marais'], ['Savane', 'Steppe'],
-      ['Prairie', 'Pampa'], ['Banquise', 'Glacier'], ['Pôle', 'Cercle polaire'],
-      ['Place', 'Esplanade'], ['Avenue', 'Boulevard'], ['Rue', 'Ruelle'],
-      ['Allée', 'Sentier'], ['Trottoir', 'Chaussée'], ['Rond-point', 'Carrefour'],
-      ['Centre commercial', 'Galerie marchande'], ['Boutique', 'Échoppe'],
-      ['Salon de beauté', 'Spa'], ['Sauna', 'Hammam'], ['Salle de sport', 'Piscine'],
-      ['Court de tennis', 'Stade'], ['Aire de jeux', 'Parc'], ['Terrasse', 'Balcon'],
-      ['Véranda', 'Pergola'], ['Garage', 'Hangar'], ['Cabane', 'Cabanon'],
-      ['Yourte', 'Tipi'], ['Tente', 'Bivouac'], ['Camping', 'Bungalow'],
-    ],
-  },
+  films: T('🎬 Films & séries', [
+    'Harry Potter|Le Seigneur des anneaux', 'Star Wars|Star Trek', 'Titanic|Avatar', 'Le Roi Lion|Le Livre de la jungle', 'Shrek|Kung Fu Panda',
+    'Toy Story|Monstres et Cie', 'La Reine des neiges|Raiponce', 'Fast & Furious|Mission impossible', 'James Bond|Jason Bourne', 'Jurassic Park|King Kong',
+    'Stranger Things|Wednesday', 'Game of Thrones|The Witcher', 'Breaking Bad|Narcos', 'La Casa de papel|Lupin', 'Squid Game|Alice in Borderland',
+    'Friends|How I Met Your Mother', 'The Office|Brooklyn Nine-Nine', 'Les Simpson|Family Guy', 'Pirates des Caraïbes|Indiana Jones', 'Le Parrain|Scarface',
+    'Intouchables|Bienvenue chez les Ch\'tis', 'Astérix|Lucky Luke', 'Matrix|Inception', 'Retour vers le futur|Terminator', 'Rocky|Creed',
+  ], [
+    'Avengers|Justice League', 'Batman|Superman', 'Spider-Man|Venom', 'Inception|Interstellar', 'Interstellar|Gravity',
+    'Le Hobbit|Le Seigneur des anneaux', 'Les Animaux fantastiques|Harry Potter', 'Narnia|Harry Potter', 'Hunger Games|Divergente', 'Twilight|Vampire Diaries',
+    'Peaky Blinders|Boardwalk Empire', 'Prison Break|La Casa de papel', 'Dexter|You', 'Sherlock|Lupin', 'Grey\'s Anatomy|Dr House',
+    'The Walking Dead|The Last of Us', 'Vikings|The Last Kingdom', 'The Crown|Downton Abbey', 'Mercredi|La Famille Addams', 'Les Bronzés|Camping',
+    'Taxi|Fast & Furious', 'OSS 117|Johnny English', 'Le Dîner de cons|La Grande Vadrouille', 'Les Visiteurs|Kaamelott', 'Dune|Star Wars',
+  ]),
 
-  // ───────── Nouveaux thèmes ─────────
+  superheros: T('🦸 Super-héros', [
+    'Batman|Daredevil', 'Spider-Man|Iron Man', 'Hulk|Thor', 'Wolverine|Deadpool', 'Wonder Woman|Captain Marvel',
+    'Flash|Quicksilver', 'Aquaman|Namor', 'Joker|Harley Quinn', 'Thanos|Darkseid', 'Captain America|Iron Man',
+    'Black Widow|Catwoman', 'Black Panther|Batman', 'Doctor Strange|Scarlet Witch', 'Magneto|Professeur X', 'Ant-Man|La Guêpe',
+    'Groot|Rocket', 'Hawkeye|Green Arrow', 'Loki|Thor', 'Venom|Carnage', 'Superman|Supergirl',
+  ], [
+    'Spider-Man|Miles Morales', 'Batman|Robin', 'Robin|Nightwing', 'Hulk|She-Hulk', 'Iron Man|War Machine',
+    'Captain America|Bucky', 'Falcon|Captain America', 'Daredevil|Punisher', 'Cyclope|Tornade', 'Mystique|Malicia',
+    'Green Lantern|Green Arrow', 'Lex Luthor|Joker', 'Bane|Double-Face', 'Pingouin|Sphinx', 'Poison Ivy|Catwoman',
+    'Star-Lord|Gamora', 'Drax|Groot', 'Vision|Ultron', 'Nick Fury|Phil Coulson', 'Galactus|Silver Surfer',
+  ]),
 
-  vehicules: {
-    label: '🚗 Véhicules',
-    pairs: [
-      ['Voiture', 'Moto'], ['Camion', 'Bus'], ['Vélo', 'Trottinette'],
-      ['Avion', 'Hélicoptère'], ['Bateau', 'Sous-marin'], ['Train', 'Métro'],
-      ['Tramway', 'Bus'], ['Camionnette', 'Fourgon'], ['Quad', 'Jet ski'],
-      ['Skateboard', 'Roller'], ['Scooter', 'Mobylette'], ['Karting', 'Buggy'],
-      ['Ferrari', 'Lamborghini'], ['Porsche', 'Audi'], ['BMW', 'Mercedes'],
-      ['Tesla', 'Renault Zoé'], ['Renault', 'Peugeot'], ['Citroën', 'Renault'],
-      ['Toyota', 'Honda'], ['Nissan', 'Mazda'], ['Hyundai', 'Kia'],
-      ['Ford', 'Chevrolet'], ['Jeep', 'Land Rover'], ['Range Rover', 'Mercedes G'],
-      ['SUV', 'Crossover'], ['Citadine', 'Compacte'], ['Berline', 'Coupé'],
-      ['Cabriolet', 'Roadster'], ['Break', 'Monospace'], ['Pick-up', 'Utilitaire'],
-      ['Boeing', 'Airbus'], ['Concorde', 'A380'], ['Hélicoptère', 'Drone'],
-      ['Montgolfière', 'Dirigeable'], ['Planeur', 'ULM'], ['Parachute', 'Parapente'],
-      ['Train à vapeur', 'TGV'], ['RER', 'Métro'], ['Tramway', 'Trolleybus'],
-      ['Cargo', 'Pétrolier'], ['Voilier', 'Yacht'], ['Catamaran', 'Trimaran'],
-      ['Kayak', 'Canoë'], ['Pédalo', 'Barque'], ['Gondole', 'Pirogue'],
-    ],
-  },
+  jeuxvideo: T('🎮 Jeux vidéo', [
+    'Mario|Luigi', 'Sonic|Pac-Man', 'Minecraft|Roblox', 'Fortnite|Apex Legends', 'FIFA|PES',
+    'Call of Duty|Battlefield', 'Zelda|Final Fantasy', 'Pokémon|Digimon', 'GTA|Red Dead Redemption', 'Tetris|Candy Crush',
+    'PlayStation|Xbox', 'Nintendo Switch|Game Boy', 'Mario Kart|Crash Team Racing', 'League of Legends|Dota', 'Clash of Clans|Clash Royale',
+    'Among Us|Fall Guys', 'The Sims|Animal Crossing', 'Rocket League|FIFA', 'Assassin\'s Creed|Prince of Persia', 'Overwatch|Valorant',
+  ], [
+    'Valorant|Counter-Strike', 'Fortnite|PUBG', 'Pikachu|Évoli', 'Bowser|Donkey Kong', 'Peach|Daisy',
+    'Link|Zelda', 'Kirby|Yoshi', 'Master Chief|Doom Guy', 'Kratos|Dante', 'Lara Croft|Nathan Drake',
+    'Elden Ring|Dark Souls', 'Skyrim|The Witcher', 'Diablo|Path of Exile', 'World of Warcraft|Final Fantasy XIV', 'Hearthstone|Magic',
+    'Brawl Stars|Clash Royale', 'Subway Surfers|Temple Run', 'Geometry Dash|Flappy Bird', 'Smash Bros|Street Fighter', 'Tekken|Mortal Kombat',
+  ]),
 
-  marques: {
-    label: '🏷️ Marques connues',
-    pairs: [
-      ['Apple', 'Samsung'], ['Nike', 'Adidas'], ['Coca-Cola', 'Pepsi'],
-      ['Google', 'Microsoft'], ['Facebook', 'Twitter'], ['Instagram', 'Snapchat'],
-      ['YouTube', 'TikTok'], ['Netflix', 'Disney+'], ['Amazon', 'eBay'],
-      ['Tesla', 'BMW'], ['Mercedes', 'Audi'], ['Rolex', 'Tag Heuer'],
-      ['Chanel', 'Dior'], ['Louis Vuitton', 'Gucci'], ['Hermès', 'Prada'],
-      ['Zara', 'H&M'], ['Uniqlo', 'Gap'], ['Lacoste', 'Polo Ralph Lauren'],
-      ['Nutella', 'Speculoos'], ['Coca-Cola', 'Pepsi'], ['Starbucks', 'Costa'],
-      ['McDonald\'s', 'Burger King'], ['KFC', 'Popeye\'s'], ['Subway', 'Quick'],
-      ['Sony', 'Microsoft Xbox'], ['PlayStation', 'Xbox'], ['Nintendo', 'Sega'],
-      ['Spotify', 'Deezer'], ['Apple Music', 'Spotify'], ['Tidal', 'Spotify'],
-      ['Uber', 'Lyft'], ['Airbnb', 'Booking'], ['Booking', 'Hotels.com'],
-      ['Tripadvisor', 'Yelp'], ['IKEA', 'Conforama'], ['Castorama', 'Leroy Merlin'],
-      ['Carrefour', 'Auchan'], ['Lidl', 'Aldi'], ['Monoprix', 'Casino'],
-      ['Air France', 'Ryanair'], ['Easyjet', 'Ryanair'], ['Lufthansa', 'British Airways'],
-      ['Ferrari', 'Lamborghini'], ['Porsche', 'Aston Martin'], ['Bentley', 'Rolls-Royce'],
-      ['Vans', 'Converse'], ['Puma', 'Reebok'], ['Asics', 'New Balance'],
-    ],
-  },
+  mangas: T('🎌 Mangas & anime', [
+    'Naruto|One Piece', 'Dragon Ball|One Punch Man', 'Pokémon|Yo-kai Watch', 'L\'Attaque des Titans|Demon Slayer', 'Death Note|Code Geass',
+    'Goku|Vegeta', 'Luffy|Zoro', 'Naruto|Sasuke', 'Totoro|Ponyo', 'Le Voyage de Chihiro|Princesse Mononoké',
+    'My Hero Academia|Jujutsu Kaisen', 'Hunter x Hunter|Fullmetal Alchemist', 'Captain Tsubasa|Inazuma Eleven', 'Sailor Moon|Cardcaptor Sakura', 'Bleach|Naruto',
+  ], [
+    'Goku|Gohan', 'Vegeta|Piccolo', 'Freezer|Cell', 'Kakashi|Jiraiya', 'Itachi|Sasuke',
+    'Zoro|Sanji', 'Nami|Robin', 'Ace|Sabo', 'Eren|Livaï', 'Mikasa|Annie',
+    'Tanjiro|Zenitsu', 'Nezuko|Shinobu', 'Gojo|Sukuna', 'Deku|Bakugo', 'Gon|Killua',
+    'Light|L', 'Ichigo|Rukia', 'Saitama|Genos', 'Chainsaw Man|Jujutsu Kaisen', 'One Piece|Fairy Tail',
+  ]),
 
-  jeux_video: {
-    label: '🎮 Jeux vidéo & personnages',
-    pairs: [
-      ['Mario', 'Luigi'], ['Sonic', 'Knuckles'], ['Link', 'Zelda'],
-      ['Pikachu', 'Raichu'], ['Pacman', 'Tetris'], ['Master Chief', 'Doomguy'],
-      ['Lara Croft', 'Indiana Jones'], ['Solid Snake', 'Big Boss'], ['Cloud', 'Sephiroth'],
-      ['Ezio', 'Altair'], ['Geralt', 'Yennefer'], ['Kratos', 'Atreus'],
-      ['Mario', 'Wario'], ['Bowser', 'Wario'], ['Yoshi', 'Toad'],
-      ['Princesse Peach', 'Princesse Daisy'], ['Donkey Kong', 'Diddy Kong'], ['Kirby', 'King Dedede'],
-      ['Sonic', 'Tails'], ['Tails', 'Knuckles'], ['Shadow', 'Sonic'],
-      ['Link', 'Ganon'], ['Zelda', 'Hyrule'], ['Samus', 'Master Chief'],
-      ['Pikachu', 'Salamèche'], ['Bulbizarre', 'Carapuce'], ['Mewtwo', 'Mew'],
-      ['Lugia', 'Ho-Oh'], ['Rayquaza', 'Kyogre'], ['Dialga', 'Palkia'],
-      ['Pac-Man', 'Ms. Pac-Man'], ['Tetris', 'Puyo Puyo'], ['Candy Crush', 'Bejeweled'],
-      ['Among Us', 'Fall Guys'], ['Fortnite', 'PUBG'], ['Apex Legends', 'Warzone'],
-      ['Call of Duty', 'Battlefield'], ['CoD MW', 'CoD Black Ops'], ['Counter-Strike', 'Valorant'],
-      ['League of Legends', 'Dota 2'], ['LoL', 'Smite'], ['HotS', 'Heroes of the Storm'],
-      ['World of Warcraft', 'Final Fantasy XIV'], ['WoW', 'Guild Wars 2'], ['Runescape', 'Tibia'],
-      ['Minecraft', 'Roblox'], ['Terraria', 'Starbound'], ['Stardew Valley', 'Animal Crossing'],
-      ['GTA V', 'Red Dead Redemption 2'], ['GTA San Andreas', 'GTA Vice City'], ['Mafia', 'GTA'],
-      ['The Witcher 3', 'Skyrim'], ['Skyrim', 'Oblivion'], ['Morrowind', 'Skyrim'],
-      ['Elden Ring', 'Dark Souls'], ['Dark Souls', 'Bloodborne'], ['Sekiro', 'Nioh'],
-      ['Resident Evil', 'Silent Hill'], ['RE4', 'RE2 Remake'], ['Outlast', 'Amnesia'],
-      ['FIFA', 'PES'], ['NBA 2K', 'NBA Live'], ['NHL', 'Madden NFL'],
-      ['Mario Kart', 'Crash Team Racing'], ['Gran Turismo', 'Forza'], ['Need for Speed', 'Ridge Racer'],
-      ['Tony Hawk', 'Skate'], ['SSX', 'Steep'], ['1080° Snowboarding', 'Cool Boarders'],
-      ['Street Fighter', 'Mortal Kombat'], ['Tekken', 'Soul Calibur'], ['Smash Bros', 'PlayStation All-Stars'],
-    ],
-  },
+  dessinsanimes: T('📺 Dessins animés', [
+    'Bob l\'éponge|Patrick', 'Tom|Jerry', 'Scooby-Doo|Snoopy', 'Mickey|Donald', 'Les Simpson|Les Griffin',
+    'Pokémon|Yu-Gi-Oh', 'Pat\'Patrouille|Peppa Pig', 'Oui-Oui|Barbapapa', 'Bugs Bunny|Daffy Duck', 'Titeuf|Le Petit Nicolas',
+    'Les Schtroumpfs|Les Minions', 'Winnie l\'ourson|Les Bisounours', 'Garfield|Snoopy', 'Gumball|Regular Show', 'Totally Spies|Les Supers Nanas',
+  ], [
+    'Tic|Tac', 'Riri|Fifi', 'Dingo|Pluto', 'Bart|Lisa', 'Homer|Peter Griffin',
+    'Rick et Morty|Futurama', 'South Park|Les Griffin', 'Kim Possible|Totally Spies', 'Ben 10|Danny Phantom', 'Avatar|La Légende de Korra',
+    'Les Minions|Les Lapins Crétins', 'Peppa Pig|Masha et Michka', 'Dora|Diego', 'Sam le pompier|Bob le bricoleur', 'Tchoupi|Petit Ours Brun',
+  ]),
 
-  boissons: {
-    label: '🍷 Boissons',
-    pairs: [
-      ['Eau', 'Eau pétillante'], ['Coca', 'Pepsi'], ['Sprite', '7up'],
-      ['Fanta', 'Orangina'], ['Café', 'Thé'], ['Café espresso', 'Café latte'],
-      ['Cappuccino', 'Macchiato'], ['Thé vert', 'Thé noir'], ['Tisane', 'Infusion'],
-      ['Chocolat chaud', 'Lait'], ['Smoothie', 'Milkshake'], ['Jus d\'orange', 'Jus de pomme'],
-      ['Bière', 'Cidre'], ['Bière blonde', 'Bière brune'], ['Vin rouge', 'Vin blanc'],
-      ['Vin rosé', 'Vin blanc'], ['Champagne', 'Crémant'], ['Whisky', 'Bourbon'],
-      ['Rhum', 'Tequila'], ['Vodka', 'Gin'], ['Cognac', 'Armagnac'],
-      ['Mojito', 'Caïpirinha'], ['Cuba Libre', 'Mojito'], ['Pina Colada', 'Daiquiri'],
-      ['Margarita', 'Tequila Sunrise'], ['Bloody Mary', 'Sangria'], ['Cosmopolitan', 'Cosmo'],
-      ['Spritz', 'Aperol'], ['Kir', 'Kir Royal'], ['Pastis', 'Anisette'],
-      ['Sake', 'Soju'], ['Saké', 'Vin de riz'], ['Shōchū', 'Saké'],
-      ['Thé matcha', 'Thé vert'], ['Yerba Mate', 'Thé'], ['Kombucha', 'Kéfir'],
-      ['Lait', 'Lait d\'amande'], ['Lait d\'avoine', 'Lait d\'amande'], ['Lait de soja', 'Lait de coco'],
-      ['Schweppes', 'Tonic'], ['Limonade', 'Diabolo'], ['Sirop', 'Grenadine'],
-      ['Coca Zero', 'Coca Light'], ['Red Bull', 'Monster'], ['Powerade', 'Gatorade'],
-    ],
-  },
+  musique: T('🎵 Musique', [
+    'Guitare|Basse', 'Piano|Orgue', 'Violon|Violoncelle', 'Batterie|Djembé', 'Trompette|Saxophone',
+    'Flûte|Clarinette', 'Rap|Rock', 'Pop|Électro', 'Jazz|Blues', 'Reggae|Ragga',
+    'Concert|Festival', 'Chanteur|Rappeur', 'Micro|Enceinte', 'Spotify|Deezer', 'Karaoké|Blind test',
+    'Michael Jackson|Prince', 'Beyoncé|Rihanna', 'Eminem|50 Cent', 'Daft Punk|David Guetta', 'Stromae|Angèle',
+  ], [
+    'Violon|Alto', 'Clarinette|Hautbois', 'Trompette|Trombone', 'Synthétiseur|Piano', 'Ukulélé|Guitare',
+    'Harpe|Lyre', 'Accordéon|Harmonica', 'Rap|Trap', 'Drill|Trap', 'House|Techno',
+    'Metal|Hard rock', 'Punk|Rock', 'R&B|Soul', 'Gospel|Soul', 'Disco|Funk',
+    'Jul|Naps', 'Ninho|Niska', 'PNL|SCH', 'Damso|Hamza', 'Aya Nakamura|Wejdene',
+    'Drake|The Weeknd', 'Taylor Swift|Billie Eilish', 'Ed Sheeran|Bruno Mars', 'Coldplay|Imagine Dragons', 'Queen|The Beatles',
+  ]),
 
-  capitales: {
-    label: '🏙️ Capitales',
-    pairs: [
-      ['Paris', 'Lyon'], ['Londres', 'Manchester'], ['Berlin', 'Munich'],
-      ['Madrid', 'Barcelone'], ['Rome', 'Milan'], ['Tokyo', 'Osaka'],
-      ['Pékin', 'Shanghai'], ['Moscou', 'Saint-Pétersbourg'], ['Washington', 'New York'],
-      ['Ottawa', 'Toronto'], ['Brasília', 'Rio'], ['Buenos Aires', 'Cordoba'],
-      ['Mexico', 'Guadalajara'], ['Le Caire', 'Alexandrie'], ['Rabat', 'Casablanca'],
-      ['Alger', 'Oran'], ['Tunis', 'Sfax'], ['Dakar', 'Saint-Louis'],
-      ['Abidjan', 'Yamoussoukro'], ['Lagos', 'Abuja'], ['Nairobi', 'Mombasa'],
-      ['Pretoria', 'Johannesbourg'], ['New Delhi', 'Mumbai'], ['Bangkok', 'Phuket'],
-      ['Hanoï', 'Hô Chi Minh-Ville'], ['Manille', 'Cebu'], ['Jakarta', 'Bali'],
-      ['Séoul', 'Busan'], ['Pyongyang', 'Séoul'], ['Riyad', 'Djeddah'],
-      ['Téhéran', 'Ispahan'], ['Bagdad', 'Bassora'], ['Damas', 'Alep'],
-      ['Beyrouth', 'Tripoli'], ['Amman', 'Pétra'], ['Jérusalem', 'Tel-Aviv'],
-      ['Ankara', 'Istanbul'], ['Athènes', 'Thessalonique'], ['Lisbonne', 'Porto'],
-      ['Bruxelles', 'Anvers'], ['Amsterdam', 'Rotterdam'], ['Berne', 'Zurich'],
-      ['Vienne', 'Salzbourg'], ['Prague', 'Brno'], ['Varsovie', 'Cracovie'],
-      ['Budapest', 'Debrecen'], ['Stockholm', 'Göteborg'], ['Oslo', 'Bergen'],
-      ['Copenhague', 'Aarhus'], ['Helsinki', 'Tampere'], ['Reykjavik', 'Akureyri'],
-      ['Dublin', 'Cork'], ['Édimbourg', 'Glasgow'], ['Cardiff', 'Swansea'],
-      ['Hong Kong', 'Macao'], ['Singapour', 'Kuala Lumpur'], ['Kuala Lumpur', 'Penang'],
-    ],
-  },
+  marques: T('🏷️ Marques', [
+    'Nike|Adidas', 'Apple|Samsung', 'Coca-Cola|Pepsi', 'Quick|Burger King', 'Netflix|Disney+',
+    'Google|Bing', 'Facebook|Instagram', 'TikTok|Snapchat', 'Amazon|eBay', 'Ikea|Conforama',
+    'Mercedes|BMW', 'Peugeot|Renault', 'Ferrari|Lamborghini', 'Rolex|Swatch', 'Lego|Playmobil',
+    'Nutella|Kinder', 'Haribo|Carambar', 'Zara|H&M', 'Louis Vuitton|Gucci', 'Évian|Cristaline',
+  ], [
+    'Puma|Reebok', 'Vans|Converse', 'Gucci|Prada', 'Chanel|Dior', 'Nivea|Dove',
+    'Audi|Volkswagen', 'Tesla|Porsche', 'Toyota|Honda', 'Uber|Bolt', 'Deliveroo|Uber Eats',
+    'WhatsApp|Messenger', 'YouTube|Twitch', 'Twitter|Threads', 'Lidl|Aldi', 'Carrefour|Delhaize',
+    'Kinder Bueno|Twix', 'Kit Kat|Twix', 'Mars|Snickers', 'M&M\'s|Smarties', 'Oreo|Prince',
+  ]),
+
+  vetements: T('👕 Vêtements & mode', [
+    'T-shirt|Chemise', 'Pantalon|Jean', 'Short|Bermuda', 'Pull|Sweat', 'Veste|Manteau',
+    'Robe|Jupe', 'Basket|Chaussure', 'Botte|Sandale', 'Casquette|Bonnet', 'Écharpe|Cravate',
+    'Chaussette|Collant', 'Pyjama|Peignoir', 'Maillot de bain|Bikini', 'Lunettes|Lunettes de soleil', 'Sac à dos|Sac à main',
+    'Bague|Collier', 'Montre|Bracelet', 'Ceinture|Bretelles', 'Gants|Moufles', 'Costume|Smoking',
+  ], [
+    'Sweat|Hoodie', 'Doudoune|Parka', 'Blouson|Veste', 'Polo|T-shirt', 'Débardeur|Marcel',
+    'Jogging|Legging', 'Chino|Jean', 'Mocassin|Derby', 'Escarpin|Talon', 'Tongs|Claquettes',
+    'Bob|Casquette', 'Béret|Bonnet', 'Foulard|Écharpe', 'Nœud papillon|Cravate', 'Boucles d\'oreilles|Piercing',
+    'Gilet|Cardigan', 'Kimono|Peignoir', 'Combinaison|Salopette', 'Mini-jupe|Jupe crayon', 'Sneakers|Baskets montantes',
+  ]),
+
+  corps: T('🧍 Corps & santé', [
+    'Main|Pied', 'Bras|Jambe', 'Œil|Oreille', 'Nez|Bouche', 'Cœur|Poumon',
+    'Dent|Langue', 'Cheveu|Barbe', 'Genou|Coude', 'Doigt|Orteil', 'Cerveau|Crâne',
+    'Rhume|Grippe', 'Médicament|Vaccin', 'Pansement|Plâtre', 'Fièvre|Toux', 'Sang|Larme',
+  ], [
+    'Poignet|Cheville', 'Épaule|Hanche', 'Mollet|Cuisse', 'Ongle|Griffe', 'Sourcil|Cil',
+    'Foie|Rein', 'Estomac|Intestin', 'Veine|Artère', 'Muscle|Tendon', 'Os|Cartilage',
+    'Migraine|Mal de tête', 'Angine|Rhume', 'Allergie|Asthme', 'Entorse|Fracture', 'Bleu|Bosse',
+  ]),
+
+  fetes: T('🎉 Fêtes & loisirs', [
+    'Noël|Nouvel An', 'Anniversaire|Mariage', 'Halloween|Carnaval', 'Pâques|Noël', 'Saint-Valentin|Fête des mères',
+    'Cadeau|Surprise', 'Gâteau|Bougie', 'Ballon|Confettis', 'Feu d\'artifice|Pétard', 'Sapin|Guirlande',
+    'Père Noël|Lapin de Pâques', 'Karaoké|Discothèque', 'Pique-nique|Barbecue', 'Camping|Randonnée', 'Jeu de société|Jeu de cartes',
+    'Échecs|Dames', 'Monopoly|Cluedo', 'Uno|Dobble', 'Puzzle|Rubik\'s Cube', 'Cinéma|Bowling',
+  ], [
+    'Mariage|Fiançailles', 'Baptême|Communion', 'Enterrement de vie de garçon|Mariage', 'Réveillon|Nouvel An', 'Épiphanie|Chandeleur',
+    'Galette des rois|Brioche', 'Bûche|Gâteau', 'Lampion|Lanterne', 'Déguisement|Costume', 'Masque|Maquillage',
+    'Poker|Blackjack', 'Belote|Tarot', 'Loup-garou|Mafia', 'Scrabble|Boggle', 'Dixit|Codenames',
+    'Escape game|Laser game', 'Paintball|Laser game', 'Bowling|Billard', 'Kermesse|Brocante', 'Fête de la musique|Festival',
+  ]),
+
+  ecole: T('🏫 École & travail', [
+    'Professeur|Élève', 'Cahier|Classeur', 'Stylo|Feutre', 'Règle|Équerre', 'Cartable|Sac de sport',
+    'Récréation|Cantine', 'Examen|Interro', 'Maths|Physique', 'Histoire|Géographie', 'Anglais|Espagnol',
+    'Bureau|Open space', 'Réunion|Pause café', 'Patron|Collègue', 'Stage|Alternance', 'Salaire|Prime',
+  ], [
+    'Bac|Brevet', 'Licence|Master', 'Partiel|Examen', 'Colle|Retenue', 'Devoir|Exposé',
+    'Compas|Rapporteur', 'Surligneur|Fluo', 'Tableau blanc|Tableau noir', 'CPE|Surveillant', 'Proviseur|Principal',
+    'CDD|CDI', 'Télétravail|Bureau', 'Visio|Réunion', 'Démission|Licenciement', 'Entretien|Candidature',
+  ]),
+
+  tech: T('📱 Tech & Internet', [
+    'Téléphone|Tablette', 'Ordinateur|Console', 'Clavier|Souris', 'Écran|Projecteur', 'Wi-Fi|Bluetooth',
+    'Email|SMS', 'Selfie|Photo', 'Like|Partage', 'Story|Réel', 'Hashtag|Mention',
+    'iPhone|Android', 'Windows|Mac', 'Google|ChatGPT', 'YouTube|TikTok', 'Instagram|Snapchat',
+    'Imprimante|Scanner', 'Casque|Écouteurs', 'Clé USB|Carte SD', 'Batterie|Chargeur', 'Appli|Site web',
+  ], [
+    'Story|Statut', 'Réel|TikTok', 'Abonné|Ami', 'DM|Commentaire', 'Mème|GIF',
+    'Emoji|Sticker', 'Wi-Fi|4G', '4G|5G', 'AirPods|Écouteurs', 'Laptop|Ordinateur fixe',
+    'Mot de passe|Code PIN', 'Virus|Bug', 'Mise à jour|Redémarrage', 'Cloud|Disque dur', 'Streaming|Téléchargement',
+    'Influenceur|Streamer', 'Podcast|Live', 'Twitch|Kick', 'Discord|WhatsApp', 'Netflix|Prime Video',
+  ]),
+
+  belgique: T('🇧🇪 Belgique', [
+    'Frites|Gaufre', 'Bruxelles|Anvers', 'Liège|Namur', 'Gand|Bruges', 'Tintin|Spirou',
+    'Manneken-Pis|Atomium', 'Chocolat belge|Praline', 'Bière belge|Trappiste', 'Stromae|Damso', 'Diables rouges|Red Flames',
+    'Flandre|Wallonie', 'Mer du Nord|Ardennes', 'Speculoos|Pain d\'épices', 'Côte belge|Ostende', 'Roi Philippe|Roi Baudouin',
+  ], [
+    'Gaufre de Liège|Gaufre de Bruxelles', 'Mitraillette|Américain', 'Sauce andalouse|Sauce samouraï', 'Fricadelle|Boulet', 'Boulets liégeois|Carbonnade',
+    'Chimay|Orval', 'Leffe|Grimbergen', 'Jupiler|Maes', 'Stella|Jupiler', 'Kriek|Gueuze',
+    'Tintin|Les Schtroumpfs', 'Lucky Luke|Gaston Lagaffe', 'Spa|Durbuy', 'Mons|Charleroi', 'Delhaize|Colruyt',
+    'Kevin De Bruyne|Eden Hazard', 'Romelu Lukaku|Thibaut Courtois', 'Septante|Nonante', 'Friterie|Snack', 'Pain à la grecque|Cramique',
+  ]),
+
+  histoire: T('🏛️ Histoire & mythologie', [
+    'Roi|Empereur', 'Chevalier|Samouraï', 'Pirate|Viking', 'Pharaon|Sultan', 'Château|Pyramide',
+    'Napoléon|César', 'Zeus|Poséidon', 'Hercule|Achille', 'Dragon|Licorne', 'Sorcier|Magicien',
+    'Momie|Zombie', 'Vampire|Loup-garou', 'Fantôme|Esprit', 'Ange|Démon', 'Sirène|Nymphe',
+  ], [
+    'Viking|Barbare', 'Gladiateur|Légionnaire', 'Mousquetaire|Chevalier', 'Ninja|Samouraï', 'Pirate|Corsaire',
+    'Zeus|Jupiter', 'Arès|Mars', 'Hadès|Poséidon', 'Odin|Thor', 'Méduse|Gorgone',
+    'Minotaure|Centaure', 'Cyclope|Géant', 'Elfe|Fée', 'Gobelin|Troll', 'Phénix|Griffon',
+  ]),
+
+  nature: T('🌳 Nature & météo', [
+    'Soleil|Lune', 'Pluie|Neige', 'Orage|Tempête', 'Arbre|Buisson', 'Fleur|Plante',
+    'Rose|Tulipe', 'Été|Hiver', 'Printemps|Automne', 'Nuage|Brouillard', 'Arc-en-ciel|Aurore boréale',
+    'Étoile|Planète', 'Mer|Lac', 'Sable|Galet', 'Feu|Lave', 'Vent|Tornade',
+  ], [
+    'Grêle|Grésil', 'Bruine|Averse', 'Ouragan|Typhon', 'Tornade|Cyclone', 'Brume|Brouillard',
+    'Chêne|Hêtre', 'Sapin|Pin', 'Palmier|Cocotier', 'Marguerite|Pâquerette', 'Coquelicot|Tulipe',
+    'Lune|Satellite', 'Comète|Météorite', 'Galaxie|Nébuleuse', 'Séisme|Tsunami', 'Rosée|Givre',
+  ]),
+
+  actions: T('🏃 Actions & émotions', [
+    'Courir|Marcher', 'Manger|Boire', 'Dormir|Rêver', 'Chanter|Danser', 'Lire|Écrire',
+    'Rire|Sourire', 'Pleurer|Crier', 'Nager|Plonger', 'Sauter|Grimper', 'Cuisiner|Pâtisser',
+    'Conduire|Pédaler', 'Acheter|Vendre', 'Gagner|Perdre', 'Parler|Chuchoter', 'Dessiner|Peindre',
+    'Joie|Tristesse', 'Peur|Colère', 'Amour|Amitié', 'Fatigue|Ennui', 'Surprise|Stress',
+  ], [
+    'Courir|Sprinter', 'Marcher|Flâner', 'Dormir|Somnoler', 'Crier|Hurler', 'Bouder|Râler',
+    'Mentir|Tricher', 'Voler|Emprunter', 'Applaudir|Siffler', 'Embrasser|Câliner', 'Rougir|Transpirer',
+    'Bâiller|S\'étirer', 'Éternuer|Tousser', 'Ronfler|Bâiller', 'Jalousie|Envie', 'Honte|Gêne',
+    'Fierté|Orgueil', 'Nostalgie|Mélancolie', 'Angoisse|Panique', 'Excitation|Impatience', 'Timidité|Gêne',
+  ]),
+
+  celebrites: T('⭐ Célébrités', [
+    'Zidane|Mbappé', 'Messi|Ronaldo', 'Neymar|Mbappé', 'Michael Jordan|LeBron James', 'Usain Bolt|Teddy Riner',
+    'Elon Musk|Jeff Bezos', 'Bill Gates|Steve Jobs', 'Einstein|Newton', 'Mozart|Beethoven', 'Picasso|Van Gogh',
+    'Leonardo DiCaprio|Brad Pitt', 'Omar Sy|Jamel Debbouze', 'Kev Adams|Norman', 'Squeezie|Cyprien', 'Griezmann|Benzema',
+  ], [
+    'Squeezie|Inoxtag', 'Michou|Inoxtag', 'Amixem|Squeezie', 'Tibo InShape|Bigflo et Oli', 'Gotaga|Kameto',
+    'Nadal|Federer', 'Djokovic|Nadal', 'Benzema|Giroud', 'Pogba|Kanté', 'Ronaldinho|Ronaldo',
+    'Rihanna|Shakira', 'Kim Kardashian|Paris Hilton', 'Dwayne Johnson|Vin Diesel', 'Tom Cruise|Tom Hanks', 'Johnny Depp|Orlando Bloom',
+  ]),
 };
 
-// Remplir 'random' avec toutes les paires des autres thèmes
-THEMES.random.pairs = Object.values(THEMES)
-  .filter(t => t !== THEMES.random)
-  .flatMap(t => t.pairs);
+// ───────── Sélection ─────────
+export const LEVELS = ['facile', 'difficile'];
 
-// ───────── API publique ─────────
+function pairsOf(themeId, level) {
+  const t = THEMES[themeId];
+  if (!t) return [];
+  const lv = level === 'mixte' ? LEVELS : [level];
+  return lv.flatMap((l) => t[l].map((s) => s.split('|')));
+}
 
 export function listThemes() {
   return Object.entries(THEMES).map(([id, t]) => ({
     id,
     label: t.label,
-    pairCount: t.pairs.length,
+    count: t.facile.length + t.difficile.length,
+    pairCount: t.facile.length + t.difficile.length,
+    facile: t.facile.length,
+    difficile: t.difficile.length,
   }));
-}
-
-// Store dynamique (modifiable via /admin)
-import { imposterStore } from '../../admin/stores.js';
-
-// Init du store avec les paires par défaut au chargement.
-// Si un fichier JSON existe, le store l'utilisera à la place.
-imposterStore.init(
-  Object.entries(THEMES)
-    .filter(([id]) => id !== 'random')
-    .flatMap(([themeId, t]) =>
-      t.pairs.map((pair, idx) => ({
-        id: `${themeId}_${idx}`,
-        themeId,
-        civil: pair[0],
-        imposter: pair[1],
-      }))
-    )
-);
-
-export function pickRandomPair(themeId = 'random') {
-  const pool = imposterStore.getByTheme(themeId);
-  if (pool.length === 0) {
-    const theme = THEMES[themeId] || THEMES.random;
-    const pair = theme.pairs[Math.floor(Math.random() * theme.pairs.length)];
-    return pair;
-  }
-  const p = pool[Math.floor(Math.random() * pool.length)];
-  return [p.civil, p.imposter];
 }
 
 export function isValidTheme(themeId) {
   return themeId in THEMES;
+}
+
+// Store dynamique (modifiable via /admin) : on y charge la banque par défaut
+imposterStore.init(
+  Object.keys(THEMES).flatMap((themeId) => LEVELS.flatMap((level) =>
+    pairsOf(themeId, level).map(([civil, imposter], idx) => ({ id: `${themeId}_${level}_${idx}`, themeId, level, civil, imposter })),
+  )),
+  'v2-2026-10',
+);
+
+/**
+ * Tire une paire parmi les thèmes choisis ([] = tous) et le niveau demandé,
+ * en évitant les paires déjà jouées récemment (`recent` : ids). Le côté civil/imposteur est tiré au hasard.
+ */
+export function pickPair({ themes = [], level = 'mixte', recent = [] } = {}) {
+  let pool = imposterStore.getAll().filter((p) => (themes.length === 0 || themes.includes(p.themeId)));
+  if (level !== 'mixte') pool = pool.filter((p) => !p.level || p.level === level);
+  if (pool.length === 0) pool = imposterStore.getAll();
+  const fresh = pool.filter((p) => !recent.includes(p.id));
+  const from = fresh.length ? fresh : pool;
+  const p = from[Math.floor(Math.random() * from.length)];
+  const swap = Math.random() < 0.5;
+  return { id: p.id, themeId: p.themeId, civil: swap ? p.imposter : p.civil, imposter: swap ? p.civil : p.imposter };
+}
+
+/** Compatibilité (ancienne API) : renvoie [civil, imposteur]. */
+export function pickRandomPair(themeId = 'random') {
+  const p = pickPair({ themes: themeId && themeId !== 'random' ? [themeId] : [] });
+  return [p.civil, p.imposter];
 }

@@ -49,7 +49,7 @@ const HISTOIRE = [
   { q: 'Quel personnage est lié à la phrase "L\'État c\'est moi" ?', a: ['Louis XIV', 'Napoléon', 'Charles V', 'François Ier'], c: 0, d: 2 },
   { q: 'Quel pays construit la Grande Muraille ?', a: ['Mongolie', 'Inde', 'Chine', 'Japon'], c: 2, d: 2 },
   { q: 'Quel pays était dirigé par Mussolini ?', a: ['Allemagne', 'Italie', 'Espagne', 'Portugal'], c: 1, d: 2 },
-  { q: 'Quelle bataille marque le début de la WWII en France (1940) ?', a: ['Bataille de France', 'Bataille d\'Angleterre', 'Bataille de Verdun', 'Bataille de Stalingrad'], c: 0, d: 2 },
+  { q: 'Quel nom porte l\'invasion de la France par l\'Allemagne en mai-juin 1940 ?', a: ['La bataille de France', 'La bataille d\'Angleterre', 'La bataille de Verdun', 'La bataille de Stalingrad'], c: 0, d: 2 },
   { q: 'Quel siècle est appelé "siècle des Lumières" ?', a: ['16e', '17e', '18e', '19e'], c: 2, d: 2 },
 
   // — difficile —
@@ -72,9 +72,9 @@ const HISTOIRE = [
   { q: 'Quel pape a lancé la première croisade en 1095 ?', a: ['Urbain II', 'Grégoire VII', 'Innocent III', 'Clément V'], c: 0, d: 4 },
   { q: 'En quelle année est signée la Magna Carta ?', a: ['1066', '1215', '1314', '1453'], c: 1, d: 4 },
   { q: 'Qui était le dernier tsar de Russie ?', a: ['Pierre III', 'Alexandre II', 'Nicolas II', 'Paul Ier'], c: 2, d: 4 },
-  { q: 'Quelle bataille marque la défaite des Francs face aux Maures (732) ?', a: ['Bataille de Tours-Poitiers', 'Bataille de Roncevaux', 'Bataille de Bouvines', 'Bataille de Crécy'], c: 0, d: 4 },
-  { q: 'Quel est le seul empereur romain à avoir abdiqué volontairement ?', a: ['Néron', 'Dioclétien', 'Hadrien', 'Marc Aurèle'], c: 1, d: 4 },
-  { q: 'Quel président mexicain a fondé la République en 1858 ?', a: ['Juarez', 'Madero', 'Cardenas', 'Calles'], c: 0, d: 4 },
+  { q: 'Quelle bataille de 732 marque la victoire des Francs de Charles Martel sur les Omeyyades ?', a: ['Bataille de Poitiers', 'Bataille de Roncevaux', 'Bataille de Bouvines', 'Bataille de Crécy'], c: 0, d: 3 },
+  { q: 'Quel empereur romain a été le premier à abdiquer volontairement, en 305 ?', a: ['Dioclétien', 'Néron', 'Hadrien', 'Marc Aurèle'], c: 0, d: 4 },
+  { q: 'Quel président mexicain a mené la Réforme et résisté à l\'intervention française ?', a: ['Benito Juárez', 'Francisco Madero', 'Lázaro Cárdenas', 'Plutarco Calles'], c: 0, d: 4 },
   { q: 'En quelle année tombe Constantinople ?', a: ['1204', '1453', '1492', '1517'], c: 1, d: 4 },
   { q: 'Quel personnage a fondé l\'Académie d\'Athènes ?', a: ['Aristote', 'Platon', 'Socrate', 'Périclès'], c: 1, d: 4 },
 ];
@@ -85,8 +85,8 @@ const HISTOIRE = [
 const GEO = [
   // — facile —
   { q: 'Quelle est la capitale du Japon ?', a: ['Kyoto', 'Osaka', 'Tokyo', 'Nagoya'], c: 2, d: 1 },
-  { q: 'Quel est le plus long fleuve du monde ?', a: ['Amazone', 'Nil', 'Yangtsé', 'Mississippi'], c: 1, d: 1 },
-  { q: 'Combien y a-t-il de continents ?', a: ['5', '6', '7', '8'], c: 2, d: 1 },
+  { q: 'Quel fleuve est traditionnellement considéré comme le plus long du monde ?', a: ['Le Nil', 'Le Congo', 'Le Yangtsé', 'Le Mississippi'], c: 0, d: 1 },
+  { q: 'Selon le modèle anglo-saxon le plus courant, combien y a-t-il de continents ?', a: ['7', '5', '6', '8'], c: 0, d: 2 },
   { q: 'Quel pays a la forme d\'une botte ?', a: ['Espagne', 'Italie', 'Grèce', 'Portugal'], c: 1, d: 1 },
   { q: 'Quelle mer sépare l\'Europe de l\'Afrique ?', a: ['Mer Noire', 'Mer Méditerranée', 'Mer Rouge', 'Mer Caspienne'], c: 1, d: 1 },
   { q: 'Quelle est la plus haute montagne du monde ?', a: ['K2', 'Everest', 'Mont Blanc', 'Kilimandjaro'], c: 1, d: 1 },
@@ -104,7 +104,7 @@ const GEO = [
   { q: 'Quelle est la capitale de l\'Australie ?', a: ['Sydney', 'Melbourne', 'Canberra', 'Perth'], c: 2, d: 2 },
   { q: 'Quel est le plus grand désert du monde ?', a: ['Sahara', 'Gobi', 'Antarctique', 'Kalahari'], c: 2, d: 2 },
   { q: 'Quel est le pays le plus peuplé du monde en 2024 ?', a: ['Chine', 'Inde', 'États-Unis', 'Indonésie'], c: 1, d: 2 },
-  { q: 'Quel pays est traversé par l\'équateur en Amérique du Sud ?', a: ['Pérou', 'Brésil', 'Colombie', 'Équateur'], c: 3, d: 2 },
+  { q: 'Quel pays d\'Amérique du Sud tire son nom de la ligne de l\'équateur ?', a: ['Équateur', 'Pérou', 'Brésil', 'Colombie'], c: 0, d: 1 },
   { q: 'Quel pays a pour capitale Reykjavik ?', a: ['Norvège', 'Suède', 'Islande', 'Finlande'], c: 2, d: 2 },
   { q: 'Quel est le plus petit pays du monde ?', a: ['Monaco', 'Vatican', 'Saint-Marin', 'Liechtenstein'], c: 1, d: 2 },
   { q: 'Quelle est la capitale du Canada ?', a: ['Toronto', 'Ottawa', 'Montréal', 'Vancouver'], c: 1, d: 2 },
@@ -135,7 +135,7 @@ const GEO = [
   { q: 'Quel pays a pour capitale Nairobi ?', a: ['Tanzanie', 'Kenya', 'Ouganda', 'Éthiopie'], c: 1, d: 3 },
   { q: 'Quelle est la profondeur max de la fosse des Mariannes (km) ?', a: ['8', '9', '11', '13'], c: 2, d: 3 },
   { q: 'Quel pays a pour capitale Manille ?', a: ['Indonésie', 'Philippines', 'Vietnam', 'Malaisie'], c: 1, d: 3 },
-  { q: 'Quel est le pays le plus enclavé d\'Europe ?', a: ['Suisse', 'Autriche', 'Liechtenstein', 'Saint-Marin'], c: 2, d: 3 },
+  { q: 'Quel pays européen est « doublement enclavé » (entouré de pays sans accès à la mer) ?', a: ['Liechtenstein', 'Suisse', 'Autriche', 'Saint-Marin'], c: 0, d: 4 },
   { q: 'Quel pays a 4 langues officielles ?', a: ['Belgique', 'Suisse', 'Canada', 'Inde'], c: 1, d: 3 },
 
   // — extrême —
@@ -143,7 +143,7 @@ const GEO = [
   { q: 'Quel est le seul pays dont le nom commence par "Q" ?', a: ['Qatar', 'Quito', 'Quetta', 'Qing'], c: 0, d: 4 },
   { q: 'Quelle est la capitale du Bhoutan ?', a: ['Thimphou', 'Katmandou', 'Dacca', 'Yangon'], c: 0, d: 4 },
   { q: 'Quel est le pays le moins peuplé du monde ?', a: ['Vatican', 'Tuvalu', 'Nauru', 'Saint-Marin'], c: 0, d: 4 },
-  { q: 'Quel pays africain a deux capitales ?', a: ['Bolivie', 'Pays-Bas', 'Eswatini', 'Afrique du Sud'], c: 3, d: 4 },
+  { q: 'Quel pays africain a trois capitales ?', a: ['Bolivie', 'Pays-Bas', 'Eswatini', 'Afrique du Sud'], c: 3, d: 4 },
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -157,30 +157,30 @@ const SPORT = [
   { q: 'Quelle est la durée d\'un match de foot pro ?', a: ['80 min', '90 min', '100 min', '120 min'], c: 1, d: 1 },
   { q: 'Quel pays organise les JO 2024 ?', a: ['Japon', 'France', 'USA', 'Australie'], c: 1, d: 1 },
   { q: 'Sur quoi joue-t-on au curling ?', a: ['Sable', 'Glace', 'Herbe', 'Béton'], c: 1, d: 1 },
-  { q: 'Combien d\'arbitres sur un terrain de foot ?', a: ['1', '3', '4', '5'], c: 2, d: 1 },
+  { q: 'Combien d\'arbitres assistants (juges de touche) y a-t-il dans un match de football ?', a: ['2', '1', '3', '4'], c: 0, d: 1 },
   { q: 'Quelle couleur du carton signifie expulsion ?', a: ['Jaune', 'Rouge', 'Noir', 'Bleu'], c: 1, d: 1 },
   { q: 'Combien de mi-temps dans un match de foot ?', a: ['1', '2', '3', '4'], c: 1, d: 1 },
   { q: 'Combien de sets pour gagner un match de tennis Grand Chelem (homme) ?', a: ['2', '3', '4', '5'], c: 1, d: 1 },
 
   // — moyen —
   { q: 'Combien de fois Roger Federer a gagné Wimbledon ?', a: ['6', '7', '8', '9'], c: 2, d: 2 },
-  { q: 'Dans quel sport utilise-t-on un "birdie" ?', a: ['Tennis', 'Golf', 'Badminton', 'Bowling'], c: 1, d: 2 },
+  { q: 'Dans quel sport réussit-on un « birdie » en jouant un coup sous le par ?', a: ['Le golf', 'Le tennis', 'Le squash', 'Le bowling'], c: 0, d: 2 },
   { q: 'Quel sportif est surnommé "le Roi James" ?', a: ['Michael Jordan', 'LeBron James', 'Kobe Bryant', 'Stephen Curry'], c: 1, d: 2 },
   { q: 'En quelle année les premiers JO modernes ?', a: ['1896', '1900', '1924', '1936'], c: 0, d: 2 },
   { q: 'Quelle équipe nationale est surnommée "La Roja" ?', a: ['Italie', 'Espagne', 'Belgique', 'Argentine'], c: 1, d: 2 },
   { q: 'Quel est le sport national japonais ?', a: ['Karaté', 'Judo', 'Sumo', 'Kendo'], c: 2, d: 2 },
   { q: 'Combien de tours dans le GP de Monaco ?', a: ['58', '78', '88', '100'], c: 1, d: 2 },
-  { q: 'Quel pays a gagné le plus d\'Euros de foot ?', a: ['France', 'Allemagne', 'Espagne', 'Italie'], c: 1, d: 2 },
-  { q: 'Combien de Ligue des Champions a gagné le Real Madrid ?', a: ['11', '13', '14', '15'], c: 2, d: 2 },
+  { q: 'Quel pays a gagné le plus de championnats d\'Europe de football (Euro) ?', a: ['Espagne', 'Allemagne', 'France', 'Italie'], c: 0, d: 3 },
+  { q: 'Combien de Ligue des champions le Real Madrid avait-il gagnées après sa victoire de 2024 ?', a: ['11', '13', '14', '15'], c: 3, d: 3 },
   { q: 'Quel sport pratique Tony Parker ?', a: ['Foot', 'Tennis', 'Basket', 'Hand'], c: 2, d: 2 },
   { q: 'Combien de joueurs dans une équipe de hand ?', a: ['5', '6', '7', '8'], c: 2, d: 2 },
-  { q: 'Quel coureur français a gagné le plus de Tours ?', a: ['Hinault', 'Anquetil', 'Bobet', 'Fignon'], c: 0, d: 2 },
+  { q: 'Quel coureur français a gagné 5 fois le Tour de France dans les années 1978-1985 ?', a: ['Bernard Hinault', 'Bernard Thévenet', 'Louison Bobet', 'Laurent Fignon'], c: 0, d: 2 },
   { q: 'Combien de minutes dure un quart-temps NBA ?', a: ['10', '12', '15', '20'], c: 1, d: 2 },
   { q: 'Quel club anglais joue à Old Trafford ?', a: ['Liverpool', 'Man United', 'Arsenal', 'Chelsea'], c: 1, d: 2 },
   { q: 'Combien de points pour un strike au bowling ?', a: ['10 + bonus', '15', '20', '25'], c: 0, d: 2 },
   { q: 'Quel pilote F1 a 7 titres mondiaux comme Schumacher ?', a: ['Vettel', 'Hamilton', 'Alonso', 'Senna'], c: 1, d: 2 },
   { q: 'Quel sport associe-t-on à Wimbledon ?', a: ['Golf', 'Tennis', 'Cricket', 'Polo'], c: 1, d: 2 },
-  { q: 'Combien de buts dans la finale Coupe du Monde 2022 (temps réglementaire) ?', a: ['3', '4', '5', '6'], c: 2, d: 2 },
+  { q: 'Combien de buts ont été marqués dans le temps réglementaire de la finale de la Coupe du monde 2022 ?', a: ['3', '4', '5', '6'], c: 1, d: 3 },
 
   // — difficile —
   { q: 'Combien de Ballons d\'Or a gagné Lionel Messi (2024) ?', a: ['6', '7', '8', '9'], c: 2, d: 3 },
@@ -191,12 +191,11 @@ const SPORT = [
   { q: 'Combien de Grands Chelems a gagné Rafael Nadal ?', a: ['20', '22', '24', '26'], c: 1, d: 3 },
   { q: 'En quelle année Maradona marque la "main de Dieu" ?', a: ['1982', '1986', '1990', '1994'], c: 1, d: 3 },
   { q: 'Quel club a gagné le plus de Ligue Europa ?', a: ['Séville', 'Inter', 'Juventus', 'Atlético'], c: 0, d: 3 },
-  { q: 'Quel marathonien a couru sous 2h (officiellement) ?', a: ['Bekele', 'Kipchoge', 'Gebrselassie', 'Lemma'], c: 1, d: 3 },
   { q: 'Combien de fois la France a gagné la Coupe du Monde ?', a: ['1', '2', '3', '4'], c: 1, d: 3 },
 
   // — extrême —
   { q: 'Quelle équipe a inventé le tiki-taka ?', a: ['Bayern', 'Real', 'Barcelone', 'Manchester'], c: 2, d: 4 },
-  { q: 'Quel est le plus jeune Ballon d\'Or de l\'histoire ?', a: ['Pelé', 'Ronaldo', 'Owen', 'Yashin'], c: 2, d: 4 },
+  { q: 'Quel est le plus jeune Ballon d\'Or de l\'histoire ?', a: ['Pelé', 'Ronaldo (R9)', 'Michael Owen', 'Lev Yachine'], c: 1, d: 4 },
   { q: 'Combien de fois Phil Mickelson a gagné le Masters ?', a: ['2', '3', '4', '5'], c: 1, d: 4 },
   { q: 'En quelle année est créée la Ligue 1 française ?', a: ['1932', '1945', '1950', '1958'], c: 0, d: 4 },
 ];
@@ -212,7 +211,7 @@ const CINEMA = [
   { q: 'Quel film d\'animation Pixar parle d\'un poisson clown ?', a: ['Némo', 'Wall-E', 'Cars', 'Là-haut'], c: 0, d: 1 },
   { q: 'Quel acteur incarne Jack Sparrow ?', a: ['Tom Hanks', 'Johnny Depp', 'Brad Pitt', 'Will Smith'], c: 1, d: 1 },
   { q: 'Qui joue Hermione dans Harry Potter ?', a: ['Emma Stone', 'Emma Watson', 'Emma Roberts', 'Emma Thompson'], c: 1, d: 1 },
-  { q: 'Quel personnage Disney a un acolyte appelé Olaf ?', a: ['Anna', 'Elsa', 'Mérida', 'Raiponce'], c: 1, d: 1 },
+  { q: 'Dans La Reine des neiges, quel personnage a créé le bonhomme de neige Olaf ?', a: ['Elsa', 'Anna', 'Kristoff', 'Hans'], c: 0, d: 1 },
   { q: 'Quel film parle d\'un jeune sorcier à Poudlard ?', a: ['Le Hobbit', 'Harry Potter', 'Narnia', 'Percy Jackson'], c: 1, d: 1 },
   { q: 'Quel film parle de jouets vivants ?', a: ['Cars', 'Ratatouille', 'Toy Story', 'Là-haut'], c: 2, d: 1 },
   { q: 'Quel super-héros a un costume noir et chasse à Gotham ?', a: ['Superman', 'Spider-Man', 'Batman', 'Hulk'], c: 2, d: 1 },
@@ -234,9 +233,9 @@ const CINEMA = [
   { q: 'Quel film a inspiré "Je suis ton père" ?', a: ['Star Wars V', 'Star Wars IV', 'Indiana Jones', 'Le Roi Lion'], c: 0, d: 2 },
   { q: 'Quel acteur joue Neo dans Matrix ?', a: ['Tom Cruise', 'Keanu Reeves', 'Brad Pitt', 'Will Smith'], c: 1, d: 2 },
   { q: 'Quelle série suit Walter White ?', a: ['Mad Men', 'Breaking Bad', 'Better Call Saul', 'Ozark'], c: 1, d: 2 },
-  { q: 'Quel acteur incarne James Bond le plus longtemps ?', a: ['Connery', 'Moore', 'Brosnan', 'Craig'], c: 1, d: 2 },
-  { q: 'Quelle série suit le braquage de la Casa de Papel ?', a: ['Lupin', 'Casa de Papel', 'Élite', 'Narcos'], c: 1, d: 2 },
-  { q: 'Quel film raconte l\'histoire d\'un boxeur de Philadelphie ?', a: ['Raging Bull', 'Rocky', 'Creed', 'The Fighter'], c: 1, d: 2 },
+  { q: 'Quel acteur a joué James Bond dans 7 films officiels, record de la saga ?', a: ['Roger Moore', 'Sean Connery', 'Pierce Brosnan', 'Daniel Craig'], c: 0, d: 3 },
+  { q: 'Quelle série espagnole suit le braquage de la Fabrique de la monnaie par « le Professeur » ?', a: ['La casa de papel', 'Élite', 'Lupin', 'Narcos'], c: 0, d: 1 },
+  { q: 'Quel film de 1976 raconte l\'histoire d\'un boxeur de Philadelphie joué par Sylvester Stallone ?', a: ['Rocky', 'Raging Bull', 'Million Dollar Baby', 'The Fighter'], c: 0, d: 1 },
   { q: 'Quel film d\'animation 2013 chante "Libérée, délivrée" ?', a: ['Vaiana', 'La Reine des Neiges', 'Raiponce', 'Coco'], c: 1, d: 2 },
   { q: 'Combien de films dans la trilogie du Seigneur des Anneaux ?', a: ['2', '3', '4', '5'], c: 1, d: 2 },
   { q: 'Qui a réalisé Schindler\'s List ?', a: ['Spielberg', 'Coppola', 'Lucas', 'Eastwood'], c: 0, d: 2 },
@@ -251,13 +250,13 @@ const CINEMA = [
   { q: 'Quel film a une scène de douche célèbre (1960) ?', a: ['Vertigo', 'Psychose', 'La Mort aux Trousses', 'Les Oiseaux'], c: 1, d: 3 },
   { q: 'Combien de saisons compte The Office (US) ?', a: ['7', '8', '9', '10'], c: 2, d: 3 },
   { q: 'Quel film a été le 1er à atteindre 1 milliard de $ ?', a: ['Titanic', 'Star Wars', 'Le Roi Lion', 'Avatar'], c: 0, d: 3 },
-  { q: 'Quel personnage français a 4 amis aux noms de fleurs ?', a: ['Astérix', 'Lucky Luke', 'Tintin', 'Spirou'], c: 0, d: 3 },
+  { q: 'Quel héros de BD a pour chien Milou ?', a: ['Tintin', 'Astérix', 'Lucky Luke', 'Spirou'], c: 0, d: 1 },
 
   // — extrême —
   { q: 'Quel acteur joue Anton Chigurh dans No Country for Old Men ?', a: ['Bardem', 'Del Toro', 'Banderas', 'Garcia'], c: 0, d: 4 },
   { q: 'Combien de fois Daniel Day-Lewis a gagné l\'Oscar du meilleur acteur ?', a: ['1', '2', '3', '4'], c: 2, d: 4 },
   { q: 'Quel est le 1er film d\'animation entièrement en CGI ?', a: ['Toy Story', 'Shrek', 'Le Roi Lion', 'Antz'], c: 0, d: 4 },
-  { q: 'Quel réalisateur a signé Mulholland Drive ?', a: ['Lynch', 'Coppola', 'Scorsese', 'Lynch'], c: 0, d: 4 },
+  { q: 'Quel réalisateur a signé « Mulholland Drive » ?', a: ['David Lynch', 'Francis Ford Coppola', 'Martin Scorsese', 'David Cronenberg'], c: 0, d: 4 },
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -285,14 +284,14 @@ const MUSIQUE = [
   { q: 'Combien de membres dans BTS ?', a: ['5', '6', '7', '9'], c: 2, d: 2 },
   { q: 'Quel groupe a chanté "Hotel California" ?', a: ['Eagles', 'Aerosmith', 'Boston', 'Fleetwood Mac'], c: 0, d: 2 },
   { q: 'Qui a chanté "Je l\'aime à mourir" ?', a: ['Aznavour', 'Cabrel', 'Brel', 'Goldman'], c: 1, d: 2 },
-  { q: 'Quel rappeur français a sorti "Mauvais Œil" ?', a: ['Booba', 'Lunatic', 'Kery James', 'IAM'], c: 1, d: 2 },
+  { q: 'Quel duo de rap français a sorti l\'album « Mauvais Œil » en 2000 ?', a: ['Lunatic', 'IAM', 'NTM', 'Les Sages Poètes de la Rue'], c: 0, d: 3 },
   { q: 'Quelle est la chanson la plus écoutée sur Spotify ?', a: ['Despacito', 'Shape of You', 'Blinding Lights', 'Bad Guy'], c: 2, d: 2 },
   { q: 'Quel rappeur français se fait appeler "Le Duc de Boulogne" ?', a: ['Booba', 'Kaaris', 'Niska', 'PNL'], c: 0, d: 2 },
   { q: 'Quel single est le plus vendu de tous les temps ?', a: ['Imagine', 'White Christmas', 'Candle in the Wind', 'Bohemian Rhapsody'], c: 1, d: 2 },
   { q: 'Quel groupe a sorti "Parachutes" en 2000 ?', a: ['Coldplay', 'Radiohead', 'Muse', 'Travis'], c: 0, d: 2 },
   { q: 'Quel rappeur US a sorti "Lose Yourself" ?', a: ['Eminem', '50 Cent', 'Jay-Z', 'Snoop Dogg'], c: 0, d: 2 },
   { q: 'Quelle chanteuse est surnommée "la Reine du Rock\'n\'Roll" ?', a: ['Aretha Franklin', 'Tina Turner', 'Madonna', 'Whitney Houston'], c: 1, d: 2 },
-  { q: 'Quel groupe français a chanté "Dragostea Din Tei" ?', a: ['O-Zone', 'Daft Punk', 'Phoenix', 'Justice'], c: 0, d: 2 },
+  { q: 'De quel pays vient le groupe O-Zone, auteur de « Dragostea Din Tei » ?', a: ['Moldavie', 'Roumanie', 'Bulgarie', 'Ukraine'], c: 0, d: 3 },
   { q: 'Quel chanteur français a chanté "Comme d\'habitude" (My Way) ?', a: ['Aznavour', 'Sardou', 'Reggiani', 'Cloclo'], c: 3, d: 2 },
 
   // — difficile —
@@ -301,7 +300,7 @@ const MUSIQUE = [
   { q: 'Quel rappeur a sorti "DAMN." en 2017 ?', a: ['Drake', 'Kendrick Lamar', 'Travis Scott', 'J. Cole'], c: 1, d: 3 },
   { q: 'En quelle année David Bowie est-il décédé ?', a: ['2014', '2015', '2016', '2017'], c: 2, d: 3 },
   { q: 'Quel groupe français a chanté "Champs-Élysées" ?', a: ['Joe Dassin', 'Téléphone', 'Indochine', 'Les Forbans'], c: 0, d: 3 },
-  { q: 'Quel groupe a fondé Roger Waters ?', a: ['Pink Floyd', 'Genesis', 'Yes', 'King Crimson'], c: 0, d: 3 },
+  { q: 'Quel groupe Roger Waters a-t-il cofondé ?', a: ['Pink Floyd', 'Genesis', 'Yes', 'King Crimson'], c: 0, d: 3 },
   { q: 'Quel chanteur est mort dans un crash en 1959 ("the day the music died") ?', a: ['Elvis', 'Buddy Holly', 'James Dean', 'Sinatra'], c: 1, d: 3 },
 
   // — extrême —
@@ -340,10 +339,10 @@ const SCIENCES = [
   { q: 'Quel groupe sanguin est donneur universel ?', a: ['A+', 'AB+', 'O-', 'B-'], c: 2, d: 2 },
   { q: 'Quel astronaute a marché en premier sur la Lune ?', a: ['Aldrin', 'Armstrong', 'Collins', 'Glenn'], c: 1, d: 2 },
   { q: 'Quel est le métal le plus conducteur ?', a: ['Or', 'Argent', 'Cuivre', 'Aluminium'], c: 1, d: 2 },
-  { q: 'Combien de planètes sont des géantes gazeuses ?', a: ['2', '3', '4', '5'], c: 2, d: 2 },
+  { q: 'Combien de planètes géantes (gazeuses et glacées) compte le système solaire ?', a: ['4', '2', '3', '5'], c: 0, d: 2 },
   { q: 'Quelle vitamine est produite par le soleil ?', a: ['A', 'B', 'C', 'D'], c: 3, d: 2 },
-  { q: 'Quel est l\'organe le plus dur du corps humain ?', a: ['Os', 'Émail dentaire', 'Crâne', 'Tibia'], c: 1, d: 2 },
-  { q: 'Quelle planète a la durée de jour la plus longue ?', a: ['Mercure', 'Vénus', 'Mars', 'Jupiter'], c: 1, d: 2 },
+  { q: 'Quelle est la substance la plus dure du corps humain ?', a: ['L\'émail dentaire', 'L\'os', 'Le cartilage', 'L\'ongle'], c: 0, d: 2 },
+  { q: 'Quelle planète met le plus de temps à faire un tour sur elle-même ?', a: ['Vénus', 'Mercure', 'Mars', 'Jupiter'], c: 0, d: 3 },
   { q: 'Combien de cœurs a un poulpe ?', a: ['1', '2', '3', '4'], c: 2, d: 2 },
   { q: 'Quel est le métal le plus utilisé au monde ?', a: ['Aluminium', 'Fer', 'Cuivre', 'Or'], c: 1, d: 2 },
 
@@ -351,7 +350,7 @@ const SCIENCES = [
   { q: 'Quelle est la formule chimique de l\'eau oxygénée ?', a: ['H2O', 'H2O2', 'HO', 'H3O'], c: 1, d: 3 },
   { q: 'Combien de muscles dans le corps humain (env.) ?', a: ['400', '500', '600', '700'], c: 2, d: 3 },
   { q: 'Quelle planète a le plus de lunes (2024) ?', a: ['Jupiter', 'Saturne', 'Uranus', 'Neptune'], c: 1, d: 3 },
-  { q: 'Quelle particule a découvert Higgs ?', a: ['Quark', 'Boson', 'Neutrino', 'Photon'], c: 1, d: 3 },
+  { q: 'Quelle particule a été prédite par Peter Higgs et observée au CERN en 2012 ?', a: ['Le boson de Higgs', 'Le quark', 'Le neutrino', 'Le photon'], c: 0, d: 2 },
   { q: 'Quel est le pH d\'une solution neutre ?', a: ['0', '7', '10', '14'], c: 1, d: 3 },
   { q: 'Quelle est l\'unité du courant électrique ?', a: ['Volt', 'Watt', 'Ampère', 'Joule'], c: 2, d: 3 },
   { q: 'Quel scientifique a fondé la psychanalyse ?', a: ['Freud', 'Jung', 'Lacan', 'Pavlov'], c: 0, d: 3 },
@@ -393,7 +392,7 @@ const CULTURE = [
   { q: 'Combien de couleurs dans l\'arc-en-ciel ?', a: ['5', '6', '7', '8'], c: 2, d: 2 },
   { q: 'Quelle religion suit Bouddha ?', a: ['Hindouisme', 'Bouddhisme', 'Islam', 'Sikhisme'], c: 1, d: 2 },
   { q: 'Quel auteur a écrit "Roméo et Juliette" ?', a: ['Shakespeare', 'Molière', 'Goethe', 'Cervantes'], c: 0, d: 2 },
-  { q: 'Quelle langue est la plus parlée au monde ?', a: ['Anglais', 'Mandarin', 'Espagnol', 'Hindi'], c: 1, d: 2 },
+  { q: 'Quelle langue compte le plus de locuteurs natifs au monde ?', a: ['Le mandarin', 'L\'anglais', 'L\'espagnol', 'L\'hindi'], c: 0, d: 2 },
   { q: 'Combien de pieds dans un mètre ?', a: ['~3,28', '~2,1', '~1,5', '~5'], c: 0, d: 2 },
 
   // — difficile —
@@ -405,7 +404,7 @@ const CULTURE = [
   { q: 'Quel poète a écrit "Les Fleurs du mal" ?', a: ['Rimbaud', 'Baudelaire', 'Verlaine', 'Apollinaire'], c: 1, d: 3 },
 
   // — extrême —
-  { q: 'Combien de mots a la langue française (env.) ?', a: ['60 000', '100 000', '200 000', '500 000'], c: 1, d: 4 },
+  { q: 'Combien de mots contient environ le dictionnaire Le Petit Robert ?', a: ['60 000', '30 000', '150 000', '300 000'], c: 0, d: 4 },
   { q: 'Quel est le mot le plus long du français officiel ?', a: ['anticonstitutionnellement', 'intergouvernementalisations', 'hippopotomonstrosesquippedaliophobie', 'pneumonoultramicroscopicsilicovolcanoconiose'], c: 1, d: 4 },
 ];
 
@@ -420,38 +419,34 @@ const INTERNET_GAMING = [
   { q: 'Dans Minecraft, quel monstre explose ?', a: ['Zombie', 'Squelette', 'Creeper', 'Enderman'], c: 2, d: 1 },
   { q: 'Quelle entreprise possède YouTube ?', a: ['Microsoft', 'Apple', 'Google', 'Meta'], c: 2, d: 1 },
   { q: 'Quelle couleur est dominante chez Facebook ?', a: ['Rouge', 'Bleu', 'Vert', 'Orange'], c: 1, d: 1 },
-  { q: 'Quel personnage de Mario lance des bananes ?', a: ['Mario', 'Yoshi', 'Donkey Kong', 'Bowser'], c: 2, d: 1 },
+  { q: 'Quel personnage Nintendo est célèbre pour lancer des tonneaux ?', a: ['Donkey Kong', 'Mario', 'Yoshi', 'Bowser'], c: 0, d: 1 },
   { q: 'Quelle console est de Sony ?', a: ['Xbox', 'PlayStation', 'Switch', 'GameCube'], c: 1, d: 1 },
   { q: 'Quel jeu mobile a été un phénomène en 2016 (Pokémon) ?', a: ['Pokémon Sleep', 'Pokémon GO', 'Pokémon Café', 'Pokémon Unite'], c: 1, d: 1 },
   { q: 'Quel oiseau est le logo de Twitter avant 2023 ?', a: ['Aigle', 'Pigeon', 'Oiseau bleu', 'Hibou'], c: 2, d: 1 },
   { q: 'Quel format est utilisé pour les images animées ?', a: ['JPG', 'GIF', 'PNG', 'BMP'], c: 1, d: 1 },
-  { q: 'Quel jeu de blocs est très vendu ?', a: ['Minecraft', 'Roblox', 'Tetris', 'Lego'], c: 0, d: 1 },
+  { q: 'Quel jeu de blocs est le jeu vidéo le plus vendu de l\'histoire ?', a: ['Minecraft', 'Roblox', 'Tetris', 'Lego Worlds'], c: 0, d: 2 },
 
   // — moyen —
   { q: 'En quelle année a été créé Facebook ?', a: ['2002', '2004', '2006', '2008'], c: 1, d: 2 },
-  { q: 'Quel jeu a popularisé le terme "Battle Royale" ?', a: ['Fortnite', 'PUBG', 'Apex', 'COD Warzone'], c: 1, d: 2 },
+  { q: 'Quel jeu sorti en 2017, avant Fortnite, a lancé la mode du Battle Royale ?', a: ['PUBG', 'H1Z1', 'Apex Legends', 'COD Warzone'], c: 0, d: 3 },
   { q: 'Combien de joueurs max dans Fortnite Battle Royale ?', a: ['50', '60', '100', '150'], c: 2, d: 2 },
   { q: 'Quelle est la couleur dominante de Spotify ?', a: ['Bleu', 'Rouge', 'Vert', 'Violet'], c: 2, d: 2 },
-  { q: 'Quelle plateforme a popularisé les vidéos courtes ?', a: ['YouTube', 'TikTok', 'Vine', 'Snapchat'], c: 1, d: 2 },
+  { q: 'Quelle application chinoise a rendu les vidéos courtes verticales incontournables ?', a: ['TikTok', 'YouTube', 'Skype', 'Snapchat'], c: 0, d: 1 },
   { q: 'Quel est le jeu vidéo le plus vendu de tous les temps ?', a: ['GTA V', 'Tetris', 'Minecraft', 'Mario Bros'], c: 2, d: 2 },
-  { q: 'Quel format d\'image supporte la transparence ?', a: ['JPG', 'PNG', 'BMP', 'TIFF'], c: 1, d: 2 },
+  { q: 'Quel format d\'image ne gère PAS la transparence ?', a: ['JPG', 'PNG', 'GIF', 'WebP'], c: 0, d: 3 },
   { q: 'En quelle année est sortie la PS5 ?', a: ['2018', '2019', '2020', '2021'], c: 2, d: 2 },
   { q: 'Quel personnage rouge sauve la Princesse Peach ?', a: ['Mario', 'Luigi', 'Toad', 'Bowser'], c: 0, d: 2 },
-  { q: 'Quelle franchise a vendu le plus de jeux ?', a: ['Mario', 'Pokémon', 'Call of Duty', 'GTA'], c: 1, d: 2 },
+  { q: 'Quelle franchise de jeux vidéo a vendu le plus de jeux ?', a: ['Mario', 'Pokémon', 'Call of Duty', 'GTA'], c: 0, d: 2 },
   { q: 'Quelle est la mascotte de Sega ?', a: ['Mario', 'Sonic', 'Crash Bandicoot', 'Spyro'], c: 1, d: 2 },
-  { q: 'Combien d\'icônes par défaut sur le bureau Windows ?', a: ['1', 'Variable', '5', '10'], c: 1, d: 2 },
   { q: 'Quel jeu utilise des "épées laser" et l\'univers Star Wars ?', a: ['Battlefront', 'Jedi Fallen Order', 'KOTOR', 'Tous'], c: 3, d: 2 },
   { q: 'Quelle entreprise possède Instagram ?', a: ['Twitter', 'Meta (Facebook)', 'Snap', 'Google'], c: 1, d: 2 },
   { q: 'Quel jeu vidéo se passe à Vice City ?', a: ['GTA III', 'GTA Vice City', 'GTA V', 'GTA San Andreas'], c: 1, d: 2 },
-  { q: 'Combien d\'abonnés a MrBeast (env. fin 2024) ?', a: ['100 M', '200 M', '300 M', '500 M'], c: 1, d: 2 },
-  { q: 'Quel est le réseau social préféré des photos pro ?', a: ['Pinterest', 'Instagram', 'Behance', 'Flickr'], c: 1, d: 2 },
   { q: 'Quel jeu a un personnage qui dit "It\'s-a me, Mario!" ?', a: ['Mario 64', 'Super Mario Bros', 'Mario Kart', 'Mario Galaxy'], c: 0, d: 2 },
   { q: 'Quelle est la mascotte d\'Android ?', a: ['Robot vert', 'Pomme', 'Pingouin', 'Renard'], c: 0, d: 2 },
   { q: 'Quel jeu se joue à 2 équipes de 5 et utilise des champions ?', a: ['Dota 2', 'League of Legends', 'Valorant', 'Heroes of the Storm'], c: 1, d: 2 },
   { q: 'Quel jeu a la phrase culte "Snake? Snake?! SNAAAKE!" ?', a: ['Final Fantasy', 'Metal Gear Solid', 'Resident Evil', 'Halo'], c: 1, d: 2 },
   { q: 'Quel jeu Bethesda se passe en Tamriel ?', a: ['Fallout', 'The Elder Scrolls', 'Doom', 'Wolfenstein'], c: 1, d: 2 },
-  { q: 'Quel personnage Pokémon de type électrique est jaune ?', a: ['Pikachu', 'Raichu', 'Voltali', 'Tous'], c: 0, d: 2 },
-  { q: 'Quel est le plus grand streamer Twitch en 2024 ?', a: ['Ninja', 'xQc', 'Kai Cenat', 'AuronPlay'], c: 2, d: 2 },
+  { q: 'Quel Pokémon électrique jaune est la mascotte de la franchise ?', a: ['Pikachu', 'Raichu', 'Voltali', 'Élekid'], c: 0, d: 1 },
 
   // — difficile —
   { q: 'Qui a créé Linux ?', a: ['Linus Torvalds', 'Bill Gates', 'Richard Stallman', 'Steve Wozniak'], c: 0, d: 3 },
@@ -460,24 +455,23 @@ const INTERNET_GAMING = [
   { q: 'Quelle entreprise a créé ChatGPT ?', a: ['Google', 'Microsoft', 'OpenAI', 'Meta'], c: 2, d: 3 },
   { q: 'Quel jeu vidéo est sorti en 1985 sur NES ?', a: ['Mario Bros', 'Super Mario Bros', 'Zelda', 'Donkey Kong'], c: 1, d: 3 },
   { q: 'Quel est le langage de programmation le plus populaire en 2024 ?', a: ['Python', 'JavaScript', 'Java', 'C++'], c: 0, d: 3 },
-  { q: 'Quel est le 1er jeu vidéo de l\'histoire ?', a: ['Pong', 'Tennis for Two', 'Spacewar!', 'OXO'], c: 3, d: 3 },
-  { q: 'Quel jeu PSX a un protagoniste avec une mèche bleue ?', a: ['Crash Bandicoot', 'Spyro', 'Cloud (FF7)', 'Sonic'], c: 2, d: 3 },
-  { q: 'Quel jeu indépendant utilise du papier (Origami) ?', a: ['Tearaway', 'Paper Mario', 'Origami King', 'Tous corrects'], c: 3, d: 3 },
-  { q: 'Quel jeu Activision a créé "Call of Duty" ?', a: ['Infinity Ward', 'Treyarch', 'Sledgehammer', 'Tous'], c: 3, d: 3 },
+  { q: 'Quel jeu de morpion de 1952 est souvent cité comme le premier jeu vidéo ?', a: ['OXO', 'Pong', 'Tennis for Two', 'Spacewar!'], c: 0, d: 4 },
+  { q: 'Quel héros de jeu PS1 aux cheveux blonds en pointes manie la Buster Sword ?', a: ['Cloud', 'Squall', 'Zidane', 'Vincent'], c: 0, d: 3 },
+  { q: 'Quel personnage Nintendo est le héros de « The Origami King » ?', a: ['Paper Mario', 'Kirby', 'Yoshi', 'Link'], c: 0, d: 2 },
+  { q: 'Quel studio a créé la série Call of Duty en 2003 ?', a: ['Infinity Ward', 'Treyarch', 'Sledgehammer', 'DICE'], c: 0, d: 3 },
   { q: 'Combien d\'abonnés YouTube max sans paiement ?', a: ['Illimité', '1 M', '10 M', '100 M'], c: 0, d: 3 },
   { q: 'Quelle est la 1ère vidéo postée sur YouTube ?', a: ['Me at the zoo', 'Charlie bit me', 'Gangnam Style', 'Despacito'], c: 0, d: 3 },
-  { q: 'Quel jeu a inventé le concept "open-world" 3D moderne ?', a: ['GTA III', 'Zelda OoT', 'Morrowind', 'Shenmue'], c: 0, d: 3 },
+  { q: 'Quel jeu de 2001 a popularisé le monde ouvert (open world) en 3D ?', a: ['GTA III', 'Zelda Ocarina of Time', 'Morrowind', 'Halo'], c: 0, d: 3 },
   { q: 'Quelle compagnie a sorti la Game Boy en 1989 ?', a: ['Sega', 'Nintendo', 'Sony', 'Atari'], c: 1, d: 3 },
   { q: 'Quel jeu se joue dans Hyrule ?', a: ['Mario', 'Zelda', 'Metroid', 'Final Fantasy'], c: 1, d: 3 },
-  { q: 'Quel jeu Steam a un capot de "Crowbar" comme arme ?', a: ['Half-Life', 'Portal', 'Counter-Strike', 'Team Fortress 2'], c: 0, d: 3 },
+  { q: 'Dans quel jeu le héros Gordon Freeman se bat-il avec un pied-de-biche ?', a: ['Half-Life', 'Portal', 'Counter-Strike', 'Team Fortress 2'], c: 0, d: 3 },
   { q: 'Quel développeur a créé The Witcher 3 ?', a: ['CDPR', 'Bethesda', 'BioWare', 'Ubisoft'], c: 0, d: 3 },
   { q: 'Quel jeu a la phrase "The cake is a lie" ?', a: ['Half-Life', 'Portal', 'BioShock', 'Team Fortress 2'], c: 1, d: 3 },
   { q: 'En quelle année est sortie la Xbox originale ?', a: ['1999', '2001', '2003', '2005'], c: 1, d: 3 },
   { q: 'Quelle est l\'extension principale du livre numérique Kindle ?', a: ['.epub', '.azw3', '.pdf', '.mobi'], c: 1, d: 3 },
 
   // — extrême —
-  { q: 'Quel est le 1er ordinateur personnel grand public ?', a: ['Apple I', 'Altair 8800', 'IBM PC', 'Commodore 64'], c: 1, d: 4 },
-  { q: 'Combien d\'utilisateurs actifs WhatsApp en 2024 (milliards) ?', a: ['1', '2', '3', '4'], c: 1, d: 4 },
+  { q: 'Quel kit de 1975 a lancé la révolution de l\'ordinateur personnel ?', a: ['Altair 8800', 'Apple I', 'IBM PC', 'Commodore 64'], c: 0, d: 4 },
   { q: 'Quelle est la taille d\'un IP v4 (en bits) ?', a: ['16', '32', '64', '128'], c: 1, d: 4 },
   { q: 'Quel jeu est considéré comme le 1er MMORPG grand public ?', a: ['Ultima Online', 'EverQuest', 'WoW', 'RuneScape'], c: 0, d: 4 },
   { q: 'Quel langage utilise la syntaxe avec accolades et points-virgules ?', a: ['Python', 'Java', 'Ruby', 'Pascal'], c: 1, d: 4 },
@@ -509,12 +503,12 @@ const ENFANT = [
   { q: 'Que mange une vache ?', a: ['Viande', 'Herbe', 'Poisson', 'Graines'], c: 1, d: 1 },
   { q: 'Quel personnage Disney a une longue chevelure magique ?', a: ['Cendrillon', 'Raiponce', 'Belle', 'Mulan'], c: 1, d: 1 },
   { q: 'Comment s\'appelle la sœur d\'Elsa dans la Reine des Neiges ?', a: ['Anna', 'Aurore', 'Ariel', 'Tiana'], c: 0, d: 1 },
-  { q: 'Quel personnage Disney est un poisson clown ?', a: ['Némo', 'Dory', 'Marin', 'Picsou'], c: 0, d: 1 },
+  { q: 'Quel poisson clown est le héros du Monde de Nemo ?', a: ['Nemo', 'Dory', 'Polochon', 'Picsou'], c: 0, d: 1 },
   { q: 'Combien de saisons y a-t-il ?', a: ['2', '3', '4', '5'], c: 2, d: 1 },
   { q: 'Quelle saison fait neige souvent ?', a: ['Été', 'Printemps', 'Hiver', 'Automne'], c: 2, d: 1 },
   { q: 'Quel animal pond des œufs ?', a: ['Vache', 'Poule', 'Chien', 'Mouton'], c: 1, d: 1 },
   { q: 'Que mange un lapin ?', a: ['Viande', 'Carottes', 'Poisson', 'Pizza'], c: 1, d: 1 },
-  { q: 'De quelle couleur est un citron ?', a: ['Bleu', 'Rouge', 'Jaune', 'Vert'], c: 2, d: 1 },
+  { q: 'De quelle couleur est un citron jaune ?', a: ['Jaune', 'Bleu', 'Rouge', 'Violet'], c: 0, d: 1 },
   { q: 'Quel animal vit dans la mer ?', a: ['Poisson', 'Vache', 'Cheval', 'Mouton'], c: 0, d: 1 },
   { q: 'Que dit un canard ?', a: ['Cocorico', 'Coin coin', 'Hi han', 'Bêêê'], c: 1, d: 1 },
   { q: 'Combien font 3 + 5 ?', a: ['6', '7', '8', '9'], c: 2, d: 1 },
@@ -533,7 +527,7 @@ const ENFANT = [
   { q: 'Quelle saison fait chaud ?', a: ['Hiver', 'Automne', 'Été', 'Printemps'], c: 2, d: 1 },
   { q: 'Combien de pattes a une araignée ?', a: ['4', '6', '8', '10'], c: 2, d: 1 },
   { q: 'Quel animal vole ?', a: ['Poisson', 'Oiseau', 'Vache', 'Chat'], c: 1, d: 1 },
-  { q: 'Comment s\'appelle le chien dans Mickey ?', a: ['Pluto', 'Donald', 'Dingo', 'Goofy'], c: 0, d: 1 },
+  { q: 'Comment s\'appelle le chien de Mickey ?', a: ['Pluto', 'Donald', 'Minnie', 'Picsou'], c: 0, d: 1 },
   { q: 'Combien de bougies sur un gâteau de 5 ans ?', a: ['3', '4', '5', '6'], c: 2, d: 1 },
   { q: 'Quel animal fait "Hi han" ?', a: ['Chien', 'Cheval', 'Âne', 'Mouton'], c: 2, d: 1 },
   { q: 'Que mange une abeille ?', a: ['Viande', 'Nectar', 'Poisson', 'Pizza'], c: 1, d: 1 },
@@ -601,19 +595,19 @@ const MONUMENTS = [
   { q: 'Quelle est la plus haute tour du monde (2024) ?', a: ['Tour Eiffel', 'Burj Khalifa', 'Tour de Tokyo', 'Empire State'], c: 1, d: 2 },
   { q: 'Quel monument se trouve sur les Champs-Élysées ?', a: ['Arc de Triomphe', 'Tour Eiffel', 'Sacré-Cœur', 'Notre-Dame'], c: 0, d: 2 },
   { q: 'Dans quel pays se trouve Stonehenge ?', a: ['Royaume-Uni', 'Irlande', 'Allemagne', 'France'], c: 0, d: 2 },
-  { q: 'Dans quel désert se trouve les pyramides de Gizeh ?', a: ['Sahara', 'Désert Libyque', 'Désert d\'Arabie', 'Aucun'], c: 0, d: 2 },
+  { q: 'Dans quel désert se trouvent les pyramides de Gizeh ?', a: ['Le Sahara', 'Le Gobi', 'Le désert d\'Arabie', 'L\'Atacama'], c: 0, d: 2 },
   { q: 'Quel monument est connu pour pencher ?', a: ['Big Ben', 'Tour de Pise', 'Tour Eiffel', 'Burj Khalifa'], c: 1, d: 2 },
   { q: 'Où est le Mont Rushmore (visages présidentiels) ?', a: ['USA', 'Canada', 'Argentine', 'Russie'], c: 0, d: 2 },
   { q: 'Quel monument romain a une coupole non soutenue célèbre ?', a: ['Colisée', 'Panthéon', 'Forum', 'Arc de Constantin'], c: 1, d: 2 },
   // — difficile —
   { q: 'Dans quel pays se trouve Pétra (la cité rose) ?', a: ['Égypte', 'Liban', 'Jordanie', 'Israël'], c: 2, d: 3 },
   { q: 'Dans quel pays se trouve Angkor Wat ?', a: ['Thaïlande', 'Cambodge', 'Vietnam', 'Laos'], c: 1, d: 3 },
-  { q: 'Quel monument a été conçu par Gustave Eiffel autre que sa tour ?', a: ['Statue de la Liberté', 'Tour de Belém', 'Sagrada Família', 'Sphinx'], c: 0, d: 3 },
+  { q: 'De quel monument Gustave Eiffel a-t-il conçu la structure interne ?', a: ['La statue de la Liberté', 'La tour de Belém', 'La Sagrada Família', 'Le Sphinx'], c: 0, d: 3 },
   { q: 'Combien d\'années pour construire la Sagrada Família (en cours) ?', a: ['50', '100', '140+', '200'], c: 2, d: 3 },
   { q: 'En quelle année a été inaugurée la Tour Eiffel ?', a: ['1869', '1889', '1900', '1920'], c: 1, d: 3 },
   // — extrême —
   { q: 'Quel architecte a conçu la Sagrada Família ?', a: ['Gaudí', 'Le Corbusier', 'Frank Lloyd Wright', 'Niemeyer'], c: 0, d: 4 },
-  { q: 'Quelle est la hauteur exacte de la Tour Eiffel (avec antenne) ?', a: ['324 m', '300 m', '350 m', '400 m'], c: 0, d: 4 },
+  { q: 'Quelle est la hauteur de la Tour Eiffel avec son antenne (depuis 2022) ?', a: ['330 m', '300 m', '350 m', '400 m'], c: 0, d: 4 },
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -626,15 +620,15 @@ const ANIMAUX = [
   { q: 'Quel animal a la trompe ?', a: ['Girafe', 'Hippopotame', 'Éléphant', 'Rhinocéros'], c: 2, d: 1 },
   { q: 'Quel animal a un long cou ?', a: ['Hippopotame', 'Girafe', 'Lion', 'Singe'], c: 1, d: 1 },
   { q: 'Quel animal noir et blanc mange du bambou ?', a: ['Koala', 'Panda géant', 'Zèbre', 'Vache'], c: 1, d: 1 },
-  { q: 'Quel oiseau est connu pour ne pas voler ?', a: ['Aigle', 'Pigeon', 'Pingouin', 'Mouette'], c: 2, d: 1 },
-  { q: 'Quel animal vit dans la mer et a 8 bras ?', a: ['Calmar', 'Pieuvre', 'Méduse', 'Étoile de mer'], c: 1, d: 1 },
+  { q: 'Quel oiseau ne peut pas voler ?', a: ['Le manchot', 'L\'aigle', 'Le pigeon', 'La mouette'], c: 0, d: 1 },
+  { q: 'Quel animal marin a 8 bras munis de ventouses ?', a: ['La pieuvre', 'Le crabe', 'La méduse', 'L\'étoile de mer'], c: 0, d: 1 },
   { q: 'Quel animal est le plus grand au monde ?', a: ['Éléphant', 'Baleine bleue', 'Girafe', 'Requin blanc'], c: 1, d: 1 },
-  { q: 'Quel animal a la même tâche au pelage ?', a: ['Lion', 'Tigre', 'Léopard', 'Guépard'], c: 2, d: 1 },
+  { q: 'Quel félin a un pelage couvert de rosettes ?', a: ['Le léopard', 'Le lion', 'Le tigre', 'Le puma'], c: 0, d: 2 },
   // — moyen —
   { q: 'Combien de temps dure la grossesse d\'un éléphant ?', a: ['9 mois', '12 mois', '18 mois', '22 mois'], c: 3, d: 2 },
-  { q: 'Quelle est la durée de vie max d\'une tortue géante ?', a: ['80 ans', '100 ans', '150+ ans', '200+ ans'], c: 2, d: 2 },
+  { q: 'Combien de temps peut vivre une tortue géante ?', a: ['Plus de 150 ans', '30 ans', '50 ans', '500 ans'], c: 0, d: 2 },
   { q: 'Quel animal pèse jusqu\'à 6 tonnes ?', a: ['Hippopotame', 'Rhinocéros', 'Éléphant d\'Afrique', 'Buffle'], c: 2, d: 2 },
-  { q: 'Quel animal est aussi appelé "guépard de mer" ?', a: ['Dauphin', 'Espadon', 'Voilier', 'Marlin'], c: 1, d: 2 },
+  { q: 'Quel poisson est surnommé le « guépard des mers » pour sa vitesse ?', a: ['Le voilier', 'Le thon', 'Le dauphin', 'Le requin'], c: 0, d: 3 },
   { q: 'Combien de cœurs a une pieuvre ?', a: ['1', '2', '3', '4'], c: 2, d: 2 },
   { q: 'Quel animal est l\'emblème national de la France ?', a: ['Aigle', 'Coq', 'Lion', 'Loup'], c: 1, d: 2 },
   { q: 'Quel animal a le plus de dents ?', a: ['Crocodile', 'Requin', 'Escargot', 'Chien'], c: 2, d: 2 },
@@ -661,8 +655,16 @@ const buildCategory = (id, label, list) => ({
     correct: item.c,
     difficulty: item.d || 1,
     image: item.image || null,
+    alt: item.alt || null,
   })),
 });
+
+import { EXTRA_CATEGORIES, EXTRA_FOR_EXISTING } from './questions-extra.js';
+
+ANIMAUX.push(...EXTRA_FOR_EXISTING.animaux);
+MONUMENTS.push(...EXTRA_FOR_EXISTING.monuments);
+MUSIQUE.push(...EXTRA_FOR_EXISTING.musique);
+CULTURE.push(...EXTRA_FOR_EXISTING.culture);
 
 export const CATEGORIES = {
   all:        { id: 'all', label: '🎲 Toutes catégories', questions: [] },
@@ -677,6 +679,7 @@ export const CATEGORIES = {
   drapeaux:   buildCategory('drapeaux',  '🏳️ Drapeaux (avec images)', DRAPEAUX),
   monuments:  buildCategory('monuments', '🏛️ Monuments du monde', MONUMENTS),
   animaux:    buildCategory('animaux',   '🐾 Animaux', ANIMAUX),
+  ...Object.fromEntries(EXTRA_CATEGORIES.map((c) => [c.id, buildCategory(c.id, c.label, c.list)])),
   enfant:     buildCategory('enfant',    '🧒 Mode enfant (questions simples)', ENFANT),
 };
 
@@ -701,6 +704,10 @@ export function listCategories() {
   }));
 }
 
+export function categoryLabel(id) {
+  return CATEGORIES[id]?.label || id;
+}
+
 export function isValidCategory(id) {
   return id in CATEGORIES;
 }
@@ -713,30 +720,54 @@ import { quizStore } from '../../admin/stores.js';
 quizStore.init(
   Object.values(CATEGORIES)
     .filter(c => c.id !== 'all')
-    .flatMap(c => c.questions.map(q => ({ ...q })))
+    .flatMap(c => c.questions.map(q => ({ ...q }))),
+  'v2-2026-10',
 );
 
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const DIFF = { easy: 1, medium: 2, hard: 3, extreme: 4 };
+
 /**
- * Tire N questions distinctes au hasard.
- * Utilise le store dynamique (modifiable via /admin) plutôt que les données statiques.
+ * Tire N questions distinctes au hasard (store dynamique, modifiable via /admin).
+ * - categories : liste d'ids ([] ou ['all'] = toutes sauf le mode enfant)
+ * - difficulty : random | easy | medium | hard | extreme | progressive (de plus en plus dur)
+ * - excludedIds : questions vues récemment (évitées tant qu'il en reste assez)
  */
-export function pickQuestions(categoryId, n, difficulty = 'random', excludedIds = new Set()) {
-  let pool = quizStore.getByCategory(categoryId);
-
-  const difficultyMap = { easy: 1, medium: 2, hard: 3, extreme: 4 };
-  if (difficulty in difficultyMap) {
-    pool = pool.filter(q => q.difficulty === difficultyMap[difficulty]);
+export function pickQuestions(categories, n, difficulty = 'random', excludedIds = new Set()) {
+  const cats = (Array.isArray(categories) ? categories : [categories]).filter((c) => c && c !== 'all');
+  let pool = cats.length
+    ? quizStore.getAll().filter((q) => cats.includes(q.category))
+    : quizStore.getAll().filter((q) => q.category !== 'enfant');
+  if (difficulty in DIFF) {
+    const only = pool.filter((q) => q.difficulty === DIFF[difficulty]);
+    if (only.length >= Math.min(n, 5)) pool = only;
   }
+  const fresh = pool.filter((q) => !excludedIds.has(q.id));
+  const source = fresh.length >= n ? fresh : pool;
 
-  // Filtre anti-répétition
-  let available = pool.filter(q => !excludedIds.has(q.id));
+  if (difficulty !== 'progressive') return shuffle(source).slice(0, Math.min(n, source.length));
 
-  // Si l'exclusion laisse trop peu de questions, on relâche partiellement
-  // (on permet de re-tirer dans le pool global pour ne pas bloquer la partie)
-  if (available.length < n) {
-    available = pool;
+  // Progressif : ~30 % facile, 30 % moyen, 25 % difficile, 15 % extrême, dans cet ordre
+  const quotas = [0.3, 0.3, 0.25, 0.15].map((r) => Math.round(r * n));
+  quotas[0] += n - quotas.reduce((a, b) => a + b, 0);
+  const picked = [];
+  const used = new Set();
+  quotas.forEach((k, i) => {
+    const level = shuffle(source.filter((q) => q.difficulty === i + 1 && !used.has(q.id))).slice(0, k);
+    level.forEach((q) => used.add(q.id));
+    picked.push(...level);
+  });
+  if (picked.length < n) {
+    const rest = shuffle(source.filter((q) => !used.has(q.id))).slice(0, n - picked.length);
+    picked.push(...rest);
   }
-
-  const shuffled = [...available].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, Math.min(n, shuffled.length));
+  return picked.sort((a, b) => a.difficulty - b.difficulty);
 }

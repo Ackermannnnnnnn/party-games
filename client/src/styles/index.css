@@ -471,3 +471,78 @@ button, input[type="checkbox"], select {
 @keyframes lg-z { 0% { transform: translate(0, 0); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(18px, -26px); opacity: 0; } }
 .lg-scroll::-webkit-scrollbar { width: 6px; }
 .lg-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 9999px; }
+
+/* ═════════ Imposteur ═════════ */
+.imp-shell {
+  position: relative;
+  border-radius: 1.75rem;
+  padding: 2px;
+  background: linear-gradient(135deg, #f43f5e, #7c3aed 55%, #0ea5e9);
+  box-shadow: 0 24px 70px -28px rgba(244, 63, 94, 0.55);
+}
+.imp-inner {
+  border-radius: calc(1.75rem - 2px);
+  background:
+    radial-gradient(80% 50% at 100% 0%, rgba(244, 63, 94, 0.16), transparent 60%),
+    radial-gradient(70% 50% at 0% 100%, rgba(124, 58, 237, 0.18), transparent 60%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.018) 0 2px, transparent 2px 12px),
+    #0f0f1d;
+  padding: 0.9rem;
+  color: #f1f5f9;
+}
+@media (min-width: 640px) { .imp-inner { padding: 1.5rem; } }
+.imp-title { font-family: 'Bebas Neue', Inter, sans-serif; letter-spacing: 0.06em; }
+.imp-word {
+  font-family: 'Bebas Neue', Inter, sans-serif; letter-spacing: 0.05em;
+  background: linear-gradient(180deg, #fff, #c4b5fd); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.imp-panel { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.1rem; }
+.imp-card-back {
+  position: relative; width: 100%; height: 100%; border-radius: 1.1rem; overflow: hidden;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 14px),
+    radial-gradient(circle at 50% 40%, #e11d48, #4c0519 70%);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 25px 60px -25px rgba(244, 63, 94, 0.8);
+}
+.imp-card-front {
+  position: relative; width: 100%; height: 100%; border-radius: 1.1rem; overflow: hidden;
+  background: radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.12), transparent 60%), linear-gradient(160deg, #312e81, #0f0f1d);
+  border: 2px solid rgba(196, 181, 253, 0.5);
+  box-shadow: 0 25px 60px -25px rgba(124, 58, 237, 0.9);
+}
+.imp-speaker { box-shadow: 0 0 0 3px #fbbf24, 0 0 24px 4px rgba(251, 191, 36, 0.55); }
+.imp-chip { display: inline-flex; align-items: center; gap: 0.25rem; border-radius: 9999px; padding: 0.15rem 0.6rem; font-size: 0.8rem; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); }
+
+/* ═════════ Quiz ═════════ */
+.qz-shell {
+  border-radius: 1.75rem; padding: 2px;
+  background: linear-gradient(135deg, #22d3ee, #6366f1 45%, #ec4899);
+  box-shadow: 0 24px 70px -28px rgba(99, 102, 241, 0.65);
+}
+.qz-inner {
+  border-radius: calc(1.75rem - 2px); padding: 0.9rem; color: #f8fafc;
+  background:
+    radial-gradient(70% 45% at 50% 0%, rgba(99, 102, 241, 0.25), transparent 70%),
+    radial-gradient(60% 40% at 100% 100%, rgba(236, 72, 153, 0.14), transparent 70%),
+    #0c0f24;
+}
+@media (min-width: 640px) { .qz-inner { padding: 1.5rem; } }
+.qz-title { font-family: 'Bebas Neue', Inter, sans-serif; letter-spacing: 0.05em; }
+.qz-answer {
+  position: relative; display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left;
+  border-radius: 1rem; padding: 0.85rem 1rem; font-weight: 700; color: #fff; min-height: 64px;
+  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.25), 0 10px 24px -14px rgba(0, 0, 0, 0.8);
+  transition: transform 0.12s, filter 0.2s, opacity 0.3s;
+}
+.qz-answer:not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.08); }
+.qz-answer:not(:disabled):active { transform: translateY(1px); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.25); }
+.qz-a0 { background: linear-gradient(160deg, #f43f5e, #be123c); }
+.qz-a1 { background: linear-gradient(160deg, #3b82f6, #1d4ed8); }
+.qz-a2 { background: linear-gradient(160deg, #f59e0b, #b45309); }
+.qz-a3 { background: linear-gradient(160deg, #10b981, #047857); }
+.qz-shape { width: 2rem; height: 2rem; border-radius: 0.6rem; background: rgba(0, 0, 0, 0.22); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1rem; }
+.qz-picked { outline: 4px solid #fff; outline-offset: 2px; }
+.qz-dim { opacity: 0.28; filter: grayscale(0.7); }
+.qz-bar { height: 0.6rem; border-radius: 9999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.qz-bar > span { display: block; height: 100%; border-radius: 9999px; transition: width 0.25s linear; }
