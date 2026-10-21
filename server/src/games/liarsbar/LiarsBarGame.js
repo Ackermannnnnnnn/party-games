@@ -26,7 +26,7 @@ const SHOT_AFTER_MS = 2200;      // temps pour voir le résultat
 const DISCONNECTED_TURN_MS = 20000;
 const TURN_SECS = [0, 15, 20, 30, 45, 60];
 
-const DEFAULT_OPTIONS = { accuseMode: 'next', devilCard: false, turnSec: 30 };
+const DEFAULT_OPTIONS = { accuseMode: 'next', devilCard: false, turnSec: 30, view: '2d' };
 
 function shuffle(arr) {
   const a = [...arr];
@@ -51,6 +51,7 @@ export class LiarsBarGame extends BaseGame {
     const o = { ...DEFAULT_OPTIONS, ...(raw || {}) };
     o.accuseMode = o.accuseMode === 'anyone' ? 'anyone' : 'next';
     o.devilCard = !!o.devilCard;
+    o.view = o.view === '3d' ? '3d' : '2d'; // vue par défaut (chacun peut changer de son côté)
     const t = parseInt(o.turnSec, 10);
     o.turnSec = TURN_SECS.includes(t) ? t : 30;
     return o;

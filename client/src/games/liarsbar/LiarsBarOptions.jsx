@@ -37,9 +37,12 @@ export default function LiarsBarOptions({ playerCount, onStart }) {
         </label>
         <div className="flex flex-col gap-1 text-xs text-slate-400">🎥 Affichage
           <div className="grid grid-cols-2 gap-1">
-            <span className="rounded-lg px-3 py-2 text-sm text-center border bg-brand/25 border-brand text-white">2D</span>
-            <span className="rounded-lg px-3 py-2 text-sm text-center border border-slate-800 text-slate-500" title="Bientôt">3D · bientôt</span>
+            {[['2d', '🗺️ 2D'], ['3d', '🎥 3D']].map(([v, l]) => (
+              <button key={v} type="button" disabled={!isHost} onClick={() => set('view', v)} aria-pressed={opts.view === v}
+                className={`rounded-lg px-3 py-2 text-sm text-center border ${opts.view === v ? 'bg-brand/25 border-brand text-white' : 'border-slate-700 text-slate-300'}`}>{l}</button>
+            ))}
           </div>
+          <span className="text-[10px] text-slate-500 leading-snug">3D conseillée sur PC. Chacun peut aussi changer de vue pendant la partie.</span>
         </div>
       </section>
 

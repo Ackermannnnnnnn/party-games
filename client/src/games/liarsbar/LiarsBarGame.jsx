@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '../../store/gameStore.js';
 import { api } from '../../hooks/useSocket.js';
@@ -6,6 +6,11 @@ import { socket } from '../../lib/socket.js';
 import Avatar from '../../components/Avatar.jsx';
 import { syncClock, serverNow, roughSync } from '../blindtest/audio.js';
 import { sfx, unlockSound, stopMusic, setVolume, useVolumes } from './sfx.js';
+
+// La 3D (Three.js) n'est téléchargée que par ceux qui l'activent
+const LiarsBar3D = lazy(() => import('./LiarsBar3D.jsx'));
+const VIEW_KEY = 'liarsbarView';
+const webglOk = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { return false; } })();
 
 const RANK = {
   K: { name: 'Roi', plural: 'Rois', icon: '♚', color: '#f5c542' },
@@ -143,6 +148,7 @@ export default function LiarsBarGame() {
   const now = useNow(200);
   const lastPhase = useRef(null);
   const vols = useVolumes();
+  const [viewPref, setViewPref] = useState(() => { try { return localStorage.getItem(VIEW_KEY); } catch { return null; } });
 
   useEffect(() => { syncClock(); return () => stopMusic(); }, []);
   useEffect(() => { roughSync(p?.serverNow); }, [p?.serverNow]);
@@ -192,6 +198,8 @@ export default function LiarsBarGame() {
   const liar = () => { unlockSound(); api.gameAction('liar'); };
 
   if (p.phase === 'GAME_OVER') return <GameOver p={p} isHost={isHost} playerId={playerId} />;
+  const is3d = webglOk && (viewPref || p.options?.view || '2d') === '3d';
+  const switchView = () => { const v = is3d ? '2d' : '3d'; setViewPref(v); try { localStorage.setItem(VIEW_KEY, v); } catch {} };
 
   const status = (() => {
     if (p.phase === 'DEAL') return `Manche ${p.round} · distribution…`;
@@ -205,9 +213,21 @@ export default function LiarsBarGame() {
     <div className="lb-shell" onPointerDown={() => unlockSound()}>
       <div className="flex items-center justify-between gap-2 px-1 pb-2 text-xs text-amber-100/80">
         <span>Manche {p.round} · {p.options?.accuseMode === 'anyone' ? 'tout le monde peut accuser' : 'le suivant accuse'}{p.options?.devilCard ? ' · 😈' : ''}</span>
-        <VolumeControls vols={vols} />
+        <span className="flex items-center gap-2">
+          {webglOk && <button type="button" onClick={switchView} className="rounded-full border border-amber-400/40 px-2 py-0.5 text-amber-200 hover:bg-amber-400/10" style={{ minHeight: 0 }} title="Changer de vue (pour toi seulement)">{is3d ? '🗺️ 2D' : '🎥 3D'}</button>}
+          <VolumeControls vols={vols} />
+        </span>
       </div>
 
+      {is3d ? (
+        <div className="relative">
+          <Suspense fallback={<div className="lb-3d flex items-center justify-center text-amber-200">Chargement de la 3D…</div>}>
+            <LiarsBar3D p={p} playerId={playerId} ordered={ordered} myHand={priv.seated && priv.alive ? priv.hand || [] : []}
+              selected={selected} onToggle={toggle} canSelect={myTurn && !p.mustAccuse} />
+          </Suspense>
+          <Hud3D p={p} person={person} tableCard={tableCard} now={now} turnFrac={turnFrac} playerId={playerId} />
+        </div>
+      ) : (
       <div className="lb-table-wrap">
         <div className="lb-table">
           {/* Carte de table */}
@@ -275,12 +295,14 @@ export default function LiarsBarGame() {
           <AnimatePresence>{p.phase === 'ROULETTE' && <RouletteOverlay key={p.shot?.startedAt} p={p} person={person} />}</AnimatePresence>
         </div>
       </div>
+      )}
 
       {/* Statut + main du joueur */}
       <div className="mt-3 space-y-3">
         <p className={`text-center font-semibold ${myTurn ? 'text-amber-300' : 'text-slate-200'}`}>{status}</p>
 
-        {priv.seated && priv.alive && (
+        {is3d && priv.seated && priv.alive && myTurn && !p.mustAccuse && <p className="text-center text-xs text-amber-200/80">Clique sur tes cartes posées devant toi pour les choisir (1 à 3).</p>}
+        {!is3d && priv.seated && priv.alive && (
           <div className="flex justify-center items-end min-h-[100px]">
             <AnimatePresence>
               {(priv.hand || []).map((c, i, arr) => {
@@ -312,6 +334,52 @@ export default function LiarsBarGame() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Informations par-dessus la scène 3D : carte de table, tour en cours, révélation, roulette. */
+function Hud3D({ p, person, tableCard, now, turnFrac }) {
+  const shot = p.phase === 'ROULETTE' ? p.shot : null;
+  const revealed = !!shot && (shot.revealed || now >= shot.revealAt);
+  const r = p.reveal;
+  return (
+    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-between p-3">
+      <div className="self-start flex flex-col items-center rounded-xl bg-black/55 px-4 py-1.5 backdrop-blur-sm">
+        <span className="text-[10px] uppercase tracking-[0.25em] text-amber-200/80">Table de</span>
+        <span className="lb-title text-2xl sm:text-3xl leading-none" style={{ color: tableCard?.color }}>{tableCard?.plural}</span>
+        {p.phase === 'TURN' && (
+          <span className="mt-1 text-xs text-amber-100">
+            🎯 {person(p.currentId).pseudo}{p.lastPlay ? ` · ${person(p.lastPlay.by).pseudo} a posé ${p.lastPlay.count}` : ''}
+          </span>
+        )}
+        {p.phase === 'TURN' && turnFrac != null && <span className="mt-1 h-1 w-32 rounded-full bg-white/10 overflow-hidden"><span className="block h-full bg-amber-400" style={{ width: `${turnFrac * 100}%` }} /></span>}
+      </div>
+      <AnimatePresence>
+        {p.phase === 'REVEAL' && r && (
+          <motion.div key="rv" initial={{ scale: 1.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-1 rounded-2xl bg-black/60 px-5 py-2 backdrop-blur-sm">
+            <span className="lb-title text-4xl text-red-400 whitespace-nowrap">MENTEUR !</span>
+            <span className="text-xs text-amber-100">{person(r.accuser).pseudo} accuse {person(r.by).pseudo}</span>
+            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 + r.cards.length * 0.25 }}
+              className={`lb-title whitespace-nowrap text-2xl px-3 rounded ${r.devil ? 'bg-red-700' : r.lie ? 'bg-red-600/80' : 'bg-emerald-600/80'} text-white`}>
+              {r.devil ? '😈 CARTE DU DIABLE !' : r.lie ? 'MENSONGE' : 'VÉRITÉ'}
+            </motion.span>
+          </motion.div>
+        )}
+        {shot && (
+          <motion.div key={`sh-${shot.startedAt}`} initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }}
+            className={`flex items-center gap-3 rounded-2xl bg-black/65 px-4 py-2 backdrop-blur-sm ${revealed && shot.fired ? 'lb-shake' : ''}`}>
+            <Avatar id={person(shot.playerId).avatar} size="md" className={revealed && shot.fired ? 'grayscale' : ''} />
+            <div className="text-left">
+              <p className="font-bold">{person(shot.playerId).pseudo} · tir n°{shot.chamber + 1}</p>
+              {!revealed ? <p className="text-xs text-slate-300">1 chance sur {6 - shot.chamber}…</p>
+                : shot.fired ? <p className="lb-title text-3xl text-red-500 leading-none">💥 BANG</p>
+                  : <p className="lb-title text-2xl text-emerald-300 leading-none">*clic* · survit</p>}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {revealed && shot?.fired && <motion.div className="absolute inset-0 bg-red-600" initial={{ opacity: 0.55 }} animate={{ opacity: 0 }} transition={{ duration: 1 }} />}
     </div>
   );
 }
