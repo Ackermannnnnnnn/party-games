@@ -562,7 +562,7 @@
   ]
  },
  "naruto": {
-  "pick": 0,
+  "pick": -1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b17-phjcWCkRuIhu.png",
    "https://upload.wikimedia.org/wikipedia/en/9/9a/NarutoUzumaki.png"
