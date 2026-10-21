@@ -247,7 +247,7 @@
   ]
  },
  "gohan": {
-  "pick": 0,
+  "pick": 1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b2093-kdFZhqcNSsqW.png",
    "https://upload.wikimedia.org/wikipedia/en/b/bf/AdultSonGohan.jpg"
@@ -365,7 +365,7 @@
   ]
  },
  "itachi": {
-  "pick": 0,
+  "pick": -1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b14-9Kb1E5oel1ke.png",
    "https://upload.wikimedia.org/wikipedia/en/e/e5/Itachi_Uchiha.jpg"
@@ -489,7 +489,7 @@
   ]
  },
  "luffy": {
-  "pick": 0,
+  "pick": -1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b40-MNypXsxSRb1R.png",
    "https://upload.wikimedia.org/wikipedia/en/c/cb/Monkey_D_Luffy.png"
@@ -555,7 +555,7 @@
   ]
  },
  "nami": {
-  "pick": 0,
+  "pick": -1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b723-vp5hPptgnNEC.png",
    "https://upload.wikimedia.org/wikipedia/commons/f/fb/Nami_%28One_Piece_Odyssey%29.jpg"
@@ -621,7 +621,7 @@
   ]
  },
  "pikachu": {
-  "pick": 0,
+  "pick": 1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b3891-edgrZOgCJ9do.jpg",
    "https://upload.wikimedia.org/wikipedia/en/a/a6/Pok%C3%A9mon_Pikachu_art.png"
@@ -663,7 +663,7 @@
   ]
  },
  "saitama": {
-  "pick": 0,
+  "pick": -1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b73935-ON5d0mAcrItd.jpg",
    "https://upload.wikimedia.org/wikipedia/en/9/98/SaitamaWikipediapage.png"
@@ -676,14 +676,14 @@
   ]
  },
  "sanji": {
-  "pick": 0,
+  "pick": 1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b305-6lisPmHtCnLT.png",
    "https://upload.wikimedia.org/wikipedia/en/a/aa/Sanji_%28One_Piece%29.jpg"
   ]
  },
  "sasuke": {
-  "pick": 0,
+  "pick": -1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b13-SISLEw1oAD7a.png",
    "https://upload.wikimedia.org/wikipedia/en/4/42/SasukeKishimoto.jpg"
@@ -748,7 +748,7 @@
   ]
  },
  "tanjiro": {
-  "pick": 0,
+  "pick": 1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b126071-BTNEc1nRIv68.png",
    "https://upload.wikimedia.org/wikipedia/en/e/ea/Tanjirou_manga.png"
@@ -783,7 +783,7 @@
   ]
  },
  "totoro": {
-  "pick": 0,
+  "pick": -1,
   "candidates": [
    "https://static.wikia.nocookie.net/studio-ghibli/images/d/df/Totoro_in_the_rain.png/revision/latest"
   ]
@@ -796,7 +796,7 @@
   ]
  },
  "vegeta": {
-  "pick": 0,
+  "pick": -1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b913-NIFkKazWM8VO.png",
    "https://upload.wikimedia.org/wikipedia/en/8/88/Vegeta_Dragon_Ball.jpg"
@@ -882,7 +882,7 @@
   ]
  },
  "zoro": {
-  "pick": 0,
+  "pick": 1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/b62-S7oAeA9WInjV.png",
    "https://upload.wikimedia.org/wikipedia/en/a/a4/Roronoa_Zoro.jpg"
