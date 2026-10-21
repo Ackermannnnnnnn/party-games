@@ -243,18 +243,6 @@ export default function BombPartyGame() {
 
         {state.phase === 'GAME_OVER' && <GameOver state={state} playerId={playerId} isHost={isHost} />}
 
-        {isHost && state.phase !== 'GAME_OVER' && (
-          <div className="text-right">
-            <button
-              type="button"
-              className="text-xs text-slate-500 hover:text-rose-300"
-              style={{ minHeight: 0 }}
-              onClick={() => api.gameAction('endGame', {})}
-            >
-              🛑 Arrêter la partie
-            </button>
-          </div>
-        )}
       </motion.div>
     </div>
   );

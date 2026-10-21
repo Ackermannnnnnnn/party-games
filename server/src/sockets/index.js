@@ -212,6 +212,18 @@ export function registerSocketHandlers(io, socket) {
     }
   });
 
+  // L'hôte arrête la partie en cours : tout le monde revient ensemble à la salle d'attente
+  on('game:stop', () => {
+    const { room, player } = _getContext(socket);
+    if (!room || !player) return socket.emit('error', { code: 'NOT_IN_ROOM' });
+    if (player.id !== room.hostId) return socket.emit('error', { code: 'NOT_HOST', message: 'Seul l\'hôte peut arrêter la partie.' });
+    if (!room.gameInstance) return room.emitRoomState();
+    try { room.gameInstance.cleanup?.(); } catch { /* le jeu s'arrête quand même */ }
+    room.endGame({ stopped: true });
+    room.broadcast('room:notice', { message: `${player.pseudo} a arrêté la partie. Retour à la salle d'attente.` });
+    logger.info({ room: room.code, by: player.id }, 'Game stopped by host');
+  });
+
   // Le client demande l'état à jour (retour au premier plan, écran figé…)
   on('room:sync', () => {
     const { room, player } = _getContext(socket);

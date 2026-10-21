@@ -129,4 +129,5 @@ export const api = {
   setGame:    (gameId) => socket.emit('room:setGame', { gameId }),
   startGame:  (gameId = 'imposter', options = {}) => socket.emit('game:start', { gameId, options }),
   gameAction: (type, payload) => socket.emit('game:action', { type, payload }),
+  stopGame:   () => socket.emit('game:stop'),
 };

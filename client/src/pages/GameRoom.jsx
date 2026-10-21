@@ -63,9 +63,12 @@ export default function GameRoom() {
         <p className="hidden md:block text-sm text-slate-400 truncate">
           {inGame ? `${getGame(room.gameId)?.icon || ''} ${getGame(room.gameId)?.label || ''}` : `${room.players.length} joueur${room.players.length > 1 ? 's' : ''} dans la room`}
         </p>
-        <button onClick={leave} className="btn btn-ghost ml-auto text-sm !px-3 !py-2 !min-h-0">
-          Quitter
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          {inGame && isHost && <StopGameButton />}
+          <button onClick={leave} className="btn btn-ghost text-sm !px-3 !py-2 !min-h-0">
+            Quitter
+          </button>
+        </div>
       </div>
 
       {!connected && (
@@ -115,6 +118,26 @@ export default function GameRoom() {
         </div>
       </aside>
     </div>
+  );
+}
+
+/** Hôte : arrête la partie en cours et ramène tout le monde à la salle d'attente (avec confirmation). */
+function StopGameButton() {
+  const [confirm, setConfirm] = useState(false);
+  useEffect(() => {
+    if (!confirm) return undefined;
+    const t = setTimeout(() => setConfirm(false), 4000);
+    return () => clearTimeout(t);
+  }, [confirm]);
+  return (
+    <button
+      type="button"
+      onClick={() => { if (confirm) { api.stopGame(); setConfirm(false); } else setConfirm(true); }}
+      className={`btn text-sm !px-3 !py-2 !min-h-0 whitespace-nowrap ${confirm ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'btn-ghost'}`}
+      title="Arrêter la partie pour tout le monde et revenir à la salle d'attente"
+    >
+      {confirm ? 'Confirmer ?' : <><span className="sm:hidden">Arrêter</span><span className="hidden sm:inline">Arrêter la partie</span></>}
+    </button>
   );
 }
 
