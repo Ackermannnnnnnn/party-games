@@ -1,5 +1,120 @@
 [
  {
+  "id": "2026-10-21-b3d7f41f",
+  "game": "liarsbar",
+  "label": "Liar's Bar",
+  "room": "KXVMJD",
+  "startedAt": 1792601244463,
+  "endedAt": 1792601428596,
+  "durationSec": 184,
+  "host": "mmmmm",
+  "players": [
+   {
+    "pseudo": "mmmmm",
+    "avatar": "img:perso/black-panther"
+   }
+  ],
+  "winner": "mmmmm",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "mmmmm",
+    "avatar": "img:perso/black-panther",
+    "score": null,
+    "detail": "2 tir(s) au revolver · survivant",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Mo",
+    "avatar": "goku",
+    "score": null,
+    "detail": "1 tir(s) au revolver",
+    "win": false
+   }
+  ],
+  "recap": {
+   "events": [
+    {
+     "round": 1,
+     "text": "Manche 1 : table de Ass (2 joueurs)"
+    },
+    {
+     "text": "0qhe9enru9g8vdio pose 1 carte(s)"
+    },
+    {
+     "text": "4501jliyvv3no128 crie « Menteur ! » à 0qhe9enru9g8vdio → Roi : mensonge",
+     "accent": true
+    },
+    {
+     "text": "0qhe9enru9g8vdio tire (1/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 2,
+     "text": "Manche 2 : table de Dames (2 joueurs)"
+    },
+    {
+     "text": "0qhe9enru9g8vdio pose 1 carte(s)"
+    },
+    {
+     "text": "4501jliyvv3no128 crie « Menteur ! » à 0qhe9enru9g8vdio → Joker : vérité",
+     "accent": true
+    },
+    {
+     "text": "4501jliyvv3no128 tire (1/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 3,
+     "text": "Manche 3 : table de Dames (2 joueurs)"
+    },
+    {
+     "text": "4501jliyvv3no128 pose 3 carte(s)"
+    },
+    {
+     "text": "0qhe9enru9g8vdio crie « Menteur ! » à 4501jliyvv3no128 → Dame, As, Dame : mensonge",
+     "accent": true
+    },
+    {
+     "text": "4501jliyvv3no128 tire (2/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 4,
+     "text": "Manche 4 : table de Ass (2 joueurs)"
+    },
+    {
+     "text": "4501jliyvv3no128 : temps écoulé"
+    },
+    {
+     "text": "4501jliyvv3no128 pose 1 carte(s) (temps écoulé)"
+    },
+    {
+     "text": "0qhe9enru9g8vdio : temps écoulé"
+    },
+    {
+     "text": "0qhe9enru9g8vdio pose 1 carte(s) (temps écoulé)"
+    },
+    {
+     "text": "4501jliyvv3no128 : temps écoulé"
+    },
+    {
+     "text": "4501jliyvv3no128 pose 1 carte(s) (temps écoulé)"
+    },
+    {
+     "text": "0qhe9enru9g8vdio a quitté la table"
+    }
+   ]
+  },
+  "options": {
+   "accuseMode": "next",
+   "devilCard": false,
+   "turnSec": 30,
+   "view": "3d"
+  }
+ },
+ {
   "id": "2026-10-21-8e76774f",
   "game": "blindtest",
   "label": "Blind Test",
