@@ -16,6 +16,8 @@ import CodenamesGame    from './codenames/CodenamesGame.jsx';
 import CodenamesOptions from './codenames/CodenamesOptions.jsx';
 import BlindTestGame    from './blindtest/BlindTestGame.jsx';
 import BlindTestOptions from './blindtest/BlindTestOptions.jsx';
+import LiarsBarGame    from './liarsbar/LiarsBarGame.jsx';
+import LiarsBarOptions from './liarsbar/LiarsBarOptions.jsx';
 
 export const GAMES = {
   imposter: {
@@ -98,6 +100,15 @@ export const GAMES = {
     minPlayers: 1,
     Component: BlindTestGame,
     OptionsComp: BlindTestOptions,
+  },
+  liarsbar: {
+    id: 'liarsbar',
+    label: "Liar's Bar",
+    icon: '🃏',
+    description: 'Bluffe avec tes cartes, crie « Menteur ! »… et prie pour que le barillet soit vide. 2 à 6 joueurs.',
+    minPlayers: 2,
+    Component: LiarsBarGame,
+    OptionsComp: LiarsBarOptions,
   },
 };
 

@@ -23,13 +23,13 @@ const LOCAL_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), '../.
 
 export const GAME_LABELS = {
   imposter: "Jeu de l'imposteur", quiz: 'Quiz culture G', petitbac: 'Petit Bac', werewolf: 'Loup-Garou',
-  telephone: 'Gartic Phone', bombparty: 'BombParty', cemantix: 'Cémantix', codenames: 'Codenames', blindtest: 'Blind Test',
+  telephone: 'Gartic Phone', bombparty: 'BombParty', cemantix: 'Cémantix', codenames: 'Codenames', blindtest: 'Blind Test', liarsbar: "Liar's Bar",
 };
 
 /** Phase qui marque la fin d'une partie, par jeu. */
 export const FINAL_PHASES = {
   quiz: 'PODIUM', blindtest: 'PODIUM', petitbac: 'PODIUM', bombparty: 'GAME_OVER', codenames: 'GAME_OVER',
-  werewolf: 'GAME_OVER', imposter: 'RESULTS', telephone: 'ALBUM', cemantix: 'REVEAL',
+  werewolf: 'GAME_OVER', imposter: 'RESULTS', telephone: 'ALBUM', cemantix: 'REVEAL', liarsbar: 'GAME_OVER',
 };
 
 // ───────────────────────── Construction du récap ─────────────────────────
@@ -132,6 +132,24 @@ const EXTRACTORS = {
           owner: c.ownerId,
           entries: c.entries.map((e) => ({ type: e.type, author: e.authorId, text: e.type === 'text' ? e.text : undefined, auto: e.auto || undefined })),
         })),
+      },
+    };
+  },
+  liarsbar(g, pub) {
+    const RANK = { K: 'Roi', Q: 'Dame', A: 'As', J: 'Joker', D: 'Diable' };
+    return {
+      winnerIds: pub.winnerId ? [pub.winnerId] : [],
+      ranking: (pub.ranking || []).map((r) => ({ id: r.id, score: null, detail: `${r.shots} tir(s) au revolver${r.id === pub.winnerId ? ' · survivant' : ''}`, win: r.id === pub.winnerId })),
+      recap: {
+        events: (g.log || []).map((e) => {
+          if (e.t === 'round') return { round: e.round, text: `Manche ${e.round} : table de ${RANK[e.tableCard]}s (${e.players} joueurs)` };
+          if (e.t === 'play') return { text: `${e.by} pose ${e.count} carte(s)${e.auto ? ' (temps écoulé)' : ''}` };
+          if (e.t === 'accuse') return { text: `${e.by} crie « Menteur ! » à ${e.target}${e.forced ? ' (obligé)' : ''} → ${e.cards.map((c) => RANK[c]).join(', ')} : ${e.devil ? 'carte du Diable !' : e.lie ? 'mensonge' : 'vérité'}`, accent: true };
+          if (e.t === 'shot') return { text: `${e.by} tire (${e.n}/6) : ${e.fired ? '💥 BANG, éliminé' : 'clic, survit'}`, danger: e.fired };
+          if (e.t === 'left') return { text: `${e.by} a quitté la table` };
+          if (e.t === 'timeout') return { text: `${e.by} : temps écoulé` };
+          return null;
+        }).filter(Boolean),
       },
     };
   },

@@ -264,6 +264,16 @@ function Recap({ r }) {
           </div>
         </Section>
       );
+    case 'liarsbar':
+      return (
+        <Section title="Le déroulé">
+          <ol className="space-y-0.5 text-sm">
+            {(x.events || []).map((e, i) => (
+              <li key={i} className={e.round ? 'pt-1.5 font-semibold text-amber-300' : e.danger ? 'text-red-400 font-semibold' : e.accent ? 'text-slate-100' : 'text-slate-400'}>{e.text}</li>
+            ))}
+          </ol>
+        </Section>
+      );
     case 'cemantix':
       return (
         <Section title="Le mot secret">
