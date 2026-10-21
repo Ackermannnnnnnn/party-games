@@ -1,5 +1,129 @@
 [
  {
+  "id": "2026-10-21-644ec3f1",
+  "game": "liarsbar",
+  "label": "Liar's Bar",
+  "room": "KXVMJD",
+  "startedAt": 1792606681865,
+  "endedAt": 1792606767247,
+  "durationSec": 85,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "goku"
+   },
+   {
+    "pseudo": "mmmmm",
+    "avatar": "img:perso/black-panther"
+   }
+  ],
+  "winner": "Mo",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "goku",
+    "score": null,
+    "detail": "0 tir(s) au revolver · survivant",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "mmmmm",
+    "avatar": "img:perso/black-panther",
+    "score": null,
+    "detail": "5 tir(s) au revolver",
+    "win": false
+   }
+  ],
+  "recap": {
+   "events": [
+    {
+     "round": 1,
+     "text": "Manche 1 : table de Dames (2 joueurs)"
+    },
+    {
+     "text": "4dlq3eieh1jid9iw pose 2 carte(s)"
+    },
+    {
+     "text": "q8zoc19ps11gpqlo crie « Menteur ! » à 4dlq3eieh1jid9iw → Joker, As : mensonge",
+     "accent": true
+    },
+    {
+     "text": "4dlq3eieh1jid9iw tire (1/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 2,
+     "text": "Manche 2 : table de Ass (2 joueurs)"
+    },
+    {
+     "text": "4dlq3eieh1jid9iw pose 3 carte(s)"
+    },
+    {
+     "text": "q8zoc19ps11gpqlo crie « Menteur ! » à 4dlq3eieh1jid9iw → Roi, Roi, Dame : mensonge",
+     "accent": true
+    },
+    {
+     "text": "4dlq3eieh1jid9iw tire (2/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 3,
+     "text": "Manche 3 : table de Ass (2 joueurs)"
+    },
+    {
+     "text": "4dlq3eieh1jid9iw pose 2 carte(s)"
+    },
+    {
+     "text": "q8zoc19ps11gpqlo crie « Menteur ! » à 4dlq3eieh1jid9iw → Joker, Roi : mensonge",
+     "accent": true
+    },
+    {
+     "text": "4dlq3eieh1jid9iw tire (3/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 4,
+     "text": "Manche 4 : table de Dames (2 joueurs)"
+    },
+    {
+     "text": "4dlq3eieh1jid9iw pose 2 carte(s)"
+    },
+    {
+     "text": "q8zoc19ps11gpqlo crie « Menteur ! » à 4dlq3eieh1jid9iw → Dame, Roi : mensonge",
+     "accent": true
+    },
+    {
+     "text": "4dlq3eieh1jid9iw tire (4/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 5,
+     "text": "Manche 5 : table de Ass (2 joueurs)"
+    },
+    {
+     "text": "4dlq3eieh1jid9iw pose 2 carte(s)"
+    },
+    {
+     "text": "q8zoc19ps11gpqlo crie « Menteur ! » à 4dlq3eieh1jid9iw → Roi, Dame : mensonge",
+     "accent": true
+    },
+    {
+     "text": "4dlq3eieh1jid9iw tire (5/6) : 💥 BANG, éliminé",
+     "danger": true
+    }
+   ]
+  },
+  "options": {
+   "accuseMode": "next",
+   "devilCard": false,
+   "turnSec": 30,
+   "view": "3d"
+  }
+ },
+ {
   "id": "2026-10-21-0c83458d",
   "game": "liarsbar",
   "label": "Liar's Bar",
