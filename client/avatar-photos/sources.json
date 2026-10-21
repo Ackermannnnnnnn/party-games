@@ -59,7 +59,7 @@
   ]
  },
  "blackpanth": {
-  "pick": 0,
+  "pick": -1,
   "candidates": [
    "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/106-black-panther.jpg",
    "https://upload.wikimedia.org/wikipedia/en/f/f7/Black_Panther_%28T%27Challa%29.png"
