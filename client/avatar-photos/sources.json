@@ -85,9 +85,10 @@
   ]
  },
  "captain": {
-  "pick": 0,
+  "pick": 1,
   "candidates": [
-   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/149-captain-america.jpg"
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/149-captain-america.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/9/9e/Captain_America_The_Winter_Soldier_poster.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
   ]
  },
  "chewbacca": {
