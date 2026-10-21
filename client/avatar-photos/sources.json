@@ -161,9 +161,10 @@
   ]
  },
  "doctorstr": {
-  "pick": 0,
+  "pick": 1,
   "candidates": [
-   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/226-doctor-strange.jpg"
+   "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/226-doctor-strange.jpg",
+   "https://upload.wikimedia.org/wikipedia/en/1/18/Benedict_Cumberbatch_as_Doctor_Strange.jpeg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
   ]
  },
  "donald": {
@@ -291,10 +292,11 @@
   ]
  },
  "groot": {
-  "pick": 0,
+  "pick": 2,
   "candidates": [
    "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/303-groot.jpg",
-   "https://upload.wikimedia.org/wikipedia/en/3/3b/Groot.png"
+   "https://upload.wikimedia.org/wikipedia/en/3/3b/Groot.png",
+   "https://upload.wikimedia.org/wikipedia/en/d/d9/Vin_Diesel_as_Groot.jpeg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
   ]
  },
  "harley": {
@@ -629,10 +631,11 @@
   ]
  },
  "rocket": {
-  "pick": 0,
+  "pick": 2,
   "candidates": [
    "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/566-rocket-raccoon.jpg",
-   "https://upload.wikimedia.org/wikipedia/en/1/1b/Rocketraccoon.png"
+   "https://upload.wikimedia.org/wikipedia/en/1/1b/Rocketraccoon.png",
+   "https://static.wikia.nocookie.net/marveldatabase/images/a/a7/Rocket_%28Earth-21178%29_from_Marvel%27s_Guardians_of_the_Galaxy_%28video_game%29.JPG/revision/latest"
   ]
  },
  "rocky": {
@@ -760,10 +763,11 @@
   ]
  },
  "thanos": {
-  "pick": 0,
+  "pick": 2,
   "candidates": [
    "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/655-thanos.jpg",
-   "https://upload.wikimedia.org/wikipedia/en/b/b7/Thanos_%28Infobox_image%29.png"
+   "https://upload.wikimedia.org/wikipedia/en/b/b7/Thanos_%28Infobox_image%29.png",
+   "https://upload.wikimedia.org/wikipedia/en/7/7b/Josh_Brolin_as_Thanos.jpeg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
   ]
  },
  "thor": {
