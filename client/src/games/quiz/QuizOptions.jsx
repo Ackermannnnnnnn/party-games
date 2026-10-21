@@ -101,7 +101,7 @@ export default function QuizOptions({ playerCount, onStart }) {
       <p className="text-[11px] text-slate-500 text-center">Points : base selon la difficulté + bonus de rapidité + 🔥 bonus de série.</p>
 
       {isHost && (
-        <button type="button" onClick={() => onStart(opts)} disabled={available === 0} className="btn btn-primary w-full text-lg disabled:opacity-50">
+        <button type="button" onClick={() => onStart(opts)} disabled={available === 0} className="btn btn-token w-full text-lg disabled:opacity-40">
           🎯 Lancer le quiz {playerCount === 1 ? '(en solo)' : ''}
         </button>
       )}

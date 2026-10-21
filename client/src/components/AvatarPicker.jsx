@@ -146,31 +146,31 @@ export default function AvatarPicker({ open, onClose, mandatory = false }) {
       {open && (
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4"
           onClick={mandatory ? undefined : onClose}
         >
           <motion.div
-            initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-            className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+            initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+            className="bg-slate-900 ring-1 ring-white/10 rounded-t-3xl sm:rounded-3xl w-full max-w-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="p-4 border-b border-slate-700 flex items-center justify-between gap-3">
+            <div className="px-4 pt-4 pb-3 sm:px-5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar id={avatar} size="md" />
                 <div className="min-w-0">
-                  <h3 className="font-display text-xl text-brand-light">{mandatory ? 'Choisis ton avatar pour jouer' : 'Choisis ton avatar'}</h3>
+                  <h3 className="font-display text-2xl text-slate-50">{mandatory ? 'Choisis ton avatar pour jouer' : 'Choisis ton avatar'}</h3>
                   <p className="text-xs text-slate-400 truncate">{isPhoto(avatar) ? 'Ta photo' : getAvatar(avatar).label}</p>
                 </div>
               </div>
-              {!mandatory && <button onClick={onClose} className="text-slate-400 hover:text-white text-3xl leading-none" aria-label="Fermer">×</button>}
+              {!mandatory && <button onClick={onClose} className="w-10 h-10 !min-h-0 rounded-full flex items-center justify-center text-slate-300 bg-white/[0.06] hover:bg-white/[0.12] hover:text-white" aria-label="Fermer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg></button>}
             </div>
 
             {/* Recherche + onglets */}
-            <div className="p-3 border-b border-slate-700 space-y-2">
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="🔎 Chercher un personnage (Goku, Batman, Mario…)"
+            <div className="px-4 sm:px-5 pb-3 border-b border-white/[0.06] space-y-2.5">
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Chercher un personnage (Goku, Batman, Mario…)"
                 aria-label="Chercher un avatar"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand" />
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm outline-none" />
               {!q && (
                 <div className="flex gap-1 overflow-x-auto scrollable pb-1">
                   <TabBtn active={activeCat === 'photo'} onClick={() => setActiveCat('photo')}>📷 Ma photo</TabBtn>
@@ -182,14 +182,15 @@ export default function AvatarPicker({ open, onClose, mandatory = false }) {
             </div>
 
             {/* Contenu */}
-            <div className="flex-1 overflow-y-auto p-4 scrollable">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 scrollable">
               {!q && activeCat === 'photo' ? <PhotoTab onDone={done} /> : (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3">
                   {filtered.map((a) => (
                     <button key={a.id} type="button" onClick={() => handlePick(a.id)}
-                      className={`flex flex-col items-center gap-1 p-2 rounded-xl transition border-2 ${a.id === avatar ? 'bg-brand/20 border-brand' : 'bg-slate-800/40 border-transparent hover:border-slate-500'}`}>
-                      <AvatarFace id={a.id} className="w-16 h-16 sm:w-20 sm:h-20 text-3xl sm:text-4xl" />
-                      <span className="text-xs text-slate-300 truncate max-w-full">{a.label}</span>
+                      aria-pressed={a.id === avatar}
+                      className={`group flex flex-col items-center gap-1.5 p-2 rounded-2xl transition ${a.id === avatar ? 'bg-brand/15 ring-2 ring-brand' : 'hover:bg-white/[0.05]'}`}>
+                      <AvatarFace id={a.id} className="w-16 h-16 sm:w-20 sm:h-20 text-3xl sm:text-4xl transition-transform group-hover:scale-105" />
+                      <span className="text-xs text-slate-200 truncate max-w-full">{a.label}</span>
                     </button>
                   ))}
                   {filtered.length === 0 && <p className="col-span-full text-center text-slate-400 text-sm py-6">Aucun avatar trouvé. Tu peux mettre ta propre photo dans « 📷 Ma photo » !</p>}
@@ -197,8 +198,8 @@ export default function AvatarPicker({ open, onClose, mandatory = false }) {
               )}
             </div>
 
-            <div className="p-3 border-t border-slate-700 text-center text-xs text-slate-500">
-              📷 ta photo ou {AVATARS.length} avatars · touche pour choisir
+            <div className="px-4 py-3 border-t border-white/[0.06] text-center text-xs text-slate-500" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+              Ta photo ou l'un des {AVATARS.length} avatars : touche pour choisir
             </div>
           </motion.div>
         </motion.div>
@@ -211,7 +212,8 @@ export default function AvatarPicker({ open, onClose, mandatory = false }) {
 function TabBtn({ active, onClick, children }) {
   return (
     <button type="button" onClick={onClick} style={{ minHeight: 0 }}
-      className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition ${active ? 'bg-brand text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}>
+      aria-pressed={active}
+      className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition ${active ? 'bg-slate-100 text-slate-900' : 'bg-white/[0.05] text-slate-300 hover:bg-white/[0.1] hover:text-white'}`}>
       {children}
     </button>
   );

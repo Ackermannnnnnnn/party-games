@@ -3,11 +3,38 @@
 @tailwind utilities;
 
 html, body, #root { height: 100%; }
+:root {
+  --ink: #0e0d14;
+  --surface: #16141e;
+  --raised: #1d1a28;
+  --line: rgba(236, 234, 245, 0.08);
+  --line-strong: rgba(236, 234, 245, 0.14);
+  color-scheme: dark;
+}
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter Variable', Inter, system-ui, sans-serif;
+  background: var(--ink);
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
   /* Pas de scroll-bounce horizontal sur iOS */
   overscroll-behavior-x: none;
+}
+::selection { background: rgba(123, 97, 255, 0.45); color: #fff; }
+
+/* Fond de l'app : encre, une lueur iris discrète en haut, une pointe de jaune en bas */
+.app-bg {
+  background:
+    radial-gradient(60rem 32rem at 12% -8%, rgba(123, 97, 255, 0.16), transparent 60%),
+    radial-gradient(40rem 26rem at 100% 105%, rgba(255, 201, 60, 0.06), transparent 60%),
+    var(--ink);
+  background-attachment: fixed;
+}
+
+/* Titres : Bricolage Grotesque, serré et dense */
+.font-display {
+  font-stretch: 88%;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 /* Évite le zoom auto iOS sur input < 16px */
@@ -21,26 +48,94 @@ body {
 button, input[type="checkbox"], select {
   min-height: 40px;
 }
+button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid #b4a5ff;
+  outline-offset: 2px;
+}
 
-/* Petit utilitaire de bouton */
+/* Champs : même style partout (les jeux utilisent bg-slate-900 + border-slate-700) */
+input[type="text"], input:not([type]), input[type="search"], input[type="password"], input[type="number"], select, textarea {
+  transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+select:focus, textarea:focus {
+  border-color: #7b61ff;
+  box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.22);
+  outline: none;
+}
+input::placeholder, textarea::placeholder { color: #6c6785; }
+
+/* Boutons */
 .btn {
-  @apply px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-semibold transition-all duration-150 shadow-md;
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-semibold transition duration-150 select-none;
   min-height: 44px;
 }
-.btn-primary { @apply bg-brand hover:bg-brand-dark active:bg-brand-dark text-white; }
-.btn-ghost   { @apply bg-slate-800 hover:bg-slate-700 active:bg-slate-700 text-slate-100; }
-
-.card {
-  @apply bg-slate-800/70 backdrop-blur rounded-2xl shadow-xl p-4 sm:p-6 border border-slate-700;
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn:disabled { cursor: not-allowed; }
+.btn-primary {
+  @apply text-white;
+  background: #7b61ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 20px -10px rgba(123, 97, 255, 0.9);
 }
+.btn-primary:hover:not(:disabled) { background: #6c51f7; }
+.btn-ghost {
+  @apply text-slate-100;
+  background: rgba(236, 234, 245, 0.06);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.btn-ghost:hover:not(:disabled) { background: rgba(236, 234, 245, 0.1); }
+/* Jaune « jeton » : l'action principale d'un écran (créer une room, lancer) */
+.btn-token {
+  @apply text-token-ink font-bold;
+  background: #ffc93c;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18), 0 10px 24px -12px rgba(255, 201, 60, 0.8);
+}
+.btn-token:hover:not(:disabled) { background: #ffd35f; }
+
+/* Panneaux */
+.card {
+  @apply rounded-2xl p-4 sm:p-6;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 40%), var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line), 0 18px 40px -28px rgba(0, 0, 0, 0.9);
+}
+.panel-title { @apply font-display text-lg text-slate-100; }
 
 /* Scrollbar discrète (chat, listes) */
 .scrollable {
   scrollbar-width: thin;
-  scrollbar-color: rgba(167, 139, 250, 0.3) transparent;
+  scrollbar-color: rgba(180, 165, 255, 0.25) transparent;
 }
 .scrollable::-webkit-scrollbar { width: 6px; }
-.scrollable::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.3); border-radius: 3px; }
+.scrollable::-webkit-scrollbar-thumb { background: rgba(180, 165, 255, 0.25); border-radius: 3px; }
+
+/* Code de la room : un ticket jaune */
+.ticket {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.5rem 0.35rem 1rem;
+  border-radius: 0.9rem;
+  background: #ffc93c;
+  color: #1a1405;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+}
+.ticket::before, .ticket::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 12px; height: 12px;
+  margin-top: -6px;
+  border-radius: 999px;
+  background: var(--notch, var(--surface));
+}
+.ticket::before { left: -6px; }
+.ticket::after { right: -6px; }
+.ticket-code { font-family: 'Bricolage Grotesque Variable', 'Inter Variable', sans-serif; font-weight: 800; font-stretch: 80%; letter-spacing: 0.12em; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
 
 /* ───────── Gartic Phone : identité visuelle propre au jeu ───────── */
 .gp-shell {

@@ -148,7 +148,7 @@ export default function GameOptions({ playerCount, onStart }) {
       </p>
 
       {isHost && (
-        <button type="button" onClick={() => onStart({ ...opts, imposterCount })} disabled={playerCount < 3} className="btn btn-primary w-full text-lg disabled:opacity-50">
+        <button type="button" onClick={() => onStart({ ...opts, imposterCount })} disabled={playerCount < 3} className="btn btn-token w-full text-lg disabled:opacity-40">
           🕵️ Lancer la partie
         </button>
       )}

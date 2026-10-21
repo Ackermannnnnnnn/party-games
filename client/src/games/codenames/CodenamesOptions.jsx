@@ -35,7 +35,7 @@ export default function CodenamesOptions({ playerCount, onStart }) {
         ses agents avec un seul mot et un nombre. Les équipes se forment juste après le lancement. Il faut au moins 4 joueurs.
       </p>
       {isHost && (
-        <button onClick={() => onStart(opts)} disabled={playerCount < 4} className="btn btn-primary w-full text-lg disabled:opacity-50">
+        <button onClick={() => onStart(opts)} disabled={playerCount < 4} className="btn btn-token w-full text-lg disabled:opacity-40">
           🕵️ Lancer la partie
         </button>
       )}

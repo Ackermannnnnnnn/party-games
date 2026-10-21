@@ -51,7 +51,7 @@ export default function LiarsBarOptions({ playerCount, onStart }) {
       {isHost && (
         <>
           {tooMany && <p className="text-center text-xs text-amber-300">6 joueurs maximum à la table : les autres regarderont.</p>}
-          <button type="button" onClick={() => { unlockSound(); onStart(opts); }} disabled={playerCount < 2} className="btn btn-primary w-full text-lg disabled:opacity-50">
+          <button type="button" onClick={() => { unlockSound(); onStart(opts); }} disabled={playerCount < 2} className="btn btn-token w-full text-lg disabled:opacity-40">
             🃏 Ouvrir le bar {playerCount < 2 ? '(2 joueurs minimum)' : ''}
           </button>
         </>

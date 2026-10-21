@@ -147,7 +147,7 @@ export default function BlindTestOptions({ playerCount, onStart }) {
       {isHost && (
         <>
           {needsTwo && <p className="text-center text-xs text-amber-300">Avec un maître du jeu, il faut au moins un autre joueur.</p>}
-          <button type="button" onClick={start} disabled={available === 0 || needsTwo} className="btn btn-primary w-full text-lg disabled:opacity-50">
+          <button type="button" onClick={start} disabled={available === 0 || needsTwo} className="btn btn-token w-full text-lg disabled:opacity-50">
             🎧 Lancer le blind test {playerCount === 1 ? '(en solo)' : ''}
           </button>
         </>

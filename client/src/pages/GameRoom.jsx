@@ -6,6 +6,7 @@ import PlayerList from '../components/PlayerList.jsx';
 import Chat from '../components/Chat.jsx';
 import { GAMES, GAME_LIST, getGame } from '../games/registry.js';
 import { Identity } from './Home.jsx';
+import Avatar from '../components/Avatar.jsx';
 
 export default function GameRoom() {
   const navigate = useNavigate();
@@ -45,22 +46,24 @@ export default function GameRoom() {
 
   return (
     <div className="mt-2 sm:mt-4 lg:grid lg:grid-cols-[1fr_300px] lg:gap-4">
-      {/* Header room */}
-      <div className="card flex items-center justify-between mb-3 lg:mb-4 lg:col-span-2">
-        <div>
-          <p className="text-[10px] sm:text-xs uppercase text-slate-400">Code de la room</p>
-          <div className="flex items-center gap-2">
-            <p className="font-display text-2xl sm:text-3xl tracking-widest text-brand-light">{room.code}</p>
-            <button
-              onClick={copyCode}
-              className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-100 px-2 py-1 rounded transition"
-              title="Copier le code"
-            >
-              {copied ? '✓ lien copié' : '🔗 inviter'}
-            </button>
-          </div>
+      {/* Bandeau de la room : code à partager, joueurs, quitter */}
+      <div className="card !py-3 !px-3 sm:!px-4 flex items-center gap-3 mb-3 lg:mb-4 lg:col-span-2">
+        <button onClick={copyCode} className="ticket group" style={{ minHeight: 0 }} title="Copier le lien d'invitation">
+          <span className="ticket-code text-xl sm:text-2xl">{room.code}</span>
+          <span className="rounded-lg bg-black/10 px-2 py-1 text-xs font-semibold group-hover:bg-black/15 transition">
+            {copied ? 'Lien copié' : 'Inviter'}
+          </span>
+        </button>
+        <div className="hidden sm:flex items-center -space-x-2 ml-1 min-w-0" aria-label={`${room.players.length} joueurs`}>
+          {room.players.slice(0, 7).map((p) => (
+            <Avatar key={p.id} id={p.avatar} size="sm" className={`ring-2 ring-[var(--surface)] ${p.connected ? '' : 'opacity-40'}`} />
+          ))}
+          {room.players.length > 7 && <span className="w-8 h-8 rounded-full bg-slate-800 ring-2 ring-[var(--surface)] text-xs flex items-center justify-center text-slate-300">+{room.players.length - 7}</span>}
         </div>
-        <button onClick={leave} className="btn btn-ghost text-xs sm:text-sm px-3 py-2">
+        <p className="hidden md:block text-sm text-slate-400 truncate">
+          {inGame ? `${getGame(room.gameId)?.icon || ''} ${getGame(room.gameId)?.label || ''}` : `${room.players.length} joueur${room.players.length > 1 ? 's' : ''} dans la room`}
+        </p>
+        <button onClick={leave} className="btn btn-ghost ml-auto text-sm !px-3 !py-2 !min-h-0">
           Quitter
         </button>
       </div>
@@ -78,12 +81,12 @@ export default function GameRoom() {
       )}
 
       {/* Tabs mobile */}
-      <div className="flex gap-2 mb-3 lg:hidden">
+      <div className="flex gap-1 p-1 mb-3 rounded-xl bg-white/[0.04] ring-1 ring-white/[0.06] lg:hidden" role="tablist">
         <TabBtn active={mobileTab === 'game'} onClick={() => setMobileTab('game')}>
-          🎮 Jeu
+          {inGame ? 'Partie' : 'Salle d\'attente'}
         </TabBtn>
         <TabBtn active={mobileTab === 'chat'} onClick={() => setMobileTab('chat')}>
-          👥 Joueurs ({room.players.length}) · 💬
+          Joueurs ({room.players.length}) et chat
         </TabBtn>
       </div>
 
@@ -100,12 +103,12 @@ export default function GameRoom() {
 
       {/* Sidebar */}
       <aside className={`space-y-3 sm:space-y-4 ${mobileTab === 'chat' ? '' : 'hidden'} lg:block lg:max-h-[calc(100vh-180px)] lg:flex lg:flex-col lg:sticky lg:top-20`}>
-        <div className="card">
-          <h3 className="font-semibold mb-2 text-slate-300 text-sm">Joueurs ({room.players.length})</h3>
+        <div className="card !p-4">
+          <h3 className="panel-title mb-3">Joueurs <span className="text-slate-500 font-sans font-medium text-sm">{room.players.length}</span></h3>
           <PlayerList />
         </div>
-        <div className="card flex flex-col h-[50vh] lg:h-auto lg:flex-1 lg:min-h-[260px]">
-          <h3 className="font-semibold mb-2 text-slate-300 text-sm">Chat</h3>
+        <div className="card !p-4 flex flex-col h-[50vh] lg:h-auto lg:flex-1 lg:min-h-[260px]">
+          <h3 className="panel-title mb-2">Chat</h3>
           <div className="flex-1 min-h-0">
             <Chat />
           </div>
@@ -119,8 +122,10 @@ function TabBtn({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition ${
-        active ? 'bg-brand text-white' : 'bg-slate-800 text-slate-300'
+      role="tab"
+      aria-selected={active}
+      className={`flex-1 px-3 py-2 rounded-lg text-sm font-semibold transition ${
+        active ? 'bg-slate-100 text-slate-900 shadow' : 'text-slate-300 hover:text-white'
       }`}
     >
       {children}
@@ -136,62 +141,79 @@ function Lobby({ room, isHost }) {
   const enoughPlayers = selected ? room.players.length >= selected.minPlayers : false;
 
   return (
-    <div className="card space-y-5">
-      <div className="text-center">
-        <h2 className="font-display text-2xl sm:text-3xl mb-1 text-brand-light">Salle d'attente</h2>
-        <p className="text-slate-300 text-sm sm:text-base">Partage le code à tes amis pour qu'ils rejoignent.</p>
-      </div>
-
-      {/* Sélecteur de jeu */}
-      <div className="border-t border-slate-700 pt-4">
-        <h3 className="font-semibold text-slate-200 mb-3 text-sm sm:text-base">🎮 Choisis un jeu</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-          {GAME_LIST.map(g => {
+    <div className="space-y-4">
+      {isHost && (
+      <section className="card">
+        <div className="flex items-end justify-between gap-3 mb-4">
+          <div>
+            <h2 className="font-display text-3xl sm:text-4xl text-slate-50">Choisis le jeu</h2>
+            <p className="text-sm text-slate-400 mt-1">
+              Tout le monde voit ton choix en direct.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {GAME_LIST.map((g) => {
             const active = g.id === selectedId;
+            const tooFew = room.players.length < g.minPlayers;
             return (
               <button
                 key={g.id}
                 disabled={!isHost}
                 onClick={() => api.setGame(g.id)}
-                className={`text-left rounded-xl p-3 sm:p-4 border-2 transition ${
+                aria-pressed={active}
+                className={`relative text-left rounded-xl p-3 transition ${
                   active
-                    ? 'bg-brand/20 border-brand text-white'
-                    : 'bg-slate-900/40 border-slate-700 text-slate-300 hover:border-slate-500'
-                } ${!isHost ? 'cursor-default opacity-90' : ''}`}
+                    ? 'bg-brand/15 ring-2 ring-brand shadow-[0_10px_30px_-18px_rgba(123,97,255,0.9)]'
+                    : 'bg-white/[0.03] ring-1 ring-white/[0.06] hover:bg-white/[0.06]'
+                } ${!isHost ? 'cursor-default' : ''} ${!isHost && !active ? 'opacity-60' : ''}`}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{g.icon}</span>
-                  <span className="font-semibold">{g.label}</span>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">{g.description}</p>
-                <p className="text-[10px] text-slate-500 mt-1">Min {g.minPlayers} joueur(s)</p>
+                <span className="block text-3xl leading-none mb-2" aria-hidden="true">{g.icon}</span>
+                <span className="block font-semibold text-slate-50 leading-tight">{g.label}</span>
+                <span className={`block text-[11px] mt-0.5 ${tooFew ? 'text-rose-300/80' : 'text-slate-400'}`}>
+                  {g.minPlayers > 1 ? `dès ${g.minPlayers} joueurs` : 'dès 1 joueur'}
+                </span>
+                {active && (
+                  <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-brand text-white flex items-center justify-center" aria-hidden="true">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
-      </div>
-
-      {/* Options du jeu sélectionné */}
-      {OptionsComp && (
-        <div className="border-t border-slate-700 pt-4">
-          <h3 className="font-semibold text-slate-200 mb-3 text-sm sm:text-base">
-            ⚙️ Options — {selected.label}
-          </h3>
-          <OptionsComp
-            isHost={isHost}
-            playerCount={room.players.length}
-            onStart={(opts) => api.startGame(selected.id, opts)}
-          />
-        </div>
+      </section>
       )}
 
-      {!isHost && (
-        <p className="text-center text-slate-400 italic text-sm">En attente que l'hôte lance la partie…</p>
-      )}
-      {!enoughPlayers && (
-        <p className="text-center text-rose-300 text-sm">
-          Minimum {selected?.minPlayers} joueur(s) pour démarrer.
-        </p>
+      {selected && (
+        <section className="card">
+          {!isHost && <p className="text-sm text-slate-400 mb-3">L'hôte a choisi :</p>}
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-4xl leading-none" aria-hidden="true">{selected.icon}</span>
+            <div className="min-w-0">
+              <h3 className="font-display text-2xl text-slate-50 leading-tight">{selected.label}</h3>
+              <p className="text-sm text-slate-400">{selected.description}</p>
+            </div>
+          </div>
+          {OptionsComp && (
+            <OptionsComp
+              isHost={isHost}
+              playerCount={room.players.length}
+              onStart={(opts) => api.startGame(selected.id, opts)}
+            />
+          )}
+          {!isHost && (
+            <p className="mt-4 flex items-center justify-center gap-2 text-slate-400 text-sm">
+              <span className="w-2 h-2 rounded-full bg-token animate-pulse" aria-hidden="true" />
+              En attente que l'hôte lance la partie
+            </p>
+          )}
+          {!enoughPlayers && (
+            <p className="mt-3 text-center text-rose-300 text-sm">
+              Il faut au moins {selected.minPlayers} joueurs pour ce jeu.
+            </p>
+          )}
+        </section>
       )}
     </div>
   );
@@ -224,13 +246,13 @@ function JoinFromLink() {
   return (
     <div className="max-w-md mx-auto mt-6 sm:mt-10 card space-y-4">
       <div className="text-center">
-        <p className="text-xs uppercase text-slate-400">Tu es invité dans la room</p>
-        <p className="font-display text-4xl tracking-widest text-brand-light">{roomCode}</p>
+        <p className="text-sm text-slate-400 mb-2">On t'invite à jouer dans la room</p>
+        <span className="ticket" style={{ '--notch': 'var(--surface)' }}><span className="ticket-code text-3xl pr-2">{roomCode}</span></span>
       </div>
       <Identity compact />
-      <button type="button" className="btn btn-primary w-full disabled:opacity-50" disabled={!canJoin || !connected}
+      <button type="button" className="btn btn-token w-full disabled:opacity-40" disabled={!canJoin || !connected}
         onClick={() => api.joinRoom(roomCode, pseudo)}>
-        {connected ? '🎮 Rejoindre la partie' : 'Connexion au serveur…'}
+        {connected ? 'Rejoindre la partie' : 'Connexion au serveur…'}
       </button>
       <p className="text-[11px] text-slate-500 text-center">Partie déjà lancée ? Tu joueras à la manche suivante.</p>
       <button type="button" className="text-xs text-slate-400 underline w-full" style={{ minHeight: 0 }} onClick={() => navigate('/')}>Retour à l'accueil</button>

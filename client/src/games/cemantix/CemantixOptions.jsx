@@ -54,7 +54,7 @@ export default function CemantixOptions({ onStart }) {
         Jouable seul ou à plusieurs.
       </p>
       {isHost && (
-        <button onClick={() => onStart(opts)} className="btn btn-primary w-full text-lg">🌡️ Lancer la partie</button>
+        <button onClick={() => onStart(opts)} className="btn btn-token w-full text-lg">🌡️ Lancer la partie</button>
       )}
     </div>
   );

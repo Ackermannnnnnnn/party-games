@@ -217,7 +217,7 @@ export default function PetitBacOptions({ playerCount, onStart }) {
         <button
           onClick={() => onStart(opts)}
           disabled={playerCount < 3 || !enoughCats}
-          className="btn btn-primary w-full text-base sm:text-lg disabled:opacity-50"
+          className="btn btn-token w-full text-base sm:text-lg disabled:opacity-50"
         >
           📝 Lancer le Petit Bac
         </button>

@@ -69,23 +69,24 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
-      <header className="px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between border-b border-slate-800/60 sticky top-0 bg-slate-900/80 backdrop-blur z-10">
-        <button
-          onClick={goHome}
-          className="font-display text-xl sm:text-2xl tracking-wider text-brand-light hover:text-brand transition-colors"
-        >
-          PARTY GAMES
-        </button>
-        <div className="flex items-center gap-2">
-          <VolumeToggle />
-          <span className={`text-[10px] sm:text-xs px-2 py-1 rounded-full ${connected ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`}>
-            {connected ? '● connecté' : '○ déconnecté'}
-          </span>
+    <div className="min-h-full app-bg">
+      <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-slate-950/75 backdrop-blur-md">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between">
+          <button onClick={goHome} className="group flex items-center gap-2" style={{ minHeight: 0 }} aria-label="Accueil">
+            <Logo />
+            <span className="font-display text-lg sm:text-xl text-slate-50 group-hover:text-white">Party Games</span>
+          </button>
+          <div className="flex items-center gap-1.5">
+            <VolumeToggle />
+            <span className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs text-slate-400" title={connected ? 'Connecté au serveur' : 'Connexion au serveur…'}>
+              <span className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_0_3px_rgba(52,211,153,0.15)]' : 'bg-rose-400 animate-pulse'}`} />
+              <span className="hidden sm:inline">{connected ? 'En ligne' : 'Connexion…'}</span>
+            </span>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto p-3 sm:p-4">
+      <main className="max-w-5xl mx-auto px-3 pb-10 pt-3 sm:px-4 sm:pt-5">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/room/:code" element={<GameRoom />} />
@@ -102,7 +103,7 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             onAnimationComplete={() => setTimeout(() => setNotice(null), 4000)}
-            className="fixed z-50 top-16 left-3 right-3 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:max-w-md bg-sky-600 text-white px-4 py-3 rounded-xl shadow-2xl text-sm text-center cursor-pointer"
+            className="fixed z-50 top-[4.25rem] left-3 right-3 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:max-w-md bg-slate-800 text-slate-50 px-4 py-3 rounded-2xl shadow-2xl ring-1 ring-white/10 text-sm text-center cursor-pointer"
             onClick={() => setNotice(null)}
             role="status"
           >
@@ -119,13 +120,24 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 30 }}
             onAnimationComplete={() => setTimeout(() => setError(null), 3500)}
-            className="fixed z-50 bottom-4 left-3 right-3 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:max-w-md bg-rose-500 text-white px-4 py-3 rounded-xl shadow-2xl text-sm sm:text-base text-center cursor-pointer"
+            className="fixed z-50 bottom-4 left-3 right-3 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:max-w-md bg-[#2a1520] text-rose-100 px-4 py-3 rounded-2xl shadow-2xl ring-1 ring-rose-400/40 text-sm sm:text-base text-center cursor-pointer"
             onClick={() => setError(null)}
           >
-            ⚠️ {serverError.message || serverError.code}
+            {serverError.message || serverError.code}
           </motion.div>
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/** Logo : trois jetons empilés (iris, jaune, menthe). */
+function Logo() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true" className="shrink-0 transition-transform group-hover:-rotate-6">
+      <circle cx="9" cy="15" r="7" fill="#7b61ff" />
+      <circle cx="17" cy="15" r="7" fill="#ffc93c" style={{ mixBlendMode: 'screen' }} />
+      <circle cx="13" cy="8.5" r="5.5" fill="#3ddc97" style={{ mixBlendMode: 'screen' }} />
+    </svg>
   );
 }

@@ -79,7 +79,7 @@ export default function BombPartyOptions({ playerCount, onStart }) {
         <button
           onClick={() => onStart(opts)}
           disabled={playerCount < 2}
-          className="btn btn-primary w-full text-lg disabled:opacity-50"
+          className="btn btn-token w-full text-lg disabled:opacity-50"
         >
           💣 Lancer la partie
         </button>
