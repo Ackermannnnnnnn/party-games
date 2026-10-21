@@ -80,7 +80,7 @@ async function toDataUrl(source, max = 800) {
  * Onglet admin « Avatars » :
  *  - ⭐ Perso : cadrer les images déposées dans client/avatars/
  *  - Personnages (Marvel, Anime…) : choisir la meilleure photo parmi plusieurs propositions, puis la cadrer
- * Tout est enregistré sur GitHub en un commit → Render redéploie.
+ * Tout est enregistré sur GitHub en un commit ; le serveur l'applique tout de suite (sans redéploiement).
  */
 export default function AvatarsAdmin({ password }) {
   const version = useAvatarsVersion();

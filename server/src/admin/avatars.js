@@ -199,7 +199,9 @@ export async function saveAvatars({ cadrage = {}, photos = {}, characters = { ad
   if (removeIds.size) parts.push(`${removeIds.size} supprimé${removeIds.size > 1 ? 's' : ''}`);
   if (okPhotos) parts.push(`${okPhotos} photo${okPhotos > 1 ? 's' : ''}`);
   if (nCrops) parts.push(`cadrage de ${nCrops} image${nCrops > 1 ? 's' : ''}`);
-  const commit = await commitFiles(files, `Avatars : ${parts.join(' + ')} (depuis l'admin)`);
+  // [skip render] : pas de reconstruction du site à chaque enregistrement (le serveur applique tout en direct,
+  // voir liveAvatars.js) ; ce sera intégré au prochain déploiement du code.
+  const commit = await commitFiles(files, `Avatars : ${parts.join(' + ')} (depuis l'admin) [skip render]`);
 
   // Visible tout de suite pour les joueurs : le serveur leur envoie l'état du dépôt (voir liveAvatars.js)
   applySaved({ crops: sortedCrops, characters: charList, photos: savedImages, removed: [...removeIds] });
