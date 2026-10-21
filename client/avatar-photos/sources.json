@@ -772,10 +772,11 @@
   ]
  },
  "thor": {
-  "pick": 0,
+  "pick": 2,
   "candidates": [
    "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/659-thor.jpg",
-   "https://upload.wikimedia.org/wikipedia/en/1/1a/Thor_%28Marvel_Comics%29.png"
+   "https://upload.wikimedia.org/wikipedia/en/1/1a/Thor_%28Marvel_Comics%29.png",
+   "https://upload.wikimedia.org/wikipedia/en/3/3c/Chris_Hemsworth_as_Thor.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
   ]
  },
  "totoro": {
