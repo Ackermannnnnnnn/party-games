@@ -150,7 +150,7 @@ export default function LiarsBarGame() {
   const vols = useVolumes();
   const [viewPref, setViewPref] = useState(() => { try { return localStorage.getItem(VIEW_KEY); } catch { return null; } });
 
-  useEffect(() => { syncClock(); return () => stopMusic(); }, []);
+  useEffect(() => { syncClock(); unlockSound(); return () => stopMusic(); }, []); // l'ambiance démarre dès que le son est débloqué
   useEffect(() => { roughSync(p?.serverNow); }, [p?.serverNow]);
   useEffect(() => { setSelected([]); }, [p?.round, p?.currentId, p?.phase]);
 
@@ -164,14 +164,15 @@ export default function LiarsBarGame() {
     if (p.phase === 'REVEAL') setTimeout(() => sfx.flip(), 600);
     if (p.phase === 'ROULETTE' && p.shot && !p.shot.revealed) {
       const left = p.shot.revealAt - serverNow();
-      sfx.spin(Math.max(800, left - 400));
-      setTimeout(() => sfx.cock(), Math.max(0, left - 350));
+      sfx.spin(Math.min(1800, Math.max(800, left - 600)));
+      sfx.heartbeat(Math.max(600, left - 200));
+      setTimeout(() => sfx.cock(), Math.max(0, left - 450));
     }
     if (p.phase === 'GAME_OVER') sfx.win();
   }, [p?.phase, p?.round, p?.shot?.startedAt]);
   useEffect(() => {
-    const onEvent = ({ type }) => {
-      if (type === 'play') sfx.card();
+    const onEvent = ({ type, payload }) => {
+      if (type === 'play') sfx.card(payload?.count || 1);
       if (type === 'liar') sfx.liar();
       if (type === 'bang') sfx.bang();
       if (type === 'click') sfx.click();
@@ -179,6 +180,10 @@ export default function LiarsBarGame() {
     socket.on('game:event', onEvent);
     return () => socket.off('game:event', onEvent);
   }, []);
+
+  // petit signal quand c'est à toi
+  const isMyTurn = p?.phase === 'TURN' && p?.currentId === playerId;
+  useEffect(() => { if (isMyTurn) sfx.yourTurn(); }, [isMyTurn, p?.lastPlay?.at]);
 
   const seats = p?.seats || [];
   const myIndex = Math.max(0, seats.findIndex((s) => s.id === playerId));
@@ -225,7 +230,8 @@ export default function LiarsBarGame() {
             <LiarsBar3D p={p} playerId={playerId} ordered={ordered} myHand={priv.seated && priv.alive ? priv.hand || [] : []}
               selected={selected} onToggle={toggle} canSelect={myTurn && !p.mustAccuse} />
           </Suspense>
-          <Hud3D p={p} person={person} tableCard={tableCard} now={now} turnFrac={turnFrac} playerId={playerId} />
+          <Hud3D p={p} person={person} tableCard={tableCard} now={now} turnFrac={turnFrac} playerId={playerId}
+            myTurn={myTurn} canAccuse={canAccuse} selected={selected} onPlay={play} onLiar={liar} status={status} />
         </div>
       ) : (
       <div className="lb-table-wrap">
@@ -299,9 +305,8 @@ export default function LiarsBarGame() {
 
       {/* Statut + main du joueur */}
       <div className="mt-3 space-y-3">
-        <p className={`text-center font-semibold ${myTurn ? 'text-amber-300' : 'text-slate-200'}`}>{status}</p>
+        {!is3d && <p className={`text-center font-semibold ${myTurn ? 'text-amber-300' : 'text-slate-200'}`}>{status}</p>}
 
-        {is3d && priv.seated && priv.alive && myTurn && !p.mustAccuse && <p className="text-center text-xs text-amber-200/80">Clique sur tes cartes posées devant toi pour les choisir (1 à 3).</p>}
         {!is3d && priv.seated && priv.alive && (
           <div className="flex justify-center items-end min-h-[100px]">
             <AnimatePresence>
@@ -322,7 +327,7 @@ export default function LiarsBarGame() {
         {priv.seated && !priv.alive && <p className="text-center text-slate-400 text-sm">💀 Tu es éliminé — profite du spectacle.</p>}
         {!priv.seated && <p className="text-center text-slate-400 text-sm">👀 Tu regardes la partie (table pleine ou arrivé en cours).</p>}
 
-        <div className="flex justify-center gap-2">
+        {!is3d && <div className="flex justify-center gap-2">
           {myTurn && !p.mustAccuse && (
             <button type="button" onClick={play} disabled={!selected.length} className="btn btn-primary whitespace-nowrap disabled:opacity-40">
               {selected.length ? `Poser ${selected.length} ${selected.length > 1 ? tableCard?.plural : tableCard?.name}` : 'Choisis 1 à 3 cartes'}
@@ -332,54 +337,67 @@ export default function LiarsBarGame() {
             <motion.button type="button" onClick={liar} whileTap={{ scale: 0.92 }} animate={p.mustAccuse && myTurn ? { scale: [1, 1.06, 1] } : {}} transition={{ repeat: Infinity, duration: 1.2 }}
               className="lb-liar-btn">MENTEUR !</motion.button>
           )}
-        </div>
+        </div>}
       </div>
     </div>
   );
 }
 
-/** Informations par-dessus la scène 3D : carte de table, tour en cours, révélation, roulette. */
-function Hud3D({ p, person, tableCard, now, turnFrac }) {
+/** Informations et actions par-dessus la scène 3D : carte de table, tour en cours, révélation, roulette, boutons. */
+function Hud3D({ p, person, tableCard, now, turnFrac, myTurn, canAccuse, selected, onPlay, onLiar, status }) {
   const shot = p.phase === 'ROULETTE' ? p.shot : null;
   const revealed = !!shot && (shot.revealed || now >= shot.revealAt);
   const r = p.reveal;
   return (
-    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-between p-3">
-      <div className="self-start flex flex-col items-center rounded-xl bg-black/55 px-4 py-1.5 backdrop-blur-sm">
-        <span className="text-[10px] uppercase tracking-[0.25em] text-amber-200/80">Table de</span>
-        <span className="lb-title text-2xl sm:text-3xl leading-none" style={{ color: tableCard?.color }}>{tableCard?.plural}</span>
-        {p.phase === 'TURN' && (
-          <span className="mt-1 text-xs text-amber-100">
-            🎯 {person(p.currentId).pseudo}{p.lastPlay ? ` · ${person(p.lastPlay.by).pseudo} a posé ${p.lastPlay.count}` : ''}
-          </span>
-        )}
-        {p.phase === 'TURN' && turnFrac != null && <span className="mt-1 h-1 w-32 rounded-full bg-white/10 overflow-hidden"><span className="block h-full bg-amber-400" style={{ width: `${turnFrac * 100}%` }} /></span>}
+    <div className="pointer-events-none absolute inset-0 flex flex-col items-center p-3 sm:p-4">
+      {/* coin haut gauche : carte de table + à qui de jouer */}
+      <div className="self-start flex flex-col items-start rounded-2xl bg-black/55 px-4 py-2 backdrop-blur-sm ring-1 ring-amber-200/10 max-w-[60%]">
+        <span className="lb-title text-[13px] text-amber-200/80 leading-none">Table des</span>
+        <span className="lb-title text-3xl sm:text-4xl leading-none" style={{ color: tableCard?.color }}>{tableCard?.plural}</span>
+        <span className={`mt-1 text-xs sm:text-sm font-semibold leading-snug ${myTurn ? 'text-amber-300' : 'text-amber-50'}`}>{status}</span>
+        {p.phase === 'TURN' && turnFrac != null && <span className="mt-1.5 h-1 w-28 rounded-full bg-white/10 overflow-hidden"><span className="block h-full bg-amber-400 transition-[width] duration-200" style={{ width: `${turnFrac * 100}%` }} /></span>}
       </div>
+
       <AnimatePresence>
         {p.phase === 'REVEAL' && r && (
-          <motion.div key="rv" initial={{ scale: 1.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-1 rounded-2xl bg-black/60 px-5 py-2 backdrop-blur-sm">
-            <span className="lb-title text-4xl text-red-400 whitespace-nowrap">MENTEUR !</span>
-            <span className="text-xs text-amber-100">{person(r.accuser).pseudo} accuse {person(r.by).pseudo}</span>
-            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 + r.cards.length * 0.25 }}
-              className={`lb-title whitespace-nowrap text-2xl px-3 rounded ${r.devil ? 'bg-red-700' : r.lie ? 'bg-red-600/80' : 'bg-emerald-600/80'} text-white`}>
-              {r.devil ? '😈 CARTE DU DIABLE !' : r.lie ? 'MENSONGE' : 'VÉRITÉ'}
+          <motion.div key="rv" initial={{ scale: 1.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }} className="absolute top-[18%] flex flex-col items-center gap-1">
+            <span className="lb-title text-5xl sm:text-6xl text-red-500 whitespace-nowrap drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">MENTEUR !</span>
+            <motion.span initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 + r.cards.length * 0.3 }}
+              className={`lb-title whitespace-nowrap text-2xl px-3 rounded ${r.devil ? 'bg-red-700' : r.lie ? 'bg-red-600/90' : 'bg-emerald-600/90'} text-white`}>
+              {r.devil ? '😈 CARTE DU DIABLE !' : r.lie ? `${person(r.by).pseudo} A MENTI` : `${person(r.by).pseudo} DISAIT VRAI`}
             </motion.span>
           </motion.div>
         )}
         {shot && (
-          <motion.div key={`sh-${shot.startedAt}`} initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }}
-            className={`flex items-center gap-3 rounded-2xl bg-black/65 px-4 py-2 backdrop-blur-sm ${revealed && shot.fired ? 'lb-shake' : ''}`}>
+          <motion.div key={`sh-${shot.startedAt}`} initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }}
+            className={`absolute top-3 right-3 flex items-center gap-3 rounded-2xl bg-black/60 px-4 py-2 backdrop-blur-sm ${revealed && shot.fired ? 'lb-shake' : ''}`}>
             <Avatar id={person(shot.playerId).avatar} size="md" className={revealed && shot.fired ? 'grayscale' : ''} />
             <div className="text-left">
-              <p className="font-bold">{person(shot.playerId).pseudo} · tir n°{shot.chamber + 1}</p>
-              {!revealed ? <p className="text-xs text-slate-300">1 chance sur {6 - shot.chamber}…</p>
-                : shot.fired ? <p className="lb-title text-3xl text-red-500 leading-none">💥 BANG</p>
-                  : <p className="lb-title text-2xl text-emerald-300 leading-none">*clic* · survit</p>}
+              <p className="font-bold text-amber-50">{person(shot.playerId).pseudo} · balle n°{shot.chamber + 1}</p>
+              {!revealed ? <p className="text-xs text-amber-100/80">1 chance sur {6 - shot.chamber}…</p>
+                : shot.fired ? <p className="lb-title text-4xl text-red-500 leading-none">BANG</p>
+                  : <p className="lb-title text-3xl text-emerald-300 leading-none">*clic*</p>}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-      {revealed && shot?.fired && <motion.div className="absolute inset-0 bg-red-600" initial={{ opacity: 0.55 }} animate={{ opacity: 0 }} transition={{ duration: 1 }} />}
+
+      {/* actions, au-dessus de ta main */}
+      <div className="mt-auto mb-[30%] sm:mb-[25%] flex items-center gap-3">
+        {canAccuse && (
+          <motion.button type="button" onClick={onLiar} whileTap={{ scale: 0.92 }}
+            animate={p.mustAccuse && myTurn ? { scale: [1, 1.07, 1] } : {}} transition={{ repeat: Infinity, duration: 1.1 }}
+            className="lb-action lb-action-liar">Menteur !</motion.button>
+        )}
+        {myTurn && !p.mustAccuse && (
+          <button type="button" onClick={onPlay} disabled={!selected.length} className="lb-action lb-action-play whitespace-nowrap">
+            {selected.length ? `Poser ${selected.length} ${selected.length > 1 ? tableCard?.plural : tableCard?.name}` : 'Choisis tes cartes'}
+          </button>
+        )}
+      </div>
+
+      {revealed && shot?.fired && <motion.div className="absolute inset-0 bg-red-700" initial={{ opacity: 0.7 }} animate={{ opacity: 0 }} transition={{ duration: 1.4 }} />}
+      {revealed && shot?.fired && shot.playerId && person(shot.playerId) && <motion.div className="absolute inset-0 bg-black" initial={{ opacity: 0 }} animate={{ opacity: [0, 0, 0.35, 0] }} transition={{ duration: 2.2 }} />}
     </div>
   );
 }
@@ -387,8 +405,8 @@ function Hud3D({ p, person, tableCard, now, turnFrac }) {
 function VolumeControls({ vols }) {
   return (
     <span className="flex items-center gap-2">
-      <label className="flex items-center gap-1" title={vols.missing ? 'Ajoute client/public/sounds/liarsbar-music.mp3 pour la musique' : 'Musique'}>
-        🎵<input type="range" min="0" max="1" step="0.05" value={vols.music} disabled={vols.missing} onChange={(e) => setVolume('music', Number(e.target.value))} className="w-16 accent-amber-400 disabled:opacity-30" aria-label="Volume de la musique" />
+      <label className="flex items-center gap-1" title={vols.missing ? 'Ambiance du bar' : 'Musique'}>
+        🎵<input type="range" min="0" max="1" step="0.05" value={vols.music} onChange={(e) => setVolume('music', Number(e.target.value))} className="w-16 accent-amber-400" aria-label="Volume de l'ambiance" />
       </label>
       <label className="flex items-center gap-1" title="Bruitages">
         🔊<input type="range" min="0" max="1" step="0.05" value={vols.sfx} onChange={(e) => setVolume('sfx', Number(e.target.value))} className="w-16 accent-amber-400" aria-label="Volume des bruitages" />
