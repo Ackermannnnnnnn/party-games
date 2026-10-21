@@ -1,5 +1,99 @@
 [
  {
+  "id": "2026-10-21-583bc629",
+  "game": "liarsbar",
+  "label": "Liar's Bar",
+  "room": "KXVMJD",
+  "startedAt": 1792606771853,
+  "endedAt": 1792606875298,
+  "durationSec": 103,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "goku"
+   }
+  ],
+  "winner": "Mo",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "goku",
+    "score": null,
+    "detail": "2 tir(s) au revolver · survivant",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "mmmmm",
+    "avatar": "img:perso/black-panther",
+    "score": null,
+    "detail": "0 tir(s) au revolver",
+    "win": false
+   }
+  ],
+  "recap": {
+   "events": [
+    {
+     "round": 1,
+     "text": "Manche 1 : table de Ass (2 joueurs)"
+    },
+    {
+     "text": "q8zoc19ps11gpqlo pose 3 carte(s)"
+    },
+    {
+     "text": "4dlq3eieh1jid9iw pose 2 carte(s)"
+    },
+    {
+     "text": "q8zoc19ps11gpqlo pose 2 carte(s)"
+    },
+    {
+     "text": "4dlq3eieh1jid9iw crie « Menteur ! » à q8zoc19ps11gpqlo → Dame, Joker : mensonge",
+     "accent": true
+    },
+    {
+     "text": "q8zoc19ps11gpqlo tire (1/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 2,
+     "text": "Manche 2 : table de Ass (2 joueurs)"
+    },
+    {
+     "text": "q8zoc19ps11gpqlo pose 3 carte(s)"
+    },
+    {
+     "text": "4dlq3eieh1jid9iw crie « Menteur ! » à q8zoc19ps11gpqlo → Joker, As, Roi : mensonge",
+     "accent": true
+    },
+    {
+     "text": "q8zoc19ps11gpqlo tire (2/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 3,
+     "text": "Manche 3 : table de Ass (2 joueurs)"
+    },
+    {
+     "text": "q8zoc19ps11gpqlo : temps écoulé"
+    },
+    {
+     "text": "q8zoc19ps11gpqlo pose 1 carte(s) (temps écoulé)"
+    },
+    {
+     "text": "4dlq3eieh1jid9iw a quitté la table"
+    }
+   ]
+  },
+  "options": {
+   "accuseMode": "next",
+   "devilCard": false,
+   "turnSec": 30,
+   "view": "3d"
+  }
+ },
+ {
   "id": "2026-10-21-644ec3f1",
   "game": "liarsbar",
   "label": "Liar's Bar",
