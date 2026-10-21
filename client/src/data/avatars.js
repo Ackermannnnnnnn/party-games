@@ -319,7 +319,9 @@ export async function loadLiveAvatars() {
     const r = await fetch(`${SERVER_URL}/avatars/live`, { cache: 'no-store' });
     if (!r.ok) return;
     const d = await r.json();
-    live = { enabled: !!d.enabled, crops: d.crops || {}, characters: Array.isArray(d.characters) ? d.characters : [], photos: d.photos || {} };
+    // ancien serveur (sans cadrages/photos) ou dépôt illisible : on garde ce qui est intégré au site
+    const complete = d.enabled && d.crops && d.photos && Object.keys(d.photos).length > 0;
+    live = { enabled: !!complete, crops: d.crops || {}, characters: Array.isArray(d.characters) ? d.characters : [], photos: d.photos || {} };
     rebuild();
     version += 1;
     listeners.forEach((fn) => fn(version));
