@@ -261,7 +261,7 @@
   ]
  },
  "goku": {
-  "pick": 0,
+  "pick": -1,
   "candidates": [
    "https://s4.anilist.co/file/anilistcdn/character/large/246-wsRRr6z1kii8.png",
    "https://upload.wikimedia.org/wikipedia/en/4/4c/GokumangaToriyama.png"
