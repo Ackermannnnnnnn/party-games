@@ -340,9 +340,9 @@ function Revolver({ mode, shot, revealed, aimAngle, shakeRef }) {
     if (!g.current) return;
     // position / orientation visées
     if (mode.type === 'me') {
-      // ta main droite lève le revolver vers ta tempe : on le voit de profil, en bas à droite
-      dummy.position.copy(camera.localToWorld(new THREE.Vector3(0.3, -0.1, -0.5)));
-      dummy.lookAt(camera.localToWorld(new THREE.Vector3(-0.15, 0.06, -0.3)));
+      // canon collé contre ta tempe droite : on le voit de profil sur le bord droit, pointé vers toi
+      dummy.position.copy(camera.localToWorld(new THREE.Vector3(0.17, -0.1, -0.3)));
+      dummy.lookAt(camera.localToWorld(new THREE.Vector3(0.12, 0.12, -0.05)));
     } else if (mode.type === 'head') {
       const head = mode.head;
       const side = new THREE.Vector3(-Math.sin(mode.angle), 0, Math.cos(mode.angle));
@@ -358,7 +358,7 @@ function Revolver({ mode, shot, revealed, aimAngle, shakeRef }) {
     const k = damp(dt, mode.type === 'table' ? 4 : 6);
     g.current.position.lerp(dummy.position, k);
     g.current.quaternion.slerp(dummy.quaternion, k);
-    const sc = mode.type === 'me' ? 0.75 : mode.type === 'head' ? 2 : 1.15;
+    const sc = mode.type === 'me' ? 0.5 : mode.type === 'head' ? 2 : 1.15;
     g.current.scale.setScalar(g.current.scale.x + (sc - g.current.scale.x) * k);
     if (drum.current) {
       if (shot && !revealed) {
@@ -524,9 +524,10 @@ function Table() {
 }
 
 /** Caméra : tes yeux, assis à la table. Regarde le centre, le tireur, ou baisse les yeux sur ta main. */
-function CameraRig({ focusRef, shakeRef, zoom }) {
+function CameraRig({ focusRef, shakeRef, zoom, selfShot }) {
   const { camera, pointer, size } = useThree();
   const look = useRef(new THREE.Vector3(0, TOP + 0.2, -0.3));
+  const roll = useRef(0);
   // écran en portrait : champ plus large pour garder tout le monde visible
   const aspect = size.width / size.height;
   const baseFov = aspect < 0.8 ? 74 : aspect < 1.2 ? 64 : 55;
@@ -535,13 +536,30 @@ function CameraRig({ focusRef, shakeRef, zoom }) {
     // zoom dramatique sur le tireur pendant la roulette
     const fov = baseFov * zoom;
     if (Math.abs(camera.fov - fov) > 0.05) { camera.fov += (fov - camera.fov) * damp(dt, 2.2); camera.updateProjectionMatrix(); }
+    const t = clock.elapsedTime;
     const pos = EYE.clone();
-    pos.x += pointer.x * 0.18;
-    pos.y += pointer.y * 0.08 + Math.sin(clock.elapsedTime * 0.7) * 0.01;
-    camera.position.lerp(pos, k);
-    const target = focusRef.current || new THREE.Vector3(pointer.x * 0.5, TOP + 0.25, -0.3);
-    look.current.lerp(target, k);
+    let target = focusRef.current || new THREE.Vector3(pointer.x * 0.5, TOP + 0.25, -0.3);
+    let rollTo = 0; let kk = k;
+    if (selfShot && !selfShot.revealed) {
+      // le canon contre ta tempe : tête légèrement penchée, regard qui baisse, main qui tremble
+      rollTo = 0.13;
+      pos.add(new THREE.Vector3(-0.04, -0.04, 0));
+      target = new THREE.Vector3(-0.15, TOP + 0.05, 0.1);
+      pos.x += Math.sin(t * 23) * 0.0025; pos.y += Math.sin(t * 31) * 0.002;
+    } else if (selfShot && selfShot.fired) {
+      // BANG : tu t'effondres sur la table
+      rollTo = 0.75; kk = damp(dt, 2.2);
+      pos.add(new THREE.Vector3(-0.3, -0.5, -0.4));
+      target = new THREE.Vector3(-0.9, TOP, 0.2);
+    } else {
+      pos.x += pointer.x * 0.18;
+      pos.y += pointer.y * 0.08 + Math.sin(t * 0.7) * 0.01;
+    }
+    camera.position.lerp(pos, kk);
+    look.current.lerp(target, kk);
     camera.lookAt(look.current);
+    roll.current += (rollTo - roll.current) * kk;
+    camera.rotateZ(roll.current);
     if (shakeRef.current && performance.now() < shakeRef.current) {
       const s = ((shakeRef.current - performance.now()) / 900) * 0.08;
       camera.position.x += (Math.random() - 0.5) * s;
@@ -571,7 +589,7 @@ function Scene({ p, playerId, ordered, myHand, selected, onToggle, canSelect, no
   else if (shot) focusRef.current = new THREE.Vector3(0, TOP + 0.05, 0.4);
   else focusRef.current = null;
 
-  const gunMode = shot
+  const gunMode = shot && !(shot.playerId === playerId && revealed && shot.fired)
     ? (shot.playerId === playerId ? { type: 'me' } : { type: 'head', head: headOf(angleOf(shot.playerId)), angle: angleOf(shot.playerId) })
     : { type: 'table' };
 
@@ -582,7 +600,8 @@ function Scene({ p, playerId, ordered, myHand, selected, onToggle, canSelect, no
       <fog attach="fog" args={['#140b06', 5, 11]} />
       <ambientLight intensity={0.55} color="#ffd9b0" />
       <hemisphereLight args={['#ffcf99', '#2a1408', 0.55]} />
-      <CameraRig focusRef={focusRef} shakeRef={shakeRef} zoom={shot && shot.playerId !== playerId ? 0.5 : p.phase === 'REVEAL' ? 0.85 : 1} />
+      <CameraRig focusRef={focusRef} shakeRef={shakeRef} zoom={shot && shot.playerId !== playerId ? 0.5 : p.phase === 'REVEAL' ? 0.85 : shot ? 0.92 : 1}
+        selfShot={shot && shot.playerId === playerId ? { revealed, fired: !!shot.fired } : null} />
       <Room />
       <Lamp />
       <Dust />
@@ -617,7 +636,7 @@ function Scene({ p, playerId, ordered, myHand, selected, onToggle, canSelect, no
       })}
 
       <Revolver mode={gunMode} shot={shot} revealed={revealed} aimAngle={angleOf(p.currentId)} shakeRef={shakeRef} />
-      <MyHand hand={myHand} selected={selected} onToggle={onToggle} canSelect={canSelect} dealing={dealing} />
+      {!(shot && shot.playerId === playerId) && <MyHand hand={myHand} selected={selected} onToggle={onToggle} canSelect={canSelect} dealing={dealing} />}
     </>
   );
 }

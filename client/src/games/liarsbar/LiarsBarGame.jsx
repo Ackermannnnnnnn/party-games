@@ -344,7 +344,7 @@ export default function LiarsBarGame() {
 }
 
 /** Informations et actions par-dessus la scène 3D : carte de table, tour en cours, révélation, roulette, boutons. */
-function Hud3D({ p, person, tableCard, now, turnFrac, myTurn, canAccuse, selected, onPlay, onLiar, status }) {
+function Hud3D({ p, person, tableCard, now, turnFrac, myTurn, canAccuse, selected, onPlay, onLiar, status, playerId }) {
   const shot = p.phase === 'ROULETTE' ? p.shot : null;
   const revealed = !!shot && (shot.revealed || now >= shot.revealAt);
   const r = p.reveal;
@@ -396,6 +396,19 @@ function Hud3D({ p, person, tableCard, now, turnFrac, myTurn, canAccuse, selecte
         )}
       </div>
 
+      {/* c'est toi qui as le canon sur la tempe : bords de l'écran qui s'assombrissent au rythme du cœur */}
+      {shot && shot.playerId === playerId && !revealed && (
+        <motion.div className="absolute inset-0" style={{ background: 'radial-gradient(75% 65% at 45% 50%, transparent 35%, rgba(0,0,0,0.85) 100%)' }}
+          animate={{ opacity: [0.65, 1, 0.65] }} transition={{ repeat: Infinity, duration: 0.8 }} />
+      )}
+      {revealed && shot?.fired && shot.playerId === playerId && (
+        <motion.div className="absolute inset-0 flex items-center justify-center bg-black" initial={{ opacity: 0 }} animate={{ opacity: [0, 0, 0.92] }} transition={{ duration: 1.6, times: [0, 0.4, 1] }}>
+          <motion.span className="lb-title text-5xl text-red-500" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>Tu es mort</motion.span>
+        </motion.div>
+      )}
+      {revealed && !shot?.fired && shot?.playerId === playerId && (
+        <motion.p className="absolute top-1/3 lb-title text-4xl text-emerald-300 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]" initial={{ opacity: 0, scale: 1.4 }} animate={{ opacity: [0, 1, 1, 0], scale: 1 }} transition={{ duration: 2 }}>Ouf… tu survis</motion.p>
+      )}
       {revealed && shot?.fired && <motion.div className="absolute inset-0 bg-red-700" initial={{ opacity: 0.7 }} animate={{ opacity: 0 }} transition={{ duration: 1.4 }} />}
       {revealed && shot?.fired && shot.playerId && person(shot.playerId) && <motion.div className="absolute inset-0 bg-black" initial={{ opacity: 0 }} animate={{ opacity: [0, 0, 0.35, 0] }} transition={{ duration: 2.2 }} />}
     </div>
