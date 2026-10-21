@@ -78,10 +78,11 @@
   ]
  },
  "buzz": {
-  "pick": 0,
+  "pick": 2,
   "candidates": [
    "https://static.wikia.nocookie.net/pixar/images/5/56/Buzz_Profile.jpg/revision/latest",
-   "https://upload.wikimedia.org/wikipedia/commons/0/02/Buzz_Lightyear_sculpture_of_Toy_Story_Hotel_Shanghai_%28cropped%29.jpg"
+   "https://upload.wikimedia.org/wikipedia/commons/0/02/Buzz_Lightyear_sculpture_of_Toy_Story_Hotel_Shanghai_%28cropped%29.jpg",
+   "https://static.wikia.nocookie.net/disney/images/7/74/Profile_-_Buzz_Lightyear.jpeg/revision/latest"
   ]
  },
  "captain": {
@@ -848,10 +849,11 @@
   ]
  },
  "woody": {
-  "pick": 0,
+  "pick": 2,
   "candidates": [
    "https://static.wikia.nocookie.net/pixar/images/e/ef/Woody_profile.jpg/revision/latest",
-   "https://upload.wikimedia.org/wikipedia/commons/0/03/Woody_at_Toy_Story_Land%2C_Hong_Kong.jpg"
+   "https://upload.wikimedia.org/wikipedia/commons/0/03/Woody_at_Toy_Story_Land%2C_Hong_Kong.jpg",
+   "https://static.wikia.nocookie.net/disney/images/2/22/Profile_-_Woody.jpeg/revision/latest"
   ]
  },
  "yoda": {
