@@ -8,6 +8,7 @@ import { registerSocketHandlers } from './sockets/index.js';
 import { roomManager } from './core/RoomManager.js';
 import { createAdminRouter } from './admin/router.js';
 import { getPhoto } from './utils/photos.js';
+import { liveState, liveImage } from './admin/liveAvatars.js';
 
 const PORT = process.env.PORT || 3001;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://partygrid.click';
@@ -30,6 +31,21 @@ app.get('/photos/:hash', (req, res) => {
   res.set('Cache-Control', 'public, max-age=31536000, immutable');
   res.set('Cross-Origin-Resource-Policy', 'cross-origin');
   res.send(photo.buf);
+});
+
+// Avatars enregistrés depuis l'admin, visibles tout de suite (avant la reconstruction du site)
+app.get('/avatars/live', async (_req, res) => {
+  try { res.set('Cache-Control', 'no-store'); res.json(await liveState()); } catch { res.json({ enabled: false, characters: [], images: {} }); }
+});
+app.get('/avatars/live/:id', async (req, res) => {
+  try {
+    const im = await liveImage(String(req.params.id).toLowerCase());
+    if (!im) return res.status(404).end();
+    res.set('Content-Type', im.type);
+    res.set('Cache-Control', 'public, max-age=300');
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.send(im.buf);
+  } catch { res.status(502).end(); }
 });
 
 // Routes admin (CRUD questions Quiz + paires Imposter)

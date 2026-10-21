@@ -16,6 +16,7 @@
  *   GITHUB_BRANCH  branche (défaut : main)
  */
 import { githubEnabled, fail, readText, listDir, commitFiles, http } from '../utils/github.js';
+import { CHARACTERS_FILE, setLiveCharacters, setLiveImage, forgetLiveImage } from './liveAvatars.js';
 
 export { githubEnabled, http };
 
@@ -50,6 +51,32 @@ export function sanitizePhotos(input) {
     const url = isHttpUrl(p.url) ? p.url : null;
     const data = typeof p.data === 'string' && /^data:image\/(webp|jpeg|png);base64,/.test(p.data) ? p.data : null;
     if (url || data) out[id] = { url, data };
+  }
+  return out;
+}
+
+/** Catégories où l'on peut ajouter un personnage depuis l'admin. */
+export const CHARACTER_CATS = ['anime', 'cinema', 'dc', 'disney', 'gaming', 'marvel', 'simpsons', 'starwars'];
+
+/** Personnages ajoutés / supprimés : { add: [{ id, label, cat }], remove: [id] }. */
+export function sanitizeCharacters(input) {
+  const add = []; const remove = [];
+  if (!input || typeof input !== 'object') return { add, remove };
+  for (const c of Array.isArray(input.add) ? input.add.slice(0, 50) : []) {
+    const label = typeof c?.label === 'string' ? c.label.replace(/\s+/g, ' ').trim().slice(0, 40) : '';
+    if (!ID_RE.test(c?.id || '') || !label || !CHARACTER_CATS.includes(c?.cat)) continue;
+    add.push({ id: c.id.toLowerCase(), label, cat: c.cat });
+  }
+  for (const id of Array.isArray(input.remove) ? input.remove.slice(0, 50) : []) if (ID_RE.test(id || '')) remove.push(id.toLowerCase());
+  return { add, remove };
+}
+
+/** Vignettes recadrées par le navigateur : { id: data URL } (affichées tout de suite, avant la reconstruction du site). */
+export function sanitizeThumbs(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return {};
+  const out = {};
+  for (const [id, d] of Object.entries(input).slice(0, 200)) {
+    if (ID_RE.test(id) && typeof d === 'string' && d.length < 400_000 && /^data:image\/(webp|jpeg|png);base64,/.test(d)) out[id] = d;
   }
   return out;
 }
@@ -92,13 +119,18 @@ function decodeDataUrl(data) {
  * photos  : { id: { url, data } } → client/avatar-photos/<id>.<ext> (+ sources.json mis à jour)
  * Renvoie { commit, failed: { id: raison } }.
  */
-export async function saveAvatars({ cadrage = {}, photos = {} }) {
+export async function saveAvatars({ cadrage = {}, photos = {}, characters = { add: [], remove: [] }, thumbs = {} }) {
   const files = [];
   const failed = {};
+  const savedImages = {}; // id → { buf, type } enregistrées dans ce commit
+  const removeIds = new Set(characters.remove);
+  let sources = null; // sources.json (propositions de photos), lu si besoin
+  // un personnage supprimé n'a plus besoin de photo ni de cadrage
+  for (const id of removeIds) { delete photos[id]; delete thumbs[id]; cadrage[`@${id}`] = null; }
   const nPhotos = Object.keys(photos).length;
-  const nCrops = Object.keys(cadrage).length;
+  const nCrops = Object.keys(cadrage).filter((k) => !removeIds.has(k.slice(1))).length;
 
-  if (nCrops) {
+  if (Object.keys(cadrage).length) {
     let current = {};
     try { current = JSON.parse((await readText(CADRAGE_FILE)) || '{}') || {}; } catch { current = {}; }
     for (const [k, c] of Object.entries(cadrage)) { if (c === null) delete current[k]; else current[k] = c; }
@@ -108,7 +140,7 @@ export async function saveAvatars({ cadrage = {}, photos = {} }) {
 
   if (nPhotos) {
     const existing = await listDir(PHOTOS_DIR);
-    let sources = {};
+    sources = {};
     try { sources = JSON.parse((await readText(SOURCES_FILE)) || '{}') || {}; } catch { sources = {}; }
     for (const [id, p] of Object.entries(photos)) {
       let img;
@@ -123,6 +155,7 @@ export async function saveAvatars({ cadrage = {}, photos = {} }) {
         if (f !== name && f.replace(/\.[^.]+$/, '') === id) files.push({ path: `${PHOTOS_DIR}/${f}`, remove: true });
       }
       files.push({ path: `${PHOTOS_DIR}/${name}`, content: img.buf });
+      savedImages[id] = { buf: img.buf, type: `image/${img.ext === 'jpg' ? 'jpeg' : img.ext}` };
       const entry = sources[id] || { pick: 0, candidates: [] };
       if (p.url) {
         if (!entry.candidates.includes(p.url)) entry.candidates.push(p.url);
@@ -137,6 +170,33 @@ export async function saveAvatars({ cadrage = {}, photos = {} }) {
     }
   }
 
+  // ───── Personnages ajoutés / supprimés : characters.json (+ photos des supprimés) ─────
+  let charList = null;
+  const added = characters.add.filter((c) => {
+    if (savedImages[c.id]) return true;
+    if (!failed[c.id]) failed[c.id] = 'photo manquante';
+    return false;
+  });
+  if (added.length || removeIds.size) {
+    try { charList = JSON.parse((await readText(CHARACTERS_FILE)) || '[]'); } catch { charList = []; }
+    if (!Array.isArray(charList)) charList = [];
+    charList = charList.filter((c) => !removeIds.has(c.id) && !added.some((a) => a.id === c.id));
+    charList.push(...added);
+    charList.sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+    files.push({ path: CHARACTERS_FILE, content: `${JSON.stringify(charList, null, 1)}\n` });
+    if (removeIds.size) {
+      const existing = await listDir(PHOTOS_DIR);
+      for (const f of existing) if (removeIds.has(f.replace(/\.[^.]+$/, ''))) files.push({ path: `${PHOTOS_DIR}/${f}`, remove: true });
+      if (!sources) { try { sources = JSON.parse((await readText(SOURCES_FILE)) || '{}') || {}; } catch { sources = {}; } }
+      if ([...removeIds].some((id) => sources[id])) {
+        for (const id of removeIds) delete sources[id];
+        const content = `${JSON.stringify(sources, null, 1)}\n`;
+        const f = files.find((x) => x.path === SOURCES_FILE);
+        if (f) f.content = content; else files.push({ path: SOURCES_FILE, content });
+      }
+    }
+  }
+
   if (!files.length) {
     const err = fail(Object.keys(failed).length ? `Aucune photo n'a pu être récupérée : ${Object.entries(failed).map(([k, v]) => `${k} (${v})`).join(', ')}` : 'Rien à enregistrer.', 400);
     err.failed = failed;
@@ -144,9 +204,21 @@ export async function saveAvatars({ cadrage = {}, photos = {} }) {
   }
   const okPhotos = nPhotos - Object.keys(failed).length;
   const parts = [];
+  if (added.length) parts.push(`${added.length} personnage${added.length > 1 ? 's' : ''} ajouté${added.length > 1 ? 's' : ''}`);
+  if (removeIds.size) parts.push(`${removeIds.size} supprimé${removeIds.size > 1 ? 's' : ''}`);
   if (okPhotos) parts.push(`${okPhotos} photo${okPhotos > 1 ? 's' : ''}`);
   if (nCrops) parts.push(`cadrage de ${nCrops} image${nCrops > 1 ? 's' : ''}`);
   const commit = await commitFiles(files, `Avatars : ${parts.join(' + ')} (depuis l'admin)`);
+
+  // Visible tout de suite pour les joueurs (en attendant que Render reconstruise le site)
+  if (charList) setLiveCharacters(charList);
+  for (const id of removeIds) forgetLiveImage(id);
+  for (const [id, d] of Object.entries(thumbs)) {
+    if (failed[id]) continue;
+    const m = /^data:(image\/[a-z]+);base64,(.+)$/.exec(d);
+    setLiveImage(id, Buffer.from(m[2], 'base64'), m[1]);
+  }
+  for (const [id, im] of Object.entries(savedImages)) if (!thumbs[id]) setLiveImage(id, im.buf, im.type);
   return { commit, failed };
 }
 

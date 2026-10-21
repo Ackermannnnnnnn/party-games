@@ -239,25 +239,73 @@ const generated = import.meta.glob('../generated/customAvatars.json', { eager: t
 const CUSTOM = Object.values(generated)[0] || { categories: [], avatars: [], builtin: {} };
 const PHOTOS = CUSTOM.builtin || {};
 
+/** Personnages ajoutés depuis l'admin (client/avatar-photos/characters.json). */
+const addedFiles = import.meta.glob('../../avatar-photos/characters.json', { eager: true, import: 'default' });
+const ADDED = (Object.values(addedFiles)[0] || []).filter((c) => c && c.id && c.label && c.cat);
+const addedAvatar = (c) => ({ id: c.id, cat: c.cat, label: c.label, emoji: '🖼️', bg: 'from-slate-600 to-slate-800', added: true });
+
 /** Catégories de personnages : on n'y montre que des photos, jamais d'emoji. */
 export const CHARACTER_CATEGORIES = new Set(['marvel', 'dc', 'disney', 'simpsons', 'starwars', 'anime', 'gaming', 'cinema']);
 
-/** Avatars intégrés, avec leur photo (client/avatar-photos/) quand il y en a une. */
-export const BUILTIN_WITH_PHOTOS = BUILTIN_AVATARS.map((a) => (PHOTOS[a.id] ? { ...a, ...PHOTOS[a.id], builtinPhoto: true } : a));
+const catIndex = (id) => BUILTIN_CATEGORIES.findIndex((c) => c.id === id);
+const byLabel = (a, b) => a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' });
 
-/** Choisissables : un personnage sans photo n'est pas proposé (il reste affichable pour qui l'a déjà). */
-const PICKABLE_BUILTIN = BUILTIN_WITH_PHOTOS.filter((a) => a.img || !CHARACTER_CATEGORIES.has(a.cat));
+/*
+ * Les listes ci-dessous sont recalculées sur place quand l'admin ajoute un personnage
+ * (voir loadLiveAvatars) : on garde les mêmes tableaux pour que tous les imports restent valides.
+ */
+/** Avatars intégrés (+ ajoutés depuis l'admin), avec leur photo quand il y en a une. Triés par nom. */
+export const BUILTIN_WITH_PHOTOS = [];
+/** Onglets : d'abord ⭐ Perso / dossiers perso, puis les catégories intégrées par ordre alphabétique (onglets vides masqués). */
+export const AVATAR_CATEGORIES = [];
+export const AVATARS = [];
+const ALL_AVATARS = [];
 
-/** Onglets : d'abord les dossiers perso, puis les avatars intégrés (onglets vides masqués). */
-export const AVATAR_CATEGORIES = [
-  ...CUSTOM.categories,
-  ...BUILTIN_CATEGORIES.filter((c) => PICKABLE_BUILTIN.some((a) => a.cat === c.id)),
-];
-export const AVATARS = [
-  ...CUSTOM.avatars.map((a) => ({ ...a, bg: 'from-slate-600 to-slate-800', emoji: '🖼️' })),
-  ...PICKABLE_BUILTIN,
-];
-const ALL_AVATARS = [...AVATARS, ...BUILTIN_WITH_PHOTOS.filter((a) => !PICKABLE_BUILTIN.includes(a))];
+let live = { enabled: false, characters: [], images: {} };
+const liveImg = (id, ver) => `${SERVER_URL}/avatars/live/${encodeURIComponent(id)}?v=${ver}`;
+
+function rebuild() {
+  const liveIds = new Set(live.characters.map((c) => c.id));
+  const known = new Set(BUILTIN_AVATARS.map((a) => a.id));
+  const added = [
+    ...ADDED.filter((c) => !known.has(c.id) && (!live.enabled || liveIds.has(c.id))), // supprimé depuis l'admin → masqué tout de suite
+    ...live.characters.filter((c) => !known.has(c.id) && !ADDED.some((a) => a.id === c.id)),
+  ].map((c) => ({ ...addedAvatar(c), ...(live.characters.find((l) => l.id === c.id) || {}) }));
+  const builtin = [...BUILTIN_AVATARS, ...added].map((a) => {
+    let out = PHOTOS[a.id] ? { ...a, ...PHOTOS[a.id], builtinPhoto: true } : a;
+    if (live.images[a.id]) out = { ...out, img: liveImg(a.id, live.images[a.id]) };
+    else if (!out.img && a.added && live.enabled) out = { ...out, img: liveImg(a.id, 'repo') };
+    return out;
+  }).sort((a, b) => catIndex(a.cat) - catIndex(b.cat) || byLabel(a, b));
+  /** Choisissables : un personnage sans photo n'est pas proposé (il reste affichable pour qui l'a déjà). */
+  const pickable = builtin.filter((a) => a.img || !CHARACTER_CATEGORIES.has(a.cat));
+  const cats = [...BUILTIN_CATEGORIES].sort(byLabel);
+  BUILTIN_WITH_PHOTOS.splice(0, Infinity, ...builtin);
+  AVATAR_CATEGORIES.splice(0, Infinity, ...CUSTOM.categories, ...cats.filter((c) => pickable.some((a) => a.cat === c.id)));
+  AVATARS.splice(0, Infinity, ...CUSTOM.avatars.map((a) => ({ ...a, bg: 'from-slate-600 to-slate-800', emoji: '🖼️' })), ...pickable);
+  ALL_AVATARS.splice(0, Infinity, ...AVATARS, ...builtin.filter((a) => !pickable.includes(a)));
+}
+rebuild();
+
+// ───── Mises à jour en direct (personnages ajoutés / photos changées depuis l'admin) ─────
+const listeners = new Set();
+let version = 0;
+export function onAvatarsChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+export const avatarsVersion = () => version;
+
+/** Récupère ce qui a été enregistré depuis l'admin et pas encore intégré au site. */
+export async function loadLiveAvatars() {
+  try {
+    const r = await fetch(`${SERVER_URL}/avatars/live`, { cache: 'no-store' });
+    if (!r.ok) return;
+    const d = await r.json();
+    live = { enabled: !!d.enabled, characters: Array.isArray(d.characters) ? d.characters : [], images: d.images || {} };
+    rebuild();
+    version += 1;
+    listeners.forEach((fn) => fn(version));
+  } catch { /* serveur injoignable : on garde la version du site */ }
+}
+if (typeof window !== 'undefined') loadLiveAvatars();
 
 /** Avatar par défaut si rien de choisi (le 1er de la liste). */
 export const DEFAULT_AVATAR_ID = 'face_grin';
@@ -274,11 +322,23 @@ export function photoUrl(id) {
 /** URL de l'image d'un avatar perso (`img:…`), sinon null. */
 export function imageUrl(id) {
   if (typeof id !== 'string') return null;
-  return ALL_AVATARS.find((a) => a.id === id)?.img || null;
+  const a = ALL_AVATARS.find((x) => x.id === id);
+  if (!a) unknownAvatar(id);
+  return a?.img || null;
+}
+
+/** Avatar inconnu (personnage ajouté depuis l'admin après le chargement de la page) : on relit la liste, au plus toutes les 15 s. */
+let lastRefresh = 0;
+function unknownAvatar(id) {
+  if (typeof id !== 'string' || !id || isPhoto(id) || id.startsWith('img:') || Date.now() - lastRefresh < 15000) return;
+  lastRefresh = Date.now();
+  loadLiveAvatars();
 }
 
 export function getAvatar(id) {
-  return ALL_AVATARS.find(a => a.id === id) || ALL_AVATARS.find(a => a.id === DEFAULT_AVATAR_ID);
+  const a = ALL_AVATARS.find((x) => x.id === id);
+  if (!a) unknownAvatar(id);
+  return a || ALL_AVATARS.find((x) => x.id === DEFAULT_AVATAR_ID);
 }
 
 /** Renvoie un avatar aléatoire (utile pour init un nouveau joueur). */

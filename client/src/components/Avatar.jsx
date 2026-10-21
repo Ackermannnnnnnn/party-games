@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getAvatar, imageUrl, isPhoto, photoUrl } from '../data/avatars.js';
+import { useAvatarsVersion } from '../hooks/useAvatarsVersion.js';
 
 const SIZES = {
   xs: { box: 'w-6 h-6',   text: 'text-sm' },
@@ -12,6 +13,7 @@ const SIZES = {
 /** Rond avec la photo du joueur (si possible), sinon l'emoji de son avatar. */
 export function AvatarFace({ id, className = '', style, emojiStyle }) {
   const [broken, setBroken] = useState(null);
+  useAvatarsVersion();
   const url = isPhoto(id) ? photoUrl(id) : imageUrl(id);
   if (url && broken !== url) {
     return (

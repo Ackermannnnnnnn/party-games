@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AVATARS, BUILTIN_WITH_PHOTOS, BUILTIN_CATEGORIES, CHARACTER_CATEGORIES } from '../data/avatars.js';
+import { AVATARS, BUILTIN_WITH_PHOTOS, BUILTIN_CATEGORIES, CHARACTER_CATEGORIES, loadLiveAvatars } from '../data/avatars.js';
+import { useAvatarsVersion } from '../hooks/useAvatarsVersion.js';
 import SOURCES from '../../avatar-photos/sources.json';
 
 const SERVER = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 const DRAFT_KEY = 'avatarCadrageDraft';
 const PHOTO_DRAFT_KEY = 'avatarPhotoDraft';
+const NEW_DRAFT_KEY = 'avatarNewCharsDraft';
+const THUMB = 256;
 const DEFAULT = { zoom: 1, x: 0.5, y: 0.5 };
 const PREVIEW = 160;
 
@@ -24,6 +27,26 @@ function readDraft() {
 /** Photos choisies mais pas encore enregistrées (adresses seulement ; un fichier importé ne tient pas dans le navigateur). */
 function readPhotoDraft() {
   try { return JSON.parse(localStorage.getItem(PHOTO_DRAFT_KEY)) || {}; } catch { return {}; }
+}
+
+function readNewDraft() {
+  try { return JSON.parse(localStorage.getItem(NEW_DRAFT_KEY)) || {}; } catch { return {}; }
+}
+
+const byLabel = (a, b) => a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' });
+const slugId = (label) => label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 34) || 'perso';
+
+/** Vignette carrée recadrée (même calcul que le build), en data URL WebP : affichée tout de suite aux joueurs. */
+async function renderThumb(src, crop) {
+  const img = await new Promise((resolve, reject) => {
+    const i = new Image(); i.crossOrigin = 'anonymous';
+    i.onload = () => resolve(i); i.onerror = reject; i.src = src;
+  });
+  const r = region(img.naturalWidth, img.naturalHeight, crop || DEFAULT);
+  const c = document.createElement('canvas'); c.width = THUMB; c.height = THUMB;
+  const ctx = c.getContext('2d'); ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, r.left, r.top, r.side, r.side, 0, 0, THUMB, THUMB);
+  return c.toDataURL('image/webp', 0.85);
 }
 
 /** Où chercher d'autres photos, selon la catégorie (wikis Fandom). */
@@ -74,11 +97,18 @@ async function toDataUrl(source, max = 800) {
  * Tout est enregistré sur GitHub en un commit → Render redéploie.
  */
 export default function AvatarsAdmin({ password }) {
-  const persoList = useMemo(() => AVATARS.filter((a) => a.src && a.file && a.id.startsWith('img:')), []);
-  const charList = useMemo(() => BUILTIN_WITH_PHOTOS.filter((a) => CHARACTER_CATEGORIES.has(a.cat)).map((a) => ({ ...a, file: `@${a.id}` })), []);
+  const version = useAvatarsVersion();
+  const [newChars, setNewChars] = useState(readNewDraft); // id → { id, label, cat } pas encore enregistrés
+  const [removed, setRemoved] = useState([]); // personnages ajoutés à supprimer
+  const [adding, setAdding] = useState(false);
+  const persoList = useMemo(() => AVATARS.filter((a) => a.src && a.file && a.id.startsWith('img:')).sort(byLabel), [version]);
+  const charList = useMemo(() => [
+    ...BUILTIN_WITH_PHOTOS.filter((a) => CHARACTER_CATEGORIES.has(a.cat) && !newChars[a.id]),
+    ...Object.values(newChars).map((c) => ({ ...c, emoji: '🖼️', bg: 'from-slate-600 to-slate-800', added: true, isNew: true })),
+  ].map((a) => ({ ...a, file: `@${a.id}` })).sort(byLabel), [version, newChars]);
   const tabs = useMemo(() => [
     ...(persoList.length ? [{ id: 'perso', label: 'Perso', icon: '⭐' }] : []),
-    ...BUILTIN_CATEGORIES.filter((c) => CHARACTER_CATEGORIES.has(c.id)),
+    ...BUILTIN_CATEGORIES.filter((c) => CHARACTER_CATEGORIES.has(c.id)).sort(byLabel),
   ], [persoList]);
   const [tab, setTab] = useState(tabs[0]?.id);
   const [changes, setChanges] = useState(readDraft); // clé → crop | null (= automatique)
@@ -106,18 +136,38 @@ export default function AvatarsAdmin({ password }) {
   }, [photoChanges]);
 
   useEffect(() => { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(changes)); } catch {} }, [changes]);
+  useEffect(() => { try { localStorage.setItem(NEW_DRAFT_KEY, JSON.stringify(newChars)); } catch {} }, [newChars]);
 
   const list = tab === 'perso' ? persoList : charList.filter((a) => a.cat === tab);
   const all = [...persoList, ...charList];
   const current = list.find((a) => a.file === selected) || list[0];
-  if (!current) return <div className="card text-slate-300">Aucun avatar à régler.</div>;
+  if (!tabs.length) return <div className="card text-slate-300">Aucun avatar à régler.</div>;
 
   const idOf = (a) => (a.file.startsWith('@') ? a.file.slice(1) : null);
   const photoOf = (a) => { const id = idOf(a); return id && (photoChanges[id]?.preview || savedPhotos[id]); };
   const baseOf = (a) => (a && a.file in saved ? saved[a.file] : a?.crop);
   const cropOf = (a) => (a.file in changes ? changes[a.file] : baseOf(a));
   const pending = Object.entries(changes).filter(([file, c]) => !same(c, baseOf(all.find((a) => a.file === file))));
-  const nPending = pending.length + Object.keys(photoChanges).filter((id) => !pending.some(([f]) => f === `@${id}`)).length;
+  const nPending = pending.length + Object.keys(photoChanges).filter((id) => !pending.some(([f]) => f === `@${id}`) && !newChars[id]).length
+    + Object.keys(newChars).length + removed.length;
+  const missingPhoto = Object.keys(newChars).filter((id) => !photoChanges[id]);
+
+  const addCharacter = (label, cat) => {
+    const taken = new Set([...BUILTIN_WITH_PHOTOS.map((a) => a.id), ...Object.keys(newChars)]);
+    let id = slugId(label); const base = id; let k = 2;
+    while (taken.has(id)) id = `${base}_${k++}`;
+    setNewChars((n) => ({ ...n, [id]: { id, label, cat } }));
+    setTab(cat); setSelected(`@${id}`); setAdding(false);
+  };
+  const deleteCharacter = (a) => {
+    if (a.isNew) {
+      setNewChars((n) => { const x = { ...n }; delete x[a.id]; return x; });
+      cancelPhoto(a.id);
+      setSelected(null);
+    } else {
+      setRemoved((r) => (r.includes(a.id) ? r.filter((x) => x !== a.id) : [...r, a.id]));
+    }
+  };
 
   const setCrop = (file, c) => setChanges((ch) => ({ ...ch, [file]: c }));
   const choosePhoto = (id, p) => {
@@ -131,6 +181,10 @@ export default function AvatarsAdmin({ password }) {
 
   const save = async () => {
     if (!nPending) return;
+    if (missingPhoto.length) {
+      setMessage({ ok: false, text: `❌ Choisis d'abord une photo pour : ${missingPhoto.map((id) => newChars[id].label).join(', ')}.` });
+      return;
+    }
     setSaving(true); setMessage(null);
     if (!(await checkStatus())) {
       setSaving(false);
@@ -145,10 +199,25 @@ export default function AvatarsAdmin({ password }) {
         if (!data && p.url) { try { data = await toDataUrl(p.url); } catch { data = null; } }
         photos[id] = { url: p.url || null, data };
       }
+      // Vignettes recadrées : les joueurs voient le changement tout de suite (sans attendre Render)
+      const thumbs = {};
+      const thumbIds = new Set([...Object.keys(photos), ...pending.map(([f]) => f).filter((f) => f.startsWith('@')).map((f) => f.slice(1))]);
+      for (const id of thumbIds) {
+        if (removed.includes(id)) continue;
+        const a = charList.find((x) => x.id === id);
+        const src = photos[id] ? photos[id].data : (savedPhotos[id] || a?.src);
+        if (!src) continue;
+        let crop = `@${id}` in changes ? changes[`@${id}`] : baseOf(a);
+        if (!crop && !photos[id]) crop = a?.auto;
+        try { thumbs[id] = await renderThumb(src, crop); } catch { /* image illisible ici : le serveur montrera l'originale */ }
+      }
       const res = await fetch(`${SERVER}/admin/avatars/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
-        body: JSON.stringify({ cadrage: Object.fromEntries(pending), photos }),
+        body: JSON.stringify({
+          cadrage: Object.fromEntries(pending), photos, thumbs,
+          characters: { add: Object.values(newChars).filter((c) => !removed.includes(c.id)), remove: removed },
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
@@ -158,10 +227,13 @@ export default function AvatarsAdmin({ password }) {
       setSaved((s) => ({ ...s, ...Object.fromEntries(pending) }));
       setPhotoChanges((pc) => Object.fromEntries(Object.entries(pc).filter(([id]) => failed[id])));
       setChanges({});
+      setNewChars((n) => Object.fromEntries(Object.entries(n).filter(([id]) => failed[id])));
+      setRemoved([]);
+      await loadLiveAvatars(); // la liste se met à jour ici aussi
       const fails = Object.entries(failed);
       setMessage({
         ok: !fails.length,
-        text: `✅ Enregistré sur GitHub${data.commit ? ` (commit ${data.commit})` : ''}. Render redéploie le site : visible d'ici 3 à 5 minutes.`
+        text: `✅ Enregistré${data.commit ? ` (commit ${data.commit})` : ''}. Déjà visible pour les joueurs (ils rouvrent le choix d'avatar ou rechargent la page) ; Render intègre aussi le tout au site d'ici 3 à 5 minutes.`
           + (fails.length ? ` ⚠️ Pas récupérées : ${fails.map(([id, why]) => `${id} (${why})`).join(', ')} — choisis une autre image ou importe-la.` : ''),
       });
     } catch (e) {
@@ -171,15 +243,15 @@ export default function AvatarsAdmin({ password }) {
     }
   };
 
-  const currentId = idOf(current);
+  const currentId = current ? idOf(current) : null;
   const newPhoto = currentId && photoChanges[currentId];
-  const editorAvatar = newPhoto ? { ...current, src: newPhoto.preview, auto: null } : (currentId && savedPhotos[currentId] ? { ...current, src: savedPhotos[currentId], auto: null } : current);
+  const editorAvatar = !current ? null : newPhoto ? { ...current, src: newPhoto.preview, auto: null } : (currentId && savedPhotos[currentId] ? { ...current, src: savedPhotos[currentId], auto: null } : current);
 
   return (
     <div className="space-y-4">
       <div className="card space-y-2">
         <h3 className="font-semibold text-lg">🖼️ Avatars</h3>
-        <p className="text-sm text-slate-300">Personnages : choisis la meilleure photo parmi les propositions (ou cherche-en d'autres, colle une adresse, importe un fichier). Puis ajuste le cadrage si besoin. Tout s'applique pour tous les joueurs.</p>
+        <p className="text-sm text-slate-300">Personnages : ajoute-en avec ➕, choisis la meilleure photo parmi les propositions (ou cherche-en d'autres, colle une adresse, importe un fichier). Puis ajuste le cadrage si besoin. Tout s'applique pour tous les joueurs.</p>
         {github === false && (
           <p className="text-xs text-amber-300">⚠️ Enregistrement désactivé : ajoute la variable <code>GITHUB_TOKEN</code> au serveur sur Render.</p>
         )}
@@ -194,6 +266,9 @@ export default function AvatarsAdmin({ password }) {
         ))}
       </div>
 
+      {adding && <AddCharacter existing={charList} tabs={tabs.filter((t) => t.id !== 'perso')} defaultCat={tab === 'perso' ? tabs.find((t) => t.id !== 'perso')?.id : tab}
+        onAdd={addCharacter} onCancel={() => setAdding(false)} />}
+
       <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
         {list.map((a) => {
           const id = idOf(a);
@@ -207,20 +282,39 @@ export default function AvatarsAdmin({ password }) {
                   : <span className={`w-full aspect-square rounded-full flex items-center justify-center text-3xl bg-gradient-to-br ${a.bg}`}>{a.emoji}</span>}
               <span className="block text-[10px] truncate text-slate-300 mt-0.5">{a.label}</span>
               {changed && <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-amber-400" title="Modifié, pas encore enregistré" />}
+              {a.isNew && <span className="absolute top-0.5 left-0.5 text-[9px] font-bold bg-emerald-500 text-white rounded px-1">NEW</span>}
+              {removed.includes(a.id) && <span className="absolute inset-0 rounded-xl bg-red-900/70 flex items-center justify-center text-2xl" title="Sera supprimé à l'enregistrement">🗑️</span>}
               {!changed && !a.img && !pic && <span className="absolute top-0.5 right-0.5 text-[9px]" title="Pas de photo : masqué pour les joueurs">⚠️</span>}
             </button>
           );
         })}
+        {tab !== 'perso' && (
+          <button type="button" onClick={() => setAdding(true)} title="Ajouter un personnage"
+            className="rounded-xl p-1 border-2 border-dashed border-slate-600 hover:border-brand text-slate-300 flex flex-col items-center justify-center">
+            <span className="w-full aspect-square rounded-full flex items-center justify-center text-3xl bg-slate-800/60">➕</span>
+            <span className="block text-[10px] mt-0.5">Ajouter</span>
+          </button>
+        )}
       </div>
 
-      {currentId && (
+      {current?.added && (
+        <div className="flex justify-end">
+          <button type="button" onClick={() => deleteCharacter(current)} className="text-xs underline text-red-300" style={{ minHeight: 0 }}>
+            {current.isNew ? '✖ Retirer ce nouveau personnage' : removed.includes(current.id) ? '↩️ Ne plus supprimer' : `🗑️ Supprimer ${current.label}`}
+          </button>
+        </div>
+      )}
+
+      {!current && <div className="card text-sm text-slate-400">Aucun personnage ici pour l'instant : clique sur ➕ Ajouter.</div>}
+
+      {current && currentId && (
         <PhotoPicker key={currentId} avatar={current} id={currentId} sources={SOURCES[currentId]} extra={extra[currentId] || []}
           chosen={newPhoto} hasSaved={!!savedPhotos[currentId]}
           onSearchResults={(urls) => setExtra((e) => ({ ...e, [currentId]: [...new Set([...(e[currentId] || []), ...urls])] }))}
           onChoose={(p) => choosePhoto(currentId, p)} onCancel={() => cancelPhoto(currentId)} />
       )}
 
-      {(editorAvatar.src || newPhoto) ? (
+      {!current ? null : (editorAvatar?.src || newPhoto) ? (
         <Editor key={`${current.file}-${editorAvatar.src}`} avatar={editorAvatar} crop={cropOf(current) || editorAvatar.auto || DEFAULT} isAuto={!cropOf(current)}
           onChange={(c) => setCrop(current.file, c)} onAuto={() => setCrop(current.file, null)}
           onReset={() => setChanges((ch) => { const n = { ...ch }; delete n[current.file]; return n; })}
@@ -235,8 +329,38 @@ export default function AvatarsAdmin({ password }) {
         </button>
         {message && <p className={`text-sm ${message.ok ? 'text-emerald-300' : 'text-amber-300'}`}>{message.text}</p>}
         {nPending > 0 && !message && <p className="text-xs text-slate-400">Tes choix sont gardés sur cet appareil jusqu'à l'enregistrement (sauf les fichiers importés).</p>}
+        {missingPhoto.length > 0 && <p className="text-xs text-amber-300">📸 Il manque la photo de : {missingPhoto.map((id) => newChars[id].label).join(', ')}.</p>}
       </div>
     </div>
+  );
+}
+
+/** Petit formulaire : nom + catégorie. La photo se choisit ensuite comme pour les autres personnages. */
+function AddCharacter({ existing, tabs, defaultCat, onAdd, onCancel }) {
+  const [label, setLabel] = useState('');
+  const [cat, setCat] = useState(defaultCat || tabs[0]?.id);
+  const clean = label.replace(/\s+/g, ' ').trim();
+  const twin = clean && existing.find((a) => a.label.localeCompare(clean, 'fr', { sensitivity: 'base' }) === 0);
+  const submit = (e) => {
+    e.preventDefault();
+    if (clean && !twin) onAdd(clean.slice(0, 40), cat);
+  };
+  return (
+    <form onSubmit={submit} className="card space-y-3 border border-brand/40">
+      <h4 className="font-semibold">➕ Nouveau personnage</h4>
+      <div className="grid sm:grid-cols-[1fr_auto] gap-2">
+        <input autoFocus value={label} onChange={(e) => setLabel(e.target.value)} maxLength={40} placeholder="Nom (ex : Gojo Satoru)"
+          className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-brand" />
+        <select value={cat} onChange={(e) => setCat(e.target.value)} className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+          {tabs.map((t) => <option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}
+        </select>
+      </div>
+      {twin && <p className="text-xs text-amber-300">« {twin.label} » existe déjà ({tabs.find((t) => t.id === twin.cat)?.label || twin.cat}).</p>}
+      <div className="flex gap-2">
+        <button className="btn btn-primary text-sm" disabled={!clean || !!twin}>Créer puis choisir la photo</button>
+        <button type="button" onClick={onCancel} className="btn btn-ghost text-sm">Annuler</button>
+      </div>
+    </form>
   );
 }
 

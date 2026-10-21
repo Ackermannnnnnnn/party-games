@@ -34,6 +34,7 @@ export async function gh(path, opts = {}) {
     },
   });
   if (res.status === 401 || res.status === 403) throw fail(TOKEN_ERR);
+  if (raw === 'binary') return { status: res.status, ok: res.ok, buf: res.ok ? Buffer.from(await res.arrayBuffer()) : null, type: res.headers.get('content-type') };
   if (raw) return { status: res.status, ok: res.ok, text: res.ok ? await res.text() : null };
   const body = await res.json().catch(() => ({}));
   return { status: res.status, ok: res.ok, body };
@@ -45,6 +46,14 @@ export async function readText(path, branch = mainBranch()) {
   if (r.status === 404) return null;
   if (!r.ok) throw fail(`GitHub a répondu ${r.status}.`);
   return r.text;
+}
+
+/** Lit un fichier binaire du dépôt (null s'il n'existe pas). */
+export async function readBinary(path, branch = mainBranch()) {
+  const r = await gh(`/contents/${encodePath(path)}?ref=${encodeURIComponent(branch)}`, { raw: 'binary' });
+  if (r.status === 404) return null;
+  if (!r.ok) throw fail(`GitHub a répondu ${r.status}.`);
+  return r.buf;
 }
 
 /** Noms des fichiers d'un dossier du dépôt ([] s'il n'existe pas). */

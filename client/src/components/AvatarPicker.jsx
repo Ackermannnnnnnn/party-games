@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AVATARS, AVATAR_CATEGORIES, getAvatar, isPhoto } from '../data/avatars.js';
+import { AVATARS, AVATAR_CATEGORIES, getAvatar, isPhoto, loadLiveAvatars } from '../data/avatars.js';
 import { useGameStore } from '../store/gameStore.js';
 import { api } from '../hooks/useSocket.js';
 import Avatar, { AvatarFace } from './Avatar.jsx';
+import { useAvatarsVersion } from '../hooks/useAvatarsVersion.js';
 
 const PHOTO_SIZE = 192;
 const MAX_DATA_URL = 110_000;
@@ -120,6 +121,8 @@ function PhotoTab({ onDone }) {
  */
 export default function AvatarPicker({ open, onClose, mandatory = false }) {
   const { avatar, setAvatar, room } = useGameStore();
+  useAvatarsVersion();
+  useEffect(() => { if (open) loadLiveAvatars(); }, [open]); // nouveaux personnages ajoutés depuis l'admin
   // S'il y a des avatars perso (dossier client/avatars), on ouvre directement leur onglet
   const [activeCat, setActiveCat] = useState(() => (AVATARS[0]?.id?.startsWith('img:') ? AVATAR_CATEGORIES[0].id : 'photo'));
   const [query, setQuery] = useState('');
