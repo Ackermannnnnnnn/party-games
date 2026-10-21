@@ -129,10 +129,11 @@
   ]
  },
  "deadpool": {
-  "pick": 0,
+  "pick": 2,
   "candidates": [
    "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/lg/213-deadpool.jpg",
-   "https://upload.wikimedia.org/wikipedia/en/c/ca/Deadpool.png"
+   "https://upload.wikimedia.org/wikipedia/en/c/ca/Deadpool.png",
+   "https://upload.wikimedia.org/wikipedia/en/2/23/Deadpool_%282016_poster%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original"
   ]
  },
  "deku": {
