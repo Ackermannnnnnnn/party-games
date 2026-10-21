@@ -7,7 +7,6 @@ const SERVER = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 const DRAFT_KEY = 'avatarCadrageDraft';
 const PHOTO_DRAFT_KEY = 'avatarPhotoDraft';
 const NEW_DRAFT_KEY = 'avatarNewCharsDraft';
-const THUMB = 256;
 const DEFAULT = { zoom: 1, x: 0.5, y: 0.5 };
 const PREVIEW = 160;
 
@@ -35,19 +34,6 @@ function readNewDraft() {
 
 const byLabel = (a, b) => a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' });
 const slugId = (label) => label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 34) || 'perso';
-
-/** Vignette carrée recadrée (même calcul que le build), en data URL WebP : affichée tout de suite aux joueurs. */
-async function renderThumb(src, crop) {
-  const img = await new Promise((resolve, reject) => {
-    const i = new Image(); i.crossOrigin = 'anonymous';
-    i.onload = () => resolve(i); i.onerror = reject; i.src = src;
-  });
-  const r = region(img.naturalWidth, img.naturalHeight, crop || DEFAULT);
-  const c = document.createElement('canvas'); c.width = THUMB; c.height = THUMB;
-  const ctx = c.getContext('2d'); ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, r.left, r.top, r.side, r.side, 0, 0, THUMB, THUMB);
-  return c.toDataURL('image/webp', 0.85);
-}
 
 /** Où chercher d'autres photos, selon la catégorie (wikis Fandom). */
 const FANDOM = { marvel: 'marvel', dc: 'dc', disney: 'disney', simpsons: 'simpsons', starwars: 'starwars', gaming: 'nintendo', cinema: null, anime: null };
@@ -199,23 +185,11 @@ export default function AvatarsAdmin({ password }) {
         if (!data && p.url) { try { data = await toDataUrl(p.url); } catch { data = null; } }
         photos[id] = { url: p.url || null, data };
       }
-      // Vignettes recadrées : les joueurs voient le changement tout de suite (sans attendre Render)
-      const thumbs = {};
-      const thumbIds = new Set([...Object.keys(photos), ...pending.map(([f]) => f).filter((f) => f.startsWith('@')).map((f) => f.slice(1))]);
-      for (const id of thumbIds) {
-        if (removed.includes(id)) continue;
-        const a = charList.find((x) => x.id === id);
-        const src = photos[id] ? photos[id].data : (savedPhotos[id] || a?.src);
-        if (!src) continue;
-        let crop = `@${id}` in changes ? changes[`@${id}`] : baseOf(a);
-        if (!crop && !photos[id]) crop = a?.auto;
-        try { thumbs[id] = await renderThumb(src, crop); } catch { /* image illisible ici : le serveur montrera l'originale */ }
-      }
       const res = await fetch(`${SERVER}/admin/avatars/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Admin-Password': password },
         body: JSON.stringify({
-          cadrage: Object.fromEntries(pending), photos, thumbs,
+          cadrage: Object.fromEntries(pending), photos,
           characters: { add: Object.values(newChars).filter((c) => !removed.includes(c.id)), remove: removed },
         }),
       });
@@ -233,7 +207,7 @@ export default function AvatarsAdmin({ password }) {
       const fails = Object.entries(failed);
       setMessage({
         ok: !fails.length,
-        text: `✅ Enregistré${data.commit ? ` (commit ${data.commit})` : ''}. Déjà visible pour les joueurs (ils rouvrent le choix d'avatar ou rechargent la page) ; Render intègre aussi le tout au site d'ici 3 à 5 minutes.`
+        text: `✅ Enregistré${data.commit ? ` (commit ${data.commit})` : ''}. Déjà en ligne : les joueurs le voient en rechargeant la page ou en rouvrant le choix d'avatar.`
           + (fails.length ? ` ⚠️ Pas récupérées : ${fails.map(([id, why]) => `${id} (${why})`).join(', ')} — choisis une autre image ou importe-la.` : ''),
       });
     } catch (e) {

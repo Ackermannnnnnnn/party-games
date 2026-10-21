@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getAvatar, imageUrl, isPhoto, photoUrl } from '../data/avatars.js';
+import { getAvatar, imageUrl, imageView, viewStyle, isPhoto, photoUrl } from '../data/avatars.js';
 import { useAvatarsVersion } from '../hooks/useAvatarsVersion.js';
 
 const SIZES = {
@@ -16,6 +16,15 @@ export function AvatarFace({ id, className = '', style, emojiStyle }) {
   useAvatarsVersion();
   const url = isPhoto(id) ? photoUrl(id) : imageUrl(id);
   if (url && broken !== url) {
+    const view = isPhoto(id) ? null : imageView(id);
+    if (view) {
+      // image entière : on applique le cadrage enregistré depuis l'admin
+      return (
+        <span className={`inline-block overflow-hidden rounded-full bg-slate-700 select-none ${className}`} style={style}>
+          <img src={url} alt="" draggable="false" onError={() => setBroken(url)} className="block w-full h-full object-cover" style={viewStyle(view)} />
+        </span>
+      );
+    }
     return (
       <img src={url} alt="" draggable="false" onError={() => setBroken(url)}
         className={`rounded-full object-cover bg-slate-700 select-none ${className}`} style={style} />

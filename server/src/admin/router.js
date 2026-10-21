@@ -2,7 +2,7 @@ import express from 'express';
 import { quizStore, imposterStore } from './stores.js';
 import { listCategories } from '../games/quiz/questions.js';
 import { listThemes } from '../games/imposter/themes.js';
-import { githubEnabled, sanitizeCadrage, sanitizePhotos, sanitizeCharacters, sanitizeThumbs, saveAvatars } from './avatars.js';
+import { githubEnabled, sanitizeCadrage, sanitizePhotos, sanitizeCharacters, saveAvatars } from './avatars.js';
 import { historyStore } from '../history/history.js';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
@@ -46,11 +46,10 @@ export function createAdminRouter() {
     const cadrage = sanitizeCadrage(req.body?.cadrage) || {};
     const photos = sanitizePhotos(req.body?.photos);
     const characters = sanitizeCharacters(req.body?.characters);
-    const thumbs = sanitizeThumbs(req.body?.thumbs);
     if (!Object.keys(cadrage).length && !Object.keys(photos).length && !characters.add.length && !characters.remove.length) return res.status(400).json({ error: 'Rien à enregistrer.' });
     if (!githubEnabled()) return res.status(501).json({ error: 'GITHUB_TOKEN non configuré sur le serveur.' });
     try {
-      res.json({ ok: true, ...(await saveAvatars({ cadrage, photos, characters, thumbs })) });
+      res.json({ ok: true, ...(await saveAvatars({ cadrage, photos, characters })) });
     } catch (e) {
       res.status(e.status || 500).json({ error: e.message || 'Erreur', failed: e.failed });
     }

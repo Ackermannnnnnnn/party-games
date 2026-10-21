@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { imageUrl, isPhoto, photoUrl, getAvatar } from '../../data/avatars.js';
+import { imageUrl, imageView, isPhoto, photoUrl, getAvatar } from '../../data/avatars.js';
 import { serverNow } from '../blindtest/audio.js';
 
 /**
@@ -98,7 +98,7 @@ function useAvatarTexture(id) {
   useEffect(() => {
     const url = isPhoto(id) ? photoUrl(id) : imageUrl(id);
     if (!url) { setTex(emojiTex(id)); return undefined; }
-    const key = `avatar-${url}`;
+    const key = `avatar-${url}-${JSON.stringify(isPhoto(id) ? null : imageView(id))}`;
     if (texCache.has(key)) { setTex(texCache.get(key)); return undefined; }
     let alive = true;
     const img = new Image();
@@ -106,8 +106,14 @@ function useAvatarTexture(id) {
     img.onload = () => {
       const t = canvasTex(key, 256, 256, (g, w, h) => {
         g.beginPath(); g.arc(w / 2, h / 2, w / 2, 0, Math.PI * 2); g.clip();
-        const s = Math.max(w / img.width, h / img.height);
-        g.drawImage(img, (w - img.width * s) / 2, (h - img.height * s) / 2, img.width * s, img.height * s);
+        const v = !isPhoto(id) && imageView(id);
+        if (v) {
+          const side = Math.min(img.width, img.height) / v.zoom;
+          g.drawImage(img, (img.width - side) * v.x, (img.height - side) * v.y, side, side, 0, 0, w, h);
+        } else {
+          const s = Math.max(w / img.width, h / img.height);
+          g.drawImage(img, (w - img.width * s) / 2, (h - img.height * s) / 2, img.width * s, img.height * s);
+        }
       });
       if (alive) setTex(t);
     };

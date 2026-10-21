@@ -1,66 +1,91 @@
 /**
- * Avatars « en direct » : ce qui a été enregistré depuis l'admin est visible tout de suite,
- * sans attendre que Render ait reconstruit le site (3 à 5 minutes).
+ * Avatars « en direct » : les photos, cadrages et personnages enregistrés depuis l'admin
+ * sont lus dans le dépôt GitHub par le serveur et envoyés aux joueurs au chargement de la page.
+ * Le site n'a donc plus besoin d'être reconstruit par Render pour les afficher
+ * (la reconstruction met plusieurs minutes et prend parfois du retard).
  *
- *  - la liste des personnages ajoutés (client/avatar-photos/characters.json) est relue sur GitHub au démarrage
- *  - les images enregistrées (photo recadrée) restent en mémoire et sont servies par /avatars/live/:id
- *  - après un redémarrage, l'image d'un personnage ajouté est relue sur GitHub
- * Une fois le site reconstruit, il contient tout cela de lui-même : ceci ne sert qu'à combler l'attente.
+ *   GET /avatars/live       → { enabled, crops, characters, photos: { id: sha } }
+ *   GET /avatars/live/:id   → la photo du personnage telle qu'enregistrée dans le dépôt
  */
-import { githubEnabled, readText, readBinary, listDir } from '../utils/github.js';
+import crypto from 'node:crypto';
+import { githubEnabled, readText, readBinary, gh, mainBranch, fail } from '../utils/github.js';
 
 export const CHARACTERS_FILE = 'client/avatar-photos/characters.json';
+const CADRAGE_FILE = 'client/avatars/cadrage.json';
 const PHOTOS_DIR = 'client/avatar-photos';
 const TYPES = { webp: 'image/webp', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', avif: 'image/avif' };
+const MAX_AGE = 60_000; // relecture du dépôt au plus une fois par minute (les enregistrements depuis l'admin sont pris en compte tout de suite)
 
-let characters = null; // [{ id, label, cat }] tels qu'enregistrés sur GitHub (null = pas encore lu)
-const images = new Map(); // id → { buf, type, ver }
+let state = null; // { crops, characters, photos: { id: { name, sha } } }
+let loadedAt = 0;
 let loading = null;
+const images = new Map(); // sha → { buf, type }
 
-/** Liste à jour des personnages ajoutés (lue une fois sur GitHub). */
-async function ensureLoaded() {
-  if (characters || !githubEnabled()) return;
-  if (!loading) {
-    loading = readText(CHARACTERS_FILE)
-      .then((t) => { const list = JSON.parse(t || '[]'); characters = Array.isArray(list) ? list : []; })
-      .catch(() => { characters = null; })
-      .finally(() => { loading = null; });
+/** Empreinte Git d'un fichier (la même que celle calculée au build du site). */
+export const gitSha = (buf) => crypto.createHash('sha1').update(`blob ${buf.length}\0`).update(buf).digest('hex');
+
+async function listPhotos() {
+  const r = await gh(`/contents/${PHOTOS_DIR}?ref=${encodeURIComponent(mainBranch())}`);
+  if (r.status === 404) return {};
+  if (!r.ok || !Array.isArray(r.body)) throw fail(`GitHub a répondu ${r.status}.`);
+  const photos = {};
+  for (const f of r.body) {
+    const m = /^([a-z0-9_-]+)\.(webp|jpe?g|png|gif|avif)$/i.exec(f.name);
+    if (m && !photos[m[1]]) photos[m[1]] = { name: f.name, sha: f.sha };
   }
+  return photos;
+}
+
+async function load() {
+  const [cad, chars, photos] = await Promise.all([readText(CADRAGE_FILE), readText(CHARACTERS_FILE), listPhotos()]);
+  let crops = {}; let characters = [];
+  try { crops = JSON.parse(cad || '{}') || {}; } catch { /* fichier abîmé : on ignore */ }
+  try { characters = JSON.parse(chars || '[]'); } catch { /* idem */ }
+  state = { crops, characters: Array.isArray(characters) ? characters : [], photos };
+  loadedAt = Date.now();
+}
+
+async function ensureFresh() {
+  if (!githubEnabled()) return;
+  if (state && Date.now() - loadedAt < MAX_AGE) return;
+  if (!loading) loading = load().catch((e) => { if (!state) throw e; }).finally(() => { loading = null; });
   await loading;
 }
 
-export function setLiveCharacters(list) {
-  characters = list;
-}
-
-/** Image recadrée (ou à défaut l'originale) d'un personnage, enregistrée à l'instant. */
-export function setLiveImage(id, buf, type) {
-  images.set(id, { buf, type, ver: Date.now().toString(36) });
-}
-
-export function forgetLiveImage(id) {
-  images.delete(id);
+/** Après un enregistrement depuis l'admin : on met à jour sans attendre une relecture du dépôt. */
+export function applySaved({ crops, characters, photos, removed = [] }) {
+  if (!state) return;
+  if (crops) state.crops = crops;
+  if (characters) state.characters = characters;
+  for (const [id, { name, buf, type }] of Object.entries(photos || {})) {
+    const sha = gitSha(buf);
+    state.photos[id] = { name, sha };
+    images.set(sha, { buf, type });
+  }
+  for (const id of removed) delete state.photos[id];
 }
 
 export async function liveState() {
-  await ensureLoaded();
+  try { await ensureFresh(); } catch { /* GitHub injoignable : on renvoie ce qu'on a */ }
+  if (!state) return { enabled: false, crops: {}, characters: [], photos: {} };
   return {
-    enabled: githubEnabled() && !!characters,
-    characters: characters || [],
-    images: Object.fromEntries([...images].map(([id, im]) => [id, im.ver])),
+    enabled: true,
+    crops: state.crops,
+    characters: state.characters,
+    photos: Object.fromEntries(Object.entries(state.photos).map(([id, p]) => [id, p.sha])),
   };
 }
 
-/** Image d'un personnage : celle en mémoire, sinon le fichier du dépôt (gardé en mémoire ensuite). */
+/** Photo d'un personnage (originale, le cadrage est appliqué par le navigateur). */
 export async function liveImage(id) {
-  if (images.has(id)) return images.get(id);
-  await ensureLoaded();
-  if (!characters?.some((c) => c.id === id)) return null;
-  const name = (await listDir(PHOTOS_DIR)).find((f) => f.replace(/\.[^.]+$/, '') === id);
-  if (!name) return null;
-  const buf = await readBinary(`${PHOTOS_DIR}/${name}`);
+  await ensureFresh();
+  const p = state?.photos[id];
+  if (!p) return null;
+  if (images.has(p.sha)) return images.get(p.sha);
+  const buf = await readBinary(`${PHOTOS_DIR}/${p.name}`);
   if (!buf) return null;
-  const im = { buf, type: TYPES[name.split('.').pop().toLowerCase()] || 'application/octet-stream', ver: 'repo' };
-  images.set(id, im);
+  const im = { buf, type: TYPES[p.name.split('.').pop().toLowerCase()] || 'application/octet-stream' };
+  if (images.size > 400) images.clear();
+  images.set(p.sha, im);
   return im;
 }

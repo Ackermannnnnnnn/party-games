@@ -169,8 +169,11 @@ if (fs.existsSync(PHOTOS)) {
     if (!EXT.has(ext)) continue;
     const id = path.basename(f, path.extname(f));
     if (builtin[id] || !/^[a-z0-9_-]+$/i.test(id)) continue;
-    const done = await processImage(path.join(PHOTOS, f), `b__${id}`, `@${id}`);
-    if (done) builtin[id] = done;
+    const full = path.join(PHOTOS, f);
+    const done = await processImage(full, `b__${id}`, `@${id}`);
+    // empreinte Git du fichier : le site sait ainsi si la photo a changé depuis (voir /avatars/live du serveur)
+    const buf = fs.readFileSync(full);
+    if (done) builtin[id] = { ...done, sha: crypto.createHash('sha1').update(`blob ${buf.length}\0`).update(buf).digest('hex') };
   }
 }
 

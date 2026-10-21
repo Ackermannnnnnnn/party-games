@@ -261,8 +261,29 @@ export const AVATAR_CATEGORIES = [];
 export const AVATARS = [];
 const ALL_AVATARS = [];
 
-let live = { enabled: false, characters: [], images: {} };
-const liveImg = (id, ver) => `${SERVER_URL}/avatars/live/${encodeURIComponent(id)}?v=${ver}`;
+/*
+ * État « en direct » envoyé par le serveur (lu dans le dépôt GitHub) : photos, cadrages et personnages
+ * enregistrés depuis l'admin. Il prime sur ce qui a été intégré au site lors de sa dernière reconstruction,
+ * qui peut avoir du retard. Une image dont le cadrage vient du serveur est l'image entière, avec `view`
+ * (zoom / position) appliqué à l'affichage.
+ */
+let live = { enabled: false, crops: {}, characters: [], photos: {} };
+const liveImg = (id, sha) => `${SERVER_URL}/avatars/live/${encodeURIComponent(id)}?v=${sha.slice(0, 12)}`;
+const sameCrop = (a, b) => (!a && !b) || (!!a && !!b && a.zoom === b.zoom && a.x === b.x && a.y === b.y);
+const CENTER = { zoom: 1, x: 0.5, y: 0.5 };
+
+/** Applique le cadrage / la photo enregistrés (si différents de ceux intégrés au site). */
+function withLive(a, key, photoId) {
+  if (!live.enabled) return a;
+  const crop = live.crops[key] || null;
+  const sha = photoId ? live.photos[photoId] : null;
+  if (photoId && sha && sha !== a.sha) {
+    const url = liveImg(photoId, sha); // nouvelle photo : pas encore recadrée par le build
+    return { ...a, img: url, src: url, crop, auto: null, sha, view: crop || CENTER };
+  }
+  if (a.src && !sameCrop(crop, a.crop)) return { ...a, img: a.src, crop, view: crop || a.auto || CENTER };
+  return a;
+}
 
 function rebuild() {
   const liveIds = new Set(live.characters.map((c) => c.id));
@@ -272,17 +293,16 @@ function rebuild() {
     ...live.characters.filter((c) => !known.has(c.id) && !ADDED.some((a) => a.id === c.id)),
   ].map((c) => ({ ...addedAvatar(c), ...(live.characters.find((l) => l.id === c.id) || {}) }));
   const builtin = [...BUILTIN_AVATARS, ...added].map((a) => {
-    let out = PHOTOS[a.id] ? { ...a, ...PHOTOS[a.id], builtinPhoto: true } : a;
-    if (live.images[a.id]) out = { ...out, img: liveImg(a.id, live.images[a.id]) };
-    else if (!out.img && a.added && live.enabled) out = { ...out, img: liveImg(a.id, 'repo') };
-    return out;
+    const out = PHOTOS[a.id] ? { ...a, ...PHOTOS[a.id], builtinPhoto: true } : a;
+    return withLive(out, `@${a.id}`, a.id);
   }).sort((a, b) => catIndex(a.cat) - catIndex(b.cat) || byLabel(a, b));
   /** Choisissables : un personnage sans photo n'est pas proposé (il reste affichable pour qui l'a déjà). */
   const pickable = builtin.filter((a) => a.img || !CHARACTER_CATEGORIES.has(a.cat));
   const cats = [...BUILTIN_CATEGORIES].sort(byLabel);
+  const perso = CUSTOM.avatars.map((a) => withLive({ ...a, bg: 'from-slate-600 to-slate-800', emoji: '🖼️' }, a.file, null));
   BUILTIN_WITH_PHOTOS.splice(0, Infinity, ...builtin);
   AVATAR_CATEGORIES.splice(0, Infinity, ...CUSTOM.categories, ...cats.filter((c) => pickable.some((a) => a.cat === c.id)));
-  AVATARS.splice(0, Infinity, ...CUSTOM.avatars.map((a) => ({ ...a, bg: 'from-slate-600 to-slate-800', emoji: '🖼️' })), ...pickable);
+  AVATARS.splice(0, Infinity, ...perso, ...pickable);
   ALL_AVATARS.splice(0, Infinity, ...AVATARS, ...builtin.filter((a) => !pickable.includes(a)));
 }
 rebuild();
@@ -293,13 +313,13 @@ let version = 0;
 export function onAvatarsChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 export const avatarsVersion = () => version;
 
-/** Récupère ce qui a été enregistré depuis l'admin et pas encore intégré au site. */
+/** Récupère l'état enregistré depuis l'admin (photos, cadrages, personnages). */
 export async function loadLiveAvatars() {
   try {
     const r = await fetch(`${SERVER_URL}/avatars/live`, { cache: 'no-store' });
     if (!r.ok) return;
     const d = await r.json();
-    live = { enabled: !!d.enabled, characters: Array.isArray(d.characters) ? d.characters : [], images: d.images || {} };
+    live = { enabled: !!d.enabled, crops: d.crops || {}, characters: Array.isArray(d.characters) ? d.characters : [], photos: d.photos || {} };
     rebuild();
     version += 1;
     listeners.forEach((fn) => fn(version));
@@ -317,6 +337,18 @@ export function photoUrl(id) {
   if (id === PHOTO_LOCAL) { try { return localStorage.getItem('avatarPhoto'); } catch { return null; } }
   if (!isPhoto(id)) return null;
   return `${SERVER_URL}/photos/${id.slice(6)}`;
+}
+
+/** Cadrage à appliquer à l'affichage ({ zoom, x, y }) quand l'image n'est pas déjà recadrée, sinon null. */
+export function imageView(id) {
+  return ALL_AVATARS.find((x) => x.id === id)?.view || null;
+}
+
+/** Style d'une <img> carrée (object-cover) qui reproduit un cadrage { zoom, x, y }. */
+export function viewStyle(v) {
+  if (!v) return undefined;
+  const pos = `${v.x * 100}% ${v.y * 100}%`;
+  return { objectPosition: pos, transformOrigin: pos, transform: v.zoom > 1 ? `scale(${v.zoom})` : undefined };
 }
 
 /** URL de l'image d'un avatar perso (`img:…`), sinon null. */

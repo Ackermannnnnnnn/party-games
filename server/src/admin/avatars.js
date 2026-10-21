@@ -16,7 +16,7 @@
  *   GITHUB_BRANCH  branche (défaut : main)
  */
 import { githubEnabled, fail, readText, listDir, commitFiles, http } from '../utils/github.js';
-import { CHARACTERS_FILE, setLiveCharacters, setLiveImage, forgetLiveImage } from './liveAvatars.js';
+import { CHARACTERS_FILE, applySaved } from './liveAvatars.js';
 
 export { githubEnabled, http };
 
@@ -71,16 +71,6 @@ export function sanitizeCharacters(input) {
   return { add, remove };
 }
 
-/** Vignettes recadrées par le navigateur : { id: data URL } (affichées tout de suite, avant la reconstruction du site). */
-export function sanitizeThumbs(input) {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) return {};
-  const out = {};
-  for (const [id, d] of Object.entries(input).slice(0, 200)) {
-    if (ID_RE.test(id) && typeof d === 'string' && d.length < 400_000 && /^data:image\/(webp|jpeg|png);base64,/.test(d)) out[id] = d;
-  }
-  return out;
-}
-
 const EXT_BY_TYPE = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/avif': 'avif' };
 
 /** Télécharge une image côté serveur (quand le navigateur n'a pas pu la lire). */
@@ -119,14 +109,15 @@ function decodeDataUrl(data) {
  * photos  : { id: { url, data } } → client/avatar-photos/<id>.<ext> (+ sources.json mis à jour)
  * Renvoie { commit, failed: { id: raison } }.
  */
-export async function saveAvatars({ cadrage = {}, photos = {}, characters = { add: [], remove: [] }, thumbs = {} }) {
+export async function saveAvatars({ cadrage = {}, photos = {}, characters = { add: [], remove: [] } }) {
   const files = [];
   const failed = {};
   const savedImages = {}; // id → { buf, type } enregistrées dans ce commit
   const removeIds = new Set(characters.remove);
   let sources = null; // sources.json (propositions de photos), lu si besoin
   // un personnage supprimé n'a plus besoin de photo ni de cadrage
-  for (const id of removeIds) { delete photos[id]; delete thumbs[id]; cadrage[`@${id}`] = null; }
+  for (const id of removeIds) { delete photos[id]; cadrage[`@${id}`] = null; }
+  let sortedCrops = null;
   const nPhotos = Object.keys(photos).length;
   const nCrops = Object.keys(cadrage).filter((k) => !removeIds.has(k.slice(1))).length;
 
@@ -134,7 +125,7 @@ export async function saveAvatars({ cadrage = {}, photos = {}, characters = { ad
     let current = {};
     try { current = JSON.parse((await readText(CADRAGE_FILE)) || '{}') || {}; } catch { current = {}; }
     for (const [k, c] of Object.entries(cadrage)) { if (c === null) delete current[k]; else current[k] = c; }
-    const sorted = Object.fromEntries(Object.keys(current).sort((a, b) => a.localeCompare(b, 'fr')).map((k) => [k, current[k]]));
+    const sorted = sortedCrops = Object.fromEntries(Object.keys(current).sort((a, b) => a.localeCompare(b, 'fr')).map((k) => [k, current[k]]));
     files.push({ path: CADRAGE_FILE, content: `${JSON.stringify(sorted, null, 2)}\n` });
   }
 
@@ -155,7 +146,7 @@ export async function saveAvatars({ cadrage = {}, photos = {}, characters = { ad
         if (f !== name && f.replace(/\.[^.]+$/, '') === id) files.push({ path: `${PHOTOS_DIR}/${f}`, remove: true });
       }
       files.push({ path: `${PHOTOS_DIR}/${name}`, content: img.buf });
-      savedImages[id] = { buf: img.buf, type: `image/${img.ext === 'jpg' ? 'jpeg' : img.ext}` };
+      savedImages[id] = { name, buf: img.buf, type: `image/${img.ext === 'jpg' ? 'jpeg' : img.ext}` };
       const entry = sources[id] || { pick: 0, candidates: [] };
       if (p.url) {
         if (!entry.candidates.includes(p.url)) entry.candidates.push(p.url);
@@ -210,15 +201,8 @@ export async function saveAvatars({ cadrage = {}, photos = {}, characters = { ad
   if (nCrops) parts.push(`cadrage de ${nCrops} image${nCrops > 1 ? 's' : ''}`);
   const commit = await commitFiles(files, `Avatars : ${parts.join(' + ')} (depuis l'admin)`);
 
-  // Visible tout de suite pour les joueurs (en attendant que Render reconstruise le site)
-  if (charList) setLiveCharacters(charList);
-  for (const id of removeIds) forgetLiveImage(id);
-  for (const [id, d] of Object.entries(thumbs)) {
-    if (failed[id]) continue;
-    const m = /^data:(image\/[a-z]+);base64,(.+)$/.exec(d);
-    setLiveImage(id, Buffer.from(m[2], 'base64'), m[1]);
-  }
-  for (const [id, im] of Object.entries(savedImages)) if (!thumbs[id]) setLiveImage(id, im.buf, im.type);
+  // Visible tout de suite pour les joueurs : le serveur leur envoie l'état du dépôt (voir liveAvatars.js)
+  applySaved({ crops: sortedCrops, characters: charList, photos: savedImages, removed: [...removeIds] });
   return { commit, failed };
 }
 
