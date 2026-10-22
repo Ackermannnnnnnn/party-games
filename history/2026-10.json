@@ -1,5 +1,147 @@
 [
  {
+  "id": "2026-10-22-a2c224b0",
+  "game": "imposter",
+  "label": "Jeu de l'imposteur",
+  "room": "PMHA8Q",
+  "startedAt": 1792703126744,
+  "endedAt": 1792703317909,
+  "durationSec": 191,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:5d275f066445f8fb"
+   },
+   {
+    "pseudo": "pinemoisa",
+    "avatar": "img:perso/capitan-america"
+   },
+   {
+    "pseudo": "dolfi",
+    "avatar": "photo:9da48e4f3460849a"
+   },
+   {
+    "pseudo": "Eren nigger",
+    "avatar": "photo:b07f8e946cc64769"
+   }
+  ],
+  "winner": "Les civils (dolfi, pinemoisa, Oh oui stp oui ooooh, Mo)",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": 6,
+    "detail": "Civil",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:5d275f066445f8fb",
+    "score": 3,
+    "detail": "Civil",
+    "win": true
+   },
+   {
+    "rank": 3,
+    "pseudo": "dolfi",
+    "avatar": "photo:9da48e4f3460849a",
+    "score": 3,
+    "detail": "Civil",
+    "win": true
+   },
+   {
+    "rank": 4,
+    "pseudo": "pinemoisa",
+    "avatar": "img:perso/capitan-america",
+    "score": 2,
+    "detail": "Civil",
+    "win": true
+   },
+   {
+    "rank": 5,
+    "pseudo": "Eren nigger",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": 0,
+    "detail": "Imposteur",
+    "win": false
+   }
+  ],
+  "recap": {
+   "civilWord": "Rocket League",
+   "imposterWord": "FIFA",
+   "theme": "🎮 Jeux vidéo",
+   "reason": "ALL_FOUND",
+   "votes": {
+    "Mo": {
+     "imposter": "Eren nigger",
+     "mrWhite": null
+    },
+    "Oh oui stp oui ooooh": {
+     "imposter": "Eren nigger",
+     "mrWhite": null
+    },
+    "Eren nigger": {
+     "imposter": "Oh oui stp oui ooooh",
+     "mrWhite": null
+    },
+    "dolfi": {
+     "imposter": "Eren nigger",
+     "mrWhite": null
+    },
+    "pinemoisa": {
+     "imposter": "Mo",
+     "mrWhite": null
+    }
+   },
+   "clues": {
+    "dolfi": [
+     "@#!à",
+     "—"
+    ],
+    "pinemoisa": [
+     "moteur",
+     "—"
+    ],
+    "Oh oui stp oui ooooh": [
+     "Bleu",
+     "—"
+    ],
+    "Eren nigger": [
+     "orange",
+     "—"
+    ],
+    "Mo": [
+     "Ilias",
+     ":"
+    ]
+   }
+  },
+  "options": {
+   "themes": [
+    "films",
+    "mangas",
+    "jeuxvideo",
+    "superheros",
+    "celebrites"
+   ],
+   "level": "mixte",
+   "imposterCount": 1,
+   "imposterKnows": false,
+   "voteDurationSec": 60,
+   "turnDurationSec": 0,
+   "mrWhiteEnabled": false,
+   "clueMode": "ecrit",
+   "showTheme": false
+  }
+ },
+ {
   "id": "2026-10-22-d55d3bcd",
   "game": "imposter",
   "label": "Jeu de l'imposteur",
