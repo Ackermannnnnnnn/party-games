@@ -1,5 +1,259 @@
 [
  {
+  "id": "2026-10-22-6754aa82",
+  "game": "quiz",
+  "label": "Quiz culture G",
+  "room": "KA3KHM",
+  "startedAt": 1792632036405,
+  "endedAt": 1792632298901,
+  "durationSec": 262,
+  "host": "HAkuum",
+  "players": [
+   {
+    "pseudo": "HAkuum",
+    "avatar": "kakashi"
+   },
+   {
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308"
+   },
+   {
+    "pseudo": "pinemoisa",
+    "avatar": "img:perso/capitan-america"
+   }
+  ],
+  "winner": "Oh oui stp oui ooooh",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308",
+    "score": 5330,
+    "detail": "18 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 2,
+    "pseudo": "pinemoisa",
+    "avatar": "img:perso/capitan-america",
+    "score": 4660,
+    "detail": "17 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 3,
+    "pseudo": "HAkuum",
+    "avatar": "kakashi",
+    "score": 4590,
+    "detail": "16 bonne(s) réponse(s)"
+   }
+  ],
+  "recap": {
+   "questions": [
+    {
+     "question": "Quelle ville traverse les deux continents Europe et Asie ?",
+     "answer": "Istanbul",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quelle mer sépare l'Europe de l'Afrique ?",
+     "answer": "Mer Méditerranée",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quelle est la profondeur max de la fosse des Mariannes (km) ?",
+     "answer": "11",
+     "category": "geo",
+     "found": [
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Quel pays est en forme d'hexagone ?",
+     "answer": "France",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quel océan est entre l'Europe et l'Amérique ?",
+     "answer": "Atlantique",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quelle est la capitale du Pérou ?",
+     "answer": "Lima",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quel est le plus petit pays du monde ?",
+     "answer": "Vatican",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quel pays européen est « doublement enclavé » (entouré de pays sans accès à la mer) ?",
+     "answer": "Liechtenstein",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quel pays a pour capitale Reykjavik ?",
+     "answer": "Islande",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quelle est la capitale de l'Argentine ?",
+     "answer": "Buenos Aires",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quelle est la capitale du Kazakhstan ?",
+     "answer": "Astana",
+     "category": "geo",
+     "found": [
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Combien d'États composent les USA ?",
+     "answer": "50",
+     "category": "geo",
+     "found": [
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quel pays a pour capitale Hanoï ?",
+     "answer": "Vietnam",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Quel pays a pour capitale Helsinki ?",
+     "answer": "Finlande",
+     "category": "geo",
+     "found": [
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quelle est la capitale du Japon ?",
+     "answer": "Tokyo",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quelle est la capitale de la Russie ?",
+     "answer": "Moscou",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quel est le pays le plus visité au monde ?",
+     "answer": "France",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quel pays a Berlin pour capitale ?",
+     "answer": "Allemagne",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quel pays a Athènes pour capitale ?",
+     "answer": "Grèce",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quel est le pays le moins peuplé du monde ?",
+     "answer": "Vatican",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "pinemoisa"
+     ]
+    }
+   ]
+  },
+  "options": {
+   "categories": [
+    "geo"
+   ],
+   "difficulty": "random",
+   "nbQuestions": 20,
+   "timePerQuestionSec": 20,
+   "hardcoreMode": false,
+   "battleRoyaleMode": false,
+   "jokers": true
+  }
+ },
+ {
   "id": "2026-10-22-a1ab8574",
   "game": "quiz",
   "label": "Quiz culture G",
