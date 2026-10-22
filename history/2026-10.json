@@ -1,5 +1,273 @@
 [
  {
+  "id": "2026-10-22-a1ab8574",
+  "game": "quiz",
+  "label": "Quiz culture G",
+  "room": "KA3KHM",
+  "startedAt": 1792631748953,
+  "endedAt": 1792632013746,
+  "durationSec": 265,
+  "host": "HAkuum",
+  "players": [
+   {
+    "pseudo": "HAkuum",
+    "avatar": "kakashi"
+   },
+   {
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308"
+   },
+   {
+    "pseudo": "Tupac",
+    "avatar": "img:perso/venom"
+   },
+   {
+    "pseudo": "kaaris",
+    "avatar": "venom"
+   }
+  ],
+  "winner": "HAkuum",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "HAkuum",
+    "avatar": "kakashi",
+    "score": 5040,
+    "detail": "16 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 2,
+    "pseudo": "kaaris",
+    "avatar": "venom",
+    "score": 3905,
+    "detail": "15 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 3,
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308",
+    "score": 3460,
+    "detail": "14 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 4,
+    "pseudo": "Tupac",
+    "avatar": "img:perso/venom",
+    "score": 2555,
+    "detail": "12 bonne(s) réponse(s)"
+   }
+  ],
+  "recap": {
+   "questions": [
+    {
+     "question": "Quel personnage est lié à la phrase \"L'État c'est moi\" ?",
+     "answer": "Louis XIV",
+     "category": "histoire",
+     "found": [
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "En quelle année tombe Constantinople ?",
+     "answer": "1453",
+     "category": "histoire",
+     "found": [
+      "HAkuum"
+     ]
+    },
+    {
+     "question": "Quel animal a la trompe ?",
+     "answer": "Éléphant",
+     "category": "animaux",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Qui était Adolf Hitler ?",
+     "answer": "Dictateur allemand",
+     "category": "histoire",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel est le symbole chimique de l'or ?",
+     "answer": "Au",
+     "category": "culture",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel est le nom romain d'Arès, dieu de la guerre ?",
+     "answer": "Mars",
+     "category": "mythologie",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel jour est la fête nationale française ?",
+     "answer": "14 juillet",
+     "category": "culture",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "D'où vient le mot « week-end » ?",
+     "answer": "De l'anglais",
+     "category": "langue",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel est ce drapeau ?",
+     "answer": "Portugal",
+     "category": "drapeaux",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel est le port HTTP standard ?",
+     "answer": "80",
+     "category": "internet",
+     "found": [
+      "HAkuum",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Comment s'appelle la partie colorée de l'œil ?",
+     "answer": "L'iris",
+     "category": "corps",
+     "found": []
+    },
+    {
+     "question": "Dans The Witcher, comment s'appelle le sorceleur aux cheveux blancs ?",
+     "answer": "Geralt de Riv",
+     "category": "jeuxvideo",
+     "found": [
+      "HAkuum"
+     ]
+    },
+    {
+     "question": "Quel sens est associé à la langue ?",
+     "answer": "Le goût",
+     "category": "corps",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Dans Naruto, quel démon renard est scellé en Naruto ?",
+     "answer": "Kyubi (Kurama)",
+     "category": "mangas",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel pays construit la Grande Muraille ?",
+     "answer": "Chine",
+     "category": "histoire",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel président a signé l'abolition de la peine de mort en France ?",
+     "answer": "Mitterrand",
+     "category": "histoire",
+     "found": [
+      "HAkuum"
+     ]
+    },
+    {
+     "question": "Quel auteur a écrit \"L'Étranger\" ?",
+     "answer": "Camus",
+     "category": "culture",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel est ce drapeau ?",
+     "answer": "Suisse",
+     "category": "drapeaux",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel musicien est descendu aux Enfers pour chercher Eurydice ?",
+     "answer": "Orphée",
+     "category": "mythologie",
+     "found": [
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Dans quelle ville US se trouve l'Empire State Building ?",
+     "answer": "New York",
+     "category": "monuments",
+     "found": [
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    }
+   ]
+  },
+  "options": {
+   "categories": [],
+   "difficulty": "random",
+   "nbQuestions": 20,
+   "timePerQuestionSec": 20,
+   "hardcoreMode": false,
+   "battleRoyaleMode": false,
+   "jokers": true
+  }
+ },
+ {
   "id": "2026-10-22-0b33d4f1",
   "game": "quiz",
   "label": "Quiz culture G",
