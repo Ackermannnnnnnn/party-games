@@ -1,5 +1,273 @@
 [
  {
+  "id": "2026-10-22-4457eb3d",
+  "game": "quiz",
+  "label": "Quiz culture G",
+  "room": "KA3KHM",
+  "startedAt": 1792630744952,
+  "endedAt": 1792631041455,
+  "durationSec": 297,
+  "host": "HAkuum",
+  "players": [
+   {
+    "pseudo": "HAkuum",
+    "avatar": "kakashi"
+   },
+   {
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308"
+   },
+   {
+    "pseudo": "Tupac",
+    "avatar": "img:perso/venom"
+   },
+   {
+    "pseudo": "kaaris",
+    "avatar": "venom"
+   }
+  ],
+  "winner": "HAkuum",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "HAkuum",
+    "avatar": "kakashi",
+    "score": 4660,
+    "detail": "17 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 2,
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308",
+    "score": 4160,
+    "detail": "16 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 3,
+    "pseudo": "kaaris",
+    "avatar": "venom",
+    "score": 3010,
+    "detail": "13 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 4,
+    "pseudo": "Tupac",
+    "avatar": "img:perso/venom",
+    "score": 2405,
+    "detail": "11 bonne(s) réponse(s)"
+   }
+  ],
+  "recap": {
+   "questions": [
+    {
+     "question": "Quelle est la capitale de la Mongolie ?",
+     "answer": "Oulan-Bator",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Comment s'appelle la station spatiale habitée en orbite autour de la Terre ?",
+     "answer": "L'ISS",
+     "category": "espace",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel siècle est appelé \"siècle des Lumières\" ?",
+     "answer": "18e",
+     "category": "histoire",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel est le muscle le plus puissant pour sa taille, servant à mâcher ?",
+     "answer": "Le masséter",
+     "category": "corps",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Dans quel pays se trouve Angkor Vat ?",
+     "answer": "Cambodge",
+     "category": "monuments",
+     "found": [
+      "HAkuum"
+     ]
+    },
+    {
+     "question": "Quel est ce drapeau ?",
+     "answer": "Afrique du Sud",
+     "category": "drapeaux",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel film a inspiré \"Je suis ton père\" ?",
+     "answer": "Star Wars V",
+     "category": "cinema",
+     "found": [
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Quel est le sport le plus pratiqué au monde ?",
+     "answer": "Foot",
+     "category": "culture",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Quel est le symbole chimique de l'or ?",
+     "answer": "Au",
+     "category": "sciences",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Que veut dire « avoir le cafard » ?",
+     "answer": "Être déprimé",
+     "category": "langue",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quelle est la capitale de l'Australie ?",
+     "answer": "Canberra",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Combien de films dans la trilogie du Seigneur des Anneaux ?",
+     "answer": "3",
+     "category": "cinema",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "En quelle année se termine la Seconde Guerre mondiale ?",
+     "answer": "1945",
+     "category": "histoire",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Qui a écrit « Don Quichotte » ?",
+     "answer": "Miguel de Cervantes",
+     "category": "litterature",
+     "found": [
+      "HAkuum"
+     ]
+    },
+    {
+     "question": "Quel est le métal le plus conducteur ?",
+     "answer": "Argent",
+     "category": "sciences",
+     "found": []
+    },
+    {
+     "question": "Quel fromage est indispensable à une vraie pizza Margherita ?",
+     "answer": "La mozzarella",
+     "category": "cuisine",
+     "found": [
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "En quelle année a commencé la Première Guerre mondiale ?",
+     "answer": "1914",
+     "category": "histoire",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Quel personnage de Cervantes se bat contre des moulins à vent ?",
+     "answer": "Don Quichotte",
+     "category": "litterature",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel manga raconte la sélection de 300 attaquants japonais pour créer le meilleur buteur du monde ?",
+     "answer": "Blue Lock",
+     "category": "mangas",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "De quel pays vient la moussaka ?",
+     "answer": "Grèce",
+     "category": "cuisine",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    }
+   ]
+  },
+  "options": {
+   "categories": [],
+   "difficulty": "random",
+   "nbQuestions": 20,
+   "timePerQuestionSec": 20,
+   "hardcoreMode": false,
+   "battleRoyaleMode": false,
+   "jokers": true
+  }
+ },
+ {
   "id": "2026-10-22-dca30e10",
   "game": "quiz",
   "label": "Quiz culture G",
