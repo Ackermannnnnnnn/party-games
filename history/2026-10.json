@@ -1,5 +1,152 @@
 [
  {
+  "id": "2026-10-22-d55d3bcd",
+  "game": "imposter",
+  "label": "Jeu de l'imposteur",
+  "room": "PMHA8Q",
+  "startedAt": 1792702746362,
+  "endedAt": 1792703095449,
+  "durationSec": 349,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:5d275f066445f8fb"
+   },
+   {
+    "pseudo": "pinemoisa",
+    "avatar": "img:perso/capitan-america"
+   },
+   {
+    "pseudo": "dolfi",
+    "avatar": "photo:9da48e4f3460849a"
+   },
+   {
+    "pseudo": "Eren nigger",
+    "avatar": "photo:b07f8e946cc64769"
+   }
+  ],
+  "winner": "L'imposteur (Mo)",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": 3,
+    "detail": "Imposteur",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:5d275f066445f8fb",
+    "score": 0,
+    "detail": "Civil",
+    "win": false
+   },
+   {
+    "rank": 3,
+    "pseudo": "pinemoisa",
+    "avatar": "img:perso/capitan-america",
+    "score": 0,
+    "detail": "Civil",
+    "win": false
+   },
+   {
+    "rank": 4,
+    "pseudo": "dolfi",
+    "avatar": "photo:9da48e4f3460849a",
+    "score": 0,
+    "detail": "Civil",
+    "win": false
+   },
+   {
+    "rank": 5,
+    "pseudo": "Eren nigger",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": 0,
+    "detail": "Civil",
+    "win": false
+   }
+  ],
+  "recap": {
+   "civilWord": "King Kong",
+   "imposterWord": "Jurassic Park",
+   "theme": "🎬 Films & séries",
+   "reason": "CIVIL_ELIMINATED",
+   "votes": {
+    "Eren nigger": {
+     "imposter": "pinemoisa",
+     "mrWhite": null
+    },
+    "Mo": {
+     "imposter": "pinemoisa",
+     "mrWhite": null
+    },
+    "pinemoisa": {
+     "imposter": "Oh oui stp oui ooooh",
+     "mrWhite": null
+    },
+    "dolfi": {
+     "imposter": "pinemoisa",
+     "mrWhite": null
+    },
+    "Oh oui stp oui ooooh": {
+     "imposter": "pinemoisa",
+     "mrWhite": null
+    }
+   },
+   "clues": {
+    "Eren nigger": [
+     "film",
+     "Real madrid",
+     "eh vraiment les bananes quoi"
+    ],
+    "dolfi": [
+     "tower",
+     "nigger",
+     "grosse bit"
+    ],
+    "pinemoisa": [
+     "très connu",
+     "poilu",
+     "inspiré du règne animal"
+    ],
+    "Mo": [
+     "box office",
+     "godzilla",
+     "donkey"
+    ],
+    "Oh oui stp oui ooooh": [
+     "Énorme",
+     "Roi",
+     "Fort"
+    ]
+   }
+  },
+  "options": {
+   "themes": [
+    "films",
+    "mangas",
+    "jeuxvideo",
+    "superheros",
+    "celebrites"
+   ],
+   "level": "mixte",
+   "imposterCount": 1,
+   "imposterKnows": false,
+   "voteDurationSec": 60,
+   "turnDurationSec": 0,
+   "mrWhiteEnabled": false,
+   "clueMode": "ecrit",
+   "showTheme": false
+  }
+ },
+ {
   "id": "2026-10-22-6754aa82",
   "game": "quiz",
   "label": "Quiz culture G",
