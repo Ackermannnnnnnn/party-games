@@ -1,5 +1,147 @@
 [
  {
+  "id": "2026-10-22-d1858fbc",
+  "game": "imposter",
+  "label": "Jeu de l'imposteur",
+  "room": "PMHA8Q",
+  "startedAt": 1792703332403,
+  "endedAt": 1792703599433,
+  "durationSec": 267,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:5d275f066445f8fb"
+   },
+   {
+    "pseudo": "pinemoisa",
+    "avatar": "img:perso/capitan-america"
+   },
+   {
+    "pseudo": "dolfi",
+    "avatar": "photo:9da48e4f3460849a"
+   },
+   {
+    "pseudo": "Eren nigger",
+    "avatar": "photo:b07f8e946cc64769"
+   }
+  ],
+  "winner": "L'imposteur (Mo)",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": 9,
+    "detail": "Imposteur",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:5d275f066445f8fb",
+    "score": 4,
+    "detail": "Civil",
+    "win": false
+   },
+   {
+    "rank": 3,
+    "pseudo": "dolfi",
+    "avatar": "photo:9da48e4f3460849a",
+    "score": 3,
+    "detail": "Civil",
+    "win": false
+   },
+   {
+    "rank": 4,
+    "pseudo": "pinemoisa",
+    "avatar": "img:perso/capitan-america",
+    "score": 2,
+    "detail": "Civil",
+    "win": false
+   },
+   {
+    "rank": 5,
+    "pseudo": "Eren nigger",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": 1,
+    "detail": "Civil",
+    "win": false
+   }
+  ],
+  "recap": {
+   "civilWord": "Cyprien",
+   "imposterWord": "Squeezie",
+   "theme": "⭐ Célébrités",
+   "reason": "TIE",
+   "votes": {
+    "Mo": {
+     "imposter": "pinemoisa",
+     "mrWhite": null
+    },
+    "Eren nigger": {
+     "imposter": "Mo",
+     "mrWhite": null
+    },
+    "pinemoisa": {
+     "imposter": "dolfi",
+     "mrWhite": null
+    },
+    "dolfi": {
+     "imposter": "pinemoisa",
+     "mrWhite": null
+    },
+    "Oh oui stp oui ooooh": {
+     "imposter": "Mo",
+     "mrWhite": null
+    }
+   },
+   "clues": {
+    "Eren nigger": [
+     "Youtube",
+     "Roumanie"
+    ],
+    "dolfi": [
+     "quoi",
+     "cortex"
+    ],
+    "Oh oui stp oui ooooh": [
+     "Why",
+     "Coquillages"
+    ],
+    "Mo": [
+     "gaming",
+     "podcast"
+    ],
+    "pinemoisa": [
+     "vidéaste",
+     "dailimotion puis youtube"
+    ]
+   }
+  },
+  "options": {
+   "themes": [
+    "films",
+    "mangas",
+    "jeuxvideo",
+    "superheros",
+    "celebrites"
+   ],
+   "level": "mixte",
+   "imposterCount": 1,
+   "imposterKnows": false,
+   "voteDurationSec": 60,
+   "turnDurationSec": 0,
+   "mrWhiteEnabled": false,
+   "clueMode": "ecrit",
+   "showTheme": false
+  }
+ },
+ {
   "id": "2026-10-22-a2c224b0",
   "game": "imposter",
   "label": "Jeu de l'imposteur",
