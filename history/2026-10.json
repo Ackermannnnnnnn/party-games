@@ -1,5 +1,306 @@
 [
  {
+  "id": "2026-10-22-dca30e10",
+  "game": "quiz",
+  "label": "Quiz culture G",
+  "room": "KA3KHM",
+  "startedAt": 1792630348667,
+  "endedAt": 1792630688462,
+  "durationSec": 340,
+  "host": "HAkuum",
+  "players": [
+   {
+    "pseudo": "HAkuum",
+    "avatar": "kakashi"
+   },
+   {
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308"
+   },
+   {
+    "pseudo": "pinemoisa",
+    "avatar": "img:perso/capitan-america"
+   },
+   {
+    "pseudo": "Tupac",
+    "avatar": "img:perso/venom"
+   },
+   {
+    "pseudo": "kaaris",
+    "avatar": "venom"
+   }
+  ],
+  "winner": "Oh oui stp oui ooooh",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308",
+    "score": 5290,
+    "detail": "18 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 2,
+    "pseudo": "Tupac",
+    "avatar": "img:perso/venom",
+    "score": 4095,
+    "detail": "15 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 3,
+    "pseudo": "HAkuum",
+    "avatar": "kakashi",
+    "score": 3380,
+    "detail": "14 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 4,
+    "pseudo": "pinemoisa",
+    "avatar": "img:perso/capitan-america",
+    "score": 3150,
+    "detail": "13 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 5,
+    "pseudo": "kaaris",
+    "avatar": "venom",
+    "score": 2425,
+    "detail": "8 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 6,
+    "pseudo": "?",
+    "avatar": null,
+    "score": 875,
+    "detail": "4 bonne(s) réponse(s)"
+   }
+  ],
+  "recap": {
+   "questions": [
+    {
+     "question": "Quelle ville belge est surnommée la « Venise du Nord » ?",
+     "answer": "Bruges",
+     "category": "belgique",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Combien de pieds dans un mètre ?",
+     "answer": "~3,28",
+     "category": "culture",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Quel architecte a conçu la Sagrada Família ?",
+     "answer": "Gaudí",
+     "category": "monuments",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa"
+     ]
+    },
+    {
+     "question": "Quel est ce drapeau ?",
+     "answer": "Grèce",
+     "category": "drapeaux",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa",
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Quel studio a créé la série Call of Duty en 2003 ?",
+     "answer": "Infinity Ward",
+     "category": "internet",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa",
+      "?",
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Que veut dire « faire la grasse matinée » ?",
+     "answer": "Dormir tard le matin",
+     "category": "langue",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa",
+      "?",
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Quel pays a Stockholm pour capitale ?",
+     "answer": "Suède",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa",
+      "?",
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Quel chanteur belge a interprété « Ne me quitte pas » ?",
+     "answer": "Jacques Brel",
+     "category": "belgique",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa",
+      "?",
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Quel duo de rap français a sorti l'album « Mauvais Œil » en 2000 ?",
+     "answer": "Lunatic",
+     "category": "musique",
+     "found": [
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Quel kit de 1975 a lancé la révolution de l'ordinateur personnel ?",
+     "answer": "Altair 8800",
+     "category": "internet",
+     "found": []
+    },
+    {
+     "question": "Quel légume est la base de la soupe vichyssoise, servie froide ?",
+     "answer": "Le poireau",
+     "category": "cuisine",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Qui a écrit « Vingt mille lieues sous les mers » ?",
+     "answer": "Jules Verne",
+     "category": "litterature",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Quel pays africain a trois capitales ?",
+     "answer": "Afrique du Sud",
+     "category": "geo",
+     "found": [
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel organe stocke la bile ?",
+     "answer": "La vésicule biliaire",
+     "category": "corps",
+     "found": [
+      "Oh oui stp oui ooooh",
+      "pinemoisa",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Combien de joueurs compte une équipe de football sur le terrain ?",
+     "answer": "11",
+     "category": "culture",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quelle est la capitale du Canada ?",
+     "answer": "Ottawa",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "De quelle région française vient la choucroute ?",
+     "answer": "L'Alsace",
+     "category": "cuisine",
+     "found": [
+      "Oh oui stp oui ooooh",
+      "pinemoisa",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quelle reine d'Angleterre a régné le plus longtemps ?",
+     "answer": "Élisabeth II",
+     "category": "histoire",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quelle vitamine est produite par le soleil ?",
+     "answer": "D",
+     "category": "sciences",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "pinemoisa",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel film a une scène de douche célèbre (1960) ?",
+     "answer": "Psychose",
+     "category": "cinema",
+     "found": [
+      "Oh oui stp oui ooooh",
+      "pinemoisa",
+      "Tupac",
+      "kaaris"
+     ]
+    }
+   ]
+  },
+  "options": {
+   "categories": [],
+   "difficulty": "random",
+   "nbQuestions": 20,
+   "timePerQuestionSec": 20,
+   "hardcoreMode": false,
+   "battleRoyaleMode": false,
+   "jokers": true
+  }
+ },
+ {
   "id": "2026-10-22-2bfde836",
   "game": "blindtest",
   "label": "Blind Test",
