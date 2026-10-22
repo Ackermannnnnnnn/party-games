@@ -20,6 +20,8 @@ export class Room {
     this.gameOptions = {}; // { [gameId]: options }
     this.chat = [];             // historique limité
     this.createdAt = Date.now();
+    // Joueurs expulsés par l'hôte : pseudo (minuscules) ou id -> fin de l'interdiction (timestamp)
+    this.kicked = new Map();
     this.emptySince = null;
     // Anti-répétition : IDs des questions vues lors des 5 dernières parties Quiz
     // Format: [[ids partie 1], [ids partie 2], ...] (max 5 entrées, plus récente en tête)
@@ -131,6 +133,13 @@ export class Room {
     this.gameInstance = null;
     this.gameId = null;
     logger.info({ code: this.code, reason }, 'Room closed');
+  }
+
+  /** Expulsé récemment (même pseudo ou même session) ? */
+  isKicked({ pseudo, playerId } = {}) {
+    const now = Date.now();
+    for (const [k, until] of this.kicked) if (until < now) this.kicked.delete(k);
+    return (!!pseudo && this.kicked.has(`p:${pseudo.trim().toLowerCase()}`)) || (!!playerId && this.kicked.has(`id:${playerId}`));
   }
 
   getPlayerBySocket(socketId) {

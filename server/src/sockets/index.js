@@ -5,6 +5,8 @@ import { getGameClass, listGames } from '../games/registry.js';
 import { logger } from '../utils/logger.js';
 import { storePhoto } from '../utils/photos.js';
 
+const KICK_BAN_MS = 10 * 60 * 1000;
+
 /** Temps laissé à un joueur déconnecté pour revenir (écran verrouillé, réseau qui saute…). */
 const RECONNECT_GRACE_MS = Number(process.env.RECONNECT_GRACE_MS) || 2 * 60_000;
 /** Si l'hôte reste déconnecté aussi longtemps, quelqu'un d'autre devient hôte. */
@@ -79,6 +81,7 @@ export function registerSocketHandlers(io, socket) {
     if (!parsed) return;
     const room = roomManager.get(parsed.code.toUpperCase());
     if (!room) return socket.emit('error', { code: 'ROOM_NOT_FOUND' });
+    if (room.isKicked({ playerId: parsed.playerId })) return socket.emit('error', { code: 'KICKED', message: 'Tu as été expulsé de cette room.' });
     const player = room.players.get(parsed.playerId);
     if (!player) {
       // Session expirée mais la room existe toujours : on revient avec le même pseudo
@@ -105,6 +108,30 @@ export function registerSocketHandlers(io, socket) {
   });
 
   on('room:leave', () => _leaveRoom(socket));
+
+  // L'hôte expulse un joueur (il ne peut pas revenir dans cette room pendant 10 minutes)
+  on('room:kick', (data) => {
+    const parsed = validate(socket, schemas.roomKick, data);
+    if (!parsed) return;
+    const { room, player } = _getContext(socket);
+    if (!room || !player) return socket.emit('error', { code: 'NOT_IN_ROOM' });
+    if (player.id !== room.hostId) return socket.emit('error', { code: 'NOT_HOST', message: 'Seul l\'hôte peut expulser un joueur.' });
+    const target = room.players.get(parsed.playerId);
+    if (!target || target.id === player.id) return;
+    const until = Date.now() + KICK_BAN_MS;
+    room.kicked.set(`id:${target.id}`, until);
+    room.kicked.set(`p:${target.pseudo.trim().toLowerCase()}`, until);
+    const s = target.socketId ? io.sockets.sockets.get(target.socketId) : null;
+    if (s) {
+      s.emit('room:closed', { reason: 'KICKED' });
+      s.leave(room.code);
+      s.data.roomCode = null;
+      s.data.playerId = null;
+    }
+    _removePlayer(room, target.id);
+    room.broadcast('room:notice', { message: `${target.pseudo} a été expulsé de la room.` });
+    logger.info({ room: room.code, by: player.id, kicked: target.pseudo }, 'Player kicked');
+  });
 
   // Change l'avatar (photo ou avatar de la liste), même en cours de partie
   on('player:setAvatar', (data) => {
@@ -274,6 +301,9 @@ function _getContext(socket) {
 
 /** Rejoint une room : reprise de la place d'un déconnecté du même pseudo, ou nouveau joueur. */
 function _joinRoom(socket, room, parsed, avatar) {
+  if (room.isKicked({ pseudo: parsed.pseudo })) {
+    return socket.emit('error', { code: 'KICKED', message: 'Tu as été expulsé de cette room. Réessaie plus tard.' });
+  }
   _leaveCurrentRoom(socket, room.code);
   // 1) Quelqu'un de DÉCONNECTÉ avait ce pseudo -> on reprend sa place
   const existing = room.findDisconnectedByPseudo(parsed.pseudo);

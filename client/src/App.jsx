@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 const REDIRECT_LABELS = {
   HOST_LEFT:        "L'hôte a quitté la room.",
+  KICKED:           "L'hôte t'a expulsé de la room.",
   ROOM_CLOSED:      'La room a été fermée.',
   ROOM_NOT_FOUND:   "Cette room n'existe plus.",
   PLAYER_NOT_FOUND: 'Ta session de joueur a expiré.',

@@ -15,6 +15,7 @@ export const schemas = {
     code: z.string().length(6), playerId: z.string().min(8),
     pseudo: pseudoSchema.optional(), avatar: avatarSchema, photo: photoSchema,
   }),
+  roomKick:      z.object({ playerId: z.string().min(1).max(64) }),
   setAvatar:     z.object({ avatar: avatarSchema, photo: photoSchema }),
   chatSend:   z.object({ text: z.string().trim().min(1).max(300) }),
   gameSelect: z.object({ gameId: z.string().min(1).max(40) }),

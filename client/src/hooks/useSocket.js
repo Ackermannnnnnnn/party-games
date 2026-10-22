@@ -3,7 +3,7 @@ import { socket } from '../lib/socket.js';
 import { useGameStore } from '../store/gameStore.js';
 
 /** Codes d'erreur qui invalident notre session de room (clean + redirect home). */
-const FATAL_ROOM_ERRORS = new Set(['ROOM_NOT_FOUND', 'PLAYER_NOT_FOUND']);
+const FATAL_ROOM_ERRORS = new Set(['ROOM_NOT_FOUND', 'PLAYER_NOT_FOUND', 'KICKED']);
 
 /** Ce qu'on envoie au serveur pour l'avatar : la photo perso, ou l'id de l'avatar choisi. */
 export function avatarPayload() {
@@ -130,4 +130,5 @@ export const api = {
   startGame:  (gameId = 'imposter', options = {}) => socket.emit('game:start', { gameId, options }),
   gameAction: (type, payload) => socket.emit('game:action', { type, payload }),
   stopGame:   () => socket.emit('game:stop'),
+  kickPlayer: (playerId) => socket.emit('room:kick', { playerId }),
 };
