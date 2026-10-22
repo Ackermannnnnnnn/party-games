@@ -1,5 +1,272 @@
 [
  {
+  "id": "2026-10-22-e8c25818",
+  "game": "quiz",
+  "label": "Quiz culture G",
+  "room": "KA3KHM",
+  "startedAt": 1792631056222,
+  "endedAt": 1792631336912,
+  "durationSec": 281,
+  "host": "HAkuum",
+  "players": [
+   {
+    "pseudo": "HAkuum",
+    "avatar": "kakashi"
+   },
+   {
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308"
+   },
+   {
+    "pseudo": "Tupac",
+    "avatar": "img:perso/venom"
+   },
+   {
+    "pseudo": "kaaris",
+    "avatar": "venom"
+   }
+  ],
+  "winner": "kaaris",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "kaaris",
+    "avatar": "venom",
+    "score": 3280,
+    "detail": "14 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 2,
+    "pseudo": "HAkuum",
+    "avatar": "kakashi",
+    "score": 3220,
+    "detail": "15 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 3,
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308",
+    "score": 3170,
+    "detail": "15 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 4,
+    "pseudo": "Tupac",
+    "avatar": "img:perso/venom",
+    "score": 2420,
+    "detail": "12 bonne(s) réponse(s)"
+   }
+  ],
+  "recap": {
+   "questions": [
+    {
+     "question": "Quel auteur a écrit \"Les Misérables\" ?",
+     "answer": "Hugo",
+     "category": "culture",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Que veut dire « poser un lapin » ?",
+     "answer": "Ne pas venir à un rendez-vous",
+     "category": "langue",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "De quel pays vient le groupe O-Zone, auteur de « Dragostea Din Tei » ?",
+     "answer": "Moldavie",
+     "category": "musique",
+     "found": [
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Combien de cartes dans un jeu de tarot français ?",
+     "answer": "78",
+     "category": "culture",
+     "found": []
+    },
+    {
+     "question": "Quel pays a colonisé le plus de territoires au 19ᵉ siècle ?",
+     "answer": "Royaume-Uni",
+     "category": "histoire",
+     "found": [
+      "HAkuum",
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Quel groupe de rock anglais a Paul McCartney ?",
+     "answer": "Beatles",
+     "category": "musique",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Quel est ce drapeau ?",
+     "answer": "Maroc",
+     "category": "drapeaux",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Qui était le roi de France surnommé \"le Roi-Soleil\" ?",
+     "answer": "Louis XIV",
+     "category": "histoire",
+     "found": [
+      "Oh oui stp oui ooooh",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quelle est la capitale de la Belgique ?",
+     "answer": "Bruxelles",
+     "category": "geo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel personnage de BD belge est un cow-boy qui tire plus vite que son ombre ?",
+     "answer": "Lucky Luke",
+     "category": "belgique",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel est le pH d'une solution neutre ?",
+     "answer": "7",
+     "category": "sciences",
+     "found": [
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Sur quoi joue-t-on au curling ?",
+     "answer": "Glace",
+     "category": "sport",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Dans League of Legends, combien de joueurs compte une équipe en partie classique ?",
+     "answer": "5",
+     "category": "jeuxvideo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Où se trouve le fémur ?",
+     "answer": "Dans la cuisse",
+     "category": "corps",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Quel groupe sanguin est dit « donneur universel » ?",
+     "answer": "O négatif",
+     "category": "corps",
+     "found": [
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel instrument joue Slash ?",
+     "answer": "Guitare",
+     "category": "musique",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Dans quelle ville italienne se trouve la Tour de Pise ?",
+     "answer": "Pise",
+     "category": "monuments",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Qui a créé Linux ?",
+     "answer": "Linus Torvalds",
+     "category": "internet",
+     "found": [
+      "HAkuum",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "En quelle année est tombé le mur de Berlin ?",
+     "answer": "1989",
+     "category": "histoire",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel monument de Paris abrite le tombeau de Napoléon ?",
+     "answer": "Les Invalides",
+     "category": "monuments",
+     "found": [
+      "HAkuum",
+      "kaaris"
+     ]
+    }
+   ]
+  },
+  "options": {
+   "categories": [],
+   "difficulty": "random",
+   "nbQuestions": 20,
+   "timePerQuestionSec": 20,
+   "hardcoreMode": false,
+   "battleRoyaleMode": false,
+   "jokers": true
+  }
+ },
+ {
   "id": "2026-10-22-4457eb3d",
   "game": "quiz",
   "label": "Quiz culture G",
