@@ -1,5 +1,264 @@
 [
  {
+  "id": "2026-10-22-0b33d4f1",
+  "game": "quiz",
+  "label": "Quiz culture G",
+  "room": "KA3KHM",
+  "startedAt": 1792631436845,
+  "endedAt": 1792631726641,
+  "durationSec": 290,
+  "host": "HAkuum",
+  "players": [
+   {
+    "pseudo": "HAkuum",
+    "avatar": "kakashi"
+   },
+   {
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308"
+   },
+   {
+    "pseudo": "Tupac",
+    "avatar": "img:perso/venom"
+   },
+   {
+    "pseudo": "kaaris",
+    "avatar": "venom"
+   }
+  ],
+  "winner": "HAkuum",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "HAkuum",
+    "avatar": "kakashi",
+    "score": 3630,
+    "detail": "13 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 2,
+    "pseudo": "kaaris",
+    "avatar": "venom",
+    "score": 3585,
+    "detail": "15 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 3,
+    "pseudo": "Oh oui stp oui ooooh",
+    "avatar": "photo:dea24b9c351f0308",
+    "score": 2950,
+    "detail": "12 bonne(s) réponse(s)"
+   },
+   {
+    "rank": 4,
+    "pseudo": "Tupac",
+    "avatar": "img:perso/venom",
+    "score": 1870,
+    "detail": "9 bonne(s) réponse(s)"
+   }
+  ],
+  "recap": {
+   "questions": [
+    {
+     "question": "Quel festival de musique électronique a lieu chaque été à Boom ?",
+     "answer": "Tomorrowland",
+     "category": "belgique",
+     "found": [
+      "Oh oui stp oui ooooh",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "De quel groupe Mick Jagger est-il le chanteur ?",
+     "answer": "The Rolling Stones",
+     "category": "musique",
+     "found": [
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Comment appelle-t-on une étoile qui explose en fin de vie ?",
+     "answer": "Une supernova",
+     "category": "espace",
+     "found": [
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quelle planète met le plus de temps à faire un tour sur elle-même ?",
+     "answer": "Vénus",
+     "category": "sciences",
+     "found": []
+    },
+    {
+     "question": "Dans Friends, qui épouse Monica ?",
+     "answer": "Chandler",
+     "category": "cinema",
+     "found": [
+      "HAkuum",
+      "Tupac"
+     ]
+    },
+    {
+     "question": "Combien de Ballons d'Or a gagné Lionel Messi (2024) ?",
+     "answer": "8",
+     "category": "sport",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel est ce drapeau ?",
+     "answer": "Pays-Bas",
+     "category": "drapeaux",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel est l'ingrédient principal du houmous ?",
+     "answer": "Les pois chiches",
+     "category": "cuisine",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quelle entreprise fabrique la Xbox ?",
+     "answer": "Microsoft",
+     "category": "jeuxvideo",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Qui a créé le manga One Piece ?",
+     "answer": "Eiichiro Oda",
+     "category": "mangas",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel personnage Nintendo est le héros de « The Origami King » ?",
+     "answer": "Paper Mario",
+     "category": "internet",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Quel manga met en scène Light Yagami ?",
+     "answer": "Death Note",
+     "category": "mangas",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quelle est l'étoile la plus proche de la Terre ?",
+     "answer": "Le Soleil",
+     "category": "espace",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Qui a découvert l'Amérique en 1492 ?",
+     "answer": "Christophe Colomb",
+     "category": "histoire",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel héros a tué Méduse ?",
+     "answer": "Persée",
+     "category": "mythologie",
+     "found": [
+      "Oh oui stp oui ooooh"
+     ]
+    },
+    {
+     "question": "Combien d'années pour construire la Sagrada Família (en cours) ?",
+     "answer": "140+",
+     "category": "monuments",
+     "found": [
+      "Tupac",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel jeu vidéo est sorti en 1985 sur NES ?",
+     "answer": "Super Mario Bros",
+     "category": "internet",
+     "found": []
+    },
+    {
+     "question": "Quel héros de jeu PS1 aux cheveux blonds en pointes manie la Buster Sword ?",
+     "answer": "Cloud",
+     "category": "internet",
+     "found": [
+      "HAkuum",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel jeu de 2001 a popularisé le monde ouvert (open world) en 3D ?",
+     "answer": "GTA III",
+     "category": "internet",
+     "found": [
+      "HAkuum",
+      "kaaris"
+     ]
+    },
+    {
+     "question": "Quel artiste canadien a sorti « Hotline Bling » ?",
+     "answer": "Drake",
+     "category": "musique",
+     "found": [
+      "HAkuum",
+      "Oh oui stp oui ooooh",
+      "Tupac",
+      "kaaris"
+     ]
+    }
+   ]
+  },
+  "options": {
+   "categories": [],
+   "difficulty": "random",
+   "nbQuestions": 20,
+   "timePerQuestionSec": 20,
+   "hardcoreMode": false,
+   "battleRoyaleMode": false,
+   "jokers": true
+  }
+ },
+ {
   "id": "2026-10-22-e8c25818",
   "game": "quiz",
   "label": "Quiz culture G",
