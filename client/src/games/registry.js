@@ -18,6 +18,8 @@ import BlindTestGame    from './blindtest/BlindTestGame.jsx';
 import BlindTestOptions from './blindtest/BlindTestOptions.jsx';
 import LiarsBarGame    from './liarsbar/LiarsBarGame.jsx';
 import LiarsBarOptions from './liarsbar/LiarsBarOptions.jsx';
+import WhoIsItGame     from './whoisit/WhoIsItGame.jsx';
+import WhoIsItOptions  from './whoisit/WhoIsItOptions.jsx';
 
 export const GAMES = {
   imposter: {
@@ -109,6 +111,15 @@ export const GAMES = {
     minPlayers: 2,
     Component: LiarsBarGame,
     OptionsComp: LiarsBarOptions,
+  },
+  whoisit: {
+    id: 'whoisit',
+    label: 'Qui est-ce ?',
+    icon: '🧐',
+    description: '133 personnages, 4 modes : duel, l\'app devine (façon Akinator), qui suis-je ? et un meneur contre tous.',
+    minPlayers: 1,
+    Component: WhoIsItGame,
+    OptionsComp: WhoIsItOptions,
   },
 };
 

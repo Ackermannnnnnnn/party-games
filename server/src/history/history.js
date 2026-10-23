@@ -15,6 +15,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { logger } from '../utils/logger.js';
 import { githubEnabled, readText, commitFiles } from '../utils/github.js';
+import { CHARACTERS } from '../games/whoisit/characters.js';
 
 const DATA_BRANCH = () => process.env.HISTORY_BRANCH || 'data';
 const FLUSH_DELAY_MS = 8000;
@@ -23,13 +24,15 @@ const LOCAL_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), '../.
 
 export const GAME_LABELS = {
   imposter: "Jeu de l'imposteur", quiz: 'Quiz culture G', petitbac: 'Petit Bac', werewolf: 'Loup-Garou',
-  telephone: 'Gartic Phone', bombparty: 'BombParty', cemantix: 'Cémantix', codenames: 'Codenames', blindtest: 'Blind Test', liarsbar: "Liar's Bar",
+  telephone: 'Gartic Phone', bombparty: 'BombParty', cemantix: 'Cémantix', codenames: 'Codenames', blindtest: 'Blind Test', liarsbar: "Liar's Bar", whoisit: 'Qui est-ce ?',
 };
+
+const CHAR_NAMES = new Map(CHARACTERS.map((c) => [c.id, c.name]));
 
 /** Phase qui marque la fin d'une partie, par jeu. */
 export const FINAL_PHASES = {
   quiz: 'PODIUM', blindtest: 'PODIUM', petitbac: 'PODIUM', bombparty: 'GAME_OVER', codenames: 'GAME_OVER',
-  werewolf: 'GAME_OVER', imposter: 'RESULTS', telephone: 'ALBUM', cemantix: 'REVEAL', liarsbar: 'GAME_OVER',
+  werewolf: 'GAME_OVER', imposter: 'RESULTS', telephone: 'ALBUM', cemantix: 'REVEAL', liarsbar: 'GAME_OVER', whoisit: 'GAME_OVER',
 };
 
 // ───────────────────────── Construction du récap ─────────────────────────
@@ -132,6 +135,28 @@ const EXTRACTORS = {
           owner: c.ownerId,
           entries: c.entries.map((e) => ({ type: e.type, author: e.authorId, text: e.type === 'text' ? e.text : undefined, auto: e.auto || undefined })),
         })),
+      },
+    };
+  },
+  whoisit(g, pub) {
+    const MODE = { duel: 'Duel', akinator: "L'app devine", postit: 'Qui suis-je ?', meneur: 'Un meneur, tous devinent' };
+    const ANS = { yes: 'oui', no: 'non', idk: 'je ne sais pas', probably: 'probablement', probably_not: 'probablement pas' };
+    const ch = (id) => CHAR_NAMES.get(id) || id;
+    const winners = pub.mode === 'duel' && pub.result?.winnerSide ? (g.sides?.[pub.result.winnerSide]?.members || []) : (pub.ranking || []).filter((r, i) => i === 0 && (r.score > 0 || r.found)).map((r) => r.id);
+    return {
+      winnerIds: winners,
+      ranking: (pub.ranking || []).map((r) => ({ id: r.id, score: pub.mode === 'postit' ? null : r.score, detail: pub.mode === 'postit' ? (r.found ? `trouvé en ${r.questions} question(s)` : 'pas trouvé') : null, win: winners.includes(r.id) })),
+      recap: {
+        mode: MODE[pub.mode] || pub.mode,
+        events: (g.log || []).map((e) => {
+          if (e.t === 'start' || e.t === 'round' || e.t === 'aki_start' || e.t === 'aki_end') return { text: e.text, accent: e.t === 'aki_end' };
+          if (e.t === 'q') return { text: `${e.by} : ${e.text} → ${ANS[e.answer] || e.answer}${e.auto ? '' : e.answeredBy ? ` (répondu par ${e.answeredBy})` : ''}` };
+          if (e.t === 'aki_q') return { text: `L'app : ${e.text} → ${ANS[e.answer] || e.answer}` };
+          if (e.t === 'aki_guess') return { text: `L'app propose ${ch(e.char)} : ${e.ok ? 'gagné' : 'raté'}`, accent: true };
+          if (e.t === 'guess') return { text: `${e.by} propose ${ch(e.char)} : ${e.ok ? 'bonne réponse !' : 'raté'}`, accent: true, danger: !e.ok };
+          if (e.t === 'left') return { text: `${e.by} est parti` };
+          return null;
+        }).filter(Boolean),
       },
     };
   },
