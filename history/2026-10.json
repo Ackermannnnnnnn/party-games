@@ -1,5 +1,86 @@
 [
  {
+  "id": "2026-10-23-cbe53250",
+  "game": "whoisit",
+  "label": "Qui est-ce ?",
+  "room": "YAHPQC",
+  "startedAt": 1792778465658,
+  "endedAt": 1792778500864,
+  "durationSec": 35,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   }
+  ],
+  "winner": null,
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": 0,
+    "detail": null,
+    "win": false
+   }
+  ],
+  "recap": {
+   "mode": "L'app devine",
+   "events": [
+    {
+     "text": "Mo pense à un personnage…",
+     "accent": false
+    },
+    {
+     "text": "L'app : Est-ce un humain ? → oui"
+    },
+    {
+     "text": "L'app : A-t-il une arme ? → non"
+    },
+    {
+     "text": "L'app : A-t-il les cheveux bruns ? → oui"
+    },
+    {
+     "text": "L'app : Sa couleur principale est-elle le rouge ? → oui"
+    },
+    {
+     "text": "L'app : Porte-t-il un masque ou un casque ? → oui"
+    },
+    {
+     "text": "L'app : A-t-il une barbe ou une moustache ? → probablement pas"
+    },
+    {
+     "text": "L'app : Est-ce un enfant ou un ado ? → probablement"
+    },
+    {
+     "text": "L'app : A-t-il des pouvoirs ou de la magie ? → probablement"
+    },
+    {
+     "text": "L'app propose Spider-Man : gagné",
+     "accent": true
+    },
+    {
+     "text": "L'app a trouvé Spider-Man en 8 questions",
+     "accent": true
+    }
+   ]
+  },
+  "options": {
+   "mode": "akinator",
+   "universes": [
+    "gaming",
+    "marvel"
+   ],
+   "boardSize": 24,
+   "questions": "both",
+   "wrongGuess": "skip",
+   "meneur": "app",
+   "rounds": 5,
+   "autoFlip": true
+  }
+ },
+ {
   "id": "2026-10-22-d1858fbc",
   "game": "imposter",
   "label": "Jeu de l'imposteur",
