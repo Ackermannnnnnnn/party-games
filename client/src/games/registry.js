@@ -20,6 +20,8 @@ import LiarsBarGame    from './liarsbar/LiarsBarGame.jsx';
 import LiarsBarOptions from './liarsbar/LiarsBarOptions.jsx';
 import WhoIsItGame     from './whoisit/WhoIsItGame.jsx';
 import WhoIsItOptions  from './whoisit/WhoIsItOptions.jsx';
+import PropHuntGame     from './prophunt/PropHuntGame.jsx';
+import PropHuntOptions  from './prophunt/PropHuntOptions.jsx';
 
 export const GAMES = {
   imposter: {
@@ -120,6 +122,15 @@ export const GAMES = {
     minPlayers: 1,
     Component: WhoIsItGame,
     OptionsComp: WhoIsItOptions,
+  },
+  prophunt: {
+    id: 'prophunt',
+    label: 'Prop Hunt',
+    icon: '🫥',
+    description: 'Cache-cache en 3D : transforme-toi en objet du décor… ou chasse les objets suspects. PC et téléphone.',
+    minPlayers: 2,
+    Component: PropHuntGame,
+    OptionsComp: PropHuntOptions,
   },
 };
 

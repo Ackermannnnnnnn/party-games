@@ -266,6 +266,7 @@ function Recap({ r }) {
       );
     case 'liarsbar':
     case 'whoisit':
+    case 'prophunt':
       return (
         <Section title={x.mode ? `Le déroulé · ${x.mode}` : 'Le déroulé'}>
           <ol className="space-y-0.5 text-sm">

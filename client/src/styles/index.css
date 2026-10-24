@@ -751,3 +751,9 @@ input::placeholder, textarea::placeholder { color: #6c6785; }
 .lb-action:disabled { opacity: 0.45; }
 .lb-action-play { background: linear-gradient(180deg, #f5c542, #d99a0b); color: #2a1a02; }
 .lb-action-liar { background: linear-gradient(180deg, #ef4444, #b91c1c); color: #fff; font-size: 1.6rem; }
+
+/* ───────── Prop Hunt ───────── */
+.ph-screen { position: fixed; inset: 0; z-index: 60; background: #000; overflow: hidden; overscroll-behavior: none; -webkit-user-select: none; user-select: none; }
+.ph-btn { pointer-events: auto; display: inline-flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; min-height: 0; border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.55); color: #fff; font-size: 1.4rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18); backdrop-filter: blur(4px); touch-action: none; }
+.ph-btn:active { transform: scale(0.94); background: rgba(255,255,255,0.25); }

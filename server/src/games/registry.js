@@ -9,6 +9,7 @@ import { CodenamesGame } from './codenames/CodenamesGame.js';
 import { BlindTestGame } from './blindtest/BlindTestGame.js';
 import { LiarsBarGame } from './liarsbar/LiarsBarGame.js';
 import { WhoIsItGame } from './whoisit/WhoIsItGame.js';
+import { PropHuntGame } from './prophunt/PropHuntGame.js';
 
 export const GAMES = {
   [ImposterGame.id]: ImposterGame,
@@ -22,6 +23,7 @@ export const GAMES = {
   [BlindTestGame.id]: BlindTestGame,
   [LiarsBarGame.id]: LiarsBarGame,
   [WhoIsItGame.id]: WhoIsItGame,
+  [PropHuntGame.id]: PropHuntGame,
 };
 
 export function getGameClass(gameId) {
