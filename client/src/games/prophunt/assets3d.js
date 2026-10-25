@@ -5,10 +5,33 @@
  */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { ASSETS } from './shared.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { ASSETS, PH_ASSETS, TREE_ASSETS } from './shared.js';
 
 const BASE = `${import.meta.env?.BASE_URL || '/'}ph-assets/`;
 const loader = new GLTFLoader();
+loader.setMeshoptDecoder(MeshoptDecoder);
+const isReal = (id) => id.startsWith('ph/') || id.startsWith('tree/');
+const known = (id) => (id.startsWith('ph/') ? !!PH_ASSETS[id.slice(3)] : id.startsWith('tree/') ? !!TREE_ASSETS[id.slice(5)] : !!ASSETS[id]);
+
+/** Vent dans le feuillage (partagé par tous les arbres). */
+export const wind = { value: 0 };
+function windify(m) {
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uTime = wind;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uTime;')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        #ifdef USE_INSTANCING
+          wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
+        #endif
+        float h = max(0.0, position.y - 1.0);
+        float sw = sin(uTime * 1.3 + wp.x * 0.35 + wp.z * 0.25) * 0.5 + sin(uTime * 2.7 + wp.x * 1.7 + wp.y) * 0.25;
+        transformed.x += sw * 0.022 * h;
+        transformed.z += cos(uTime * 1.1 + wp.z * 0.4) * 0.016 * h;`);
+  };
+  m.customProgramCacheKey = () => 'leaves-wind';
+}
 const raw = new Map(); // id → Promise<[{ geometry (monde du modèle), color, name, opacity }]>
 const done = new Map(); // id → résultat (accès immédiat une fois chargé)
 
@@ -37,6 +60,7 @@ export function matKeyFor(name, kit, color, id = '') {
 /** Charge un modèle (une seule fois) : géométries normalisées (posées au sol, centrées, en mètres). */
 export function loadAsset(id) {
   if (raw.has(id)) return raw.get(id);
+  if (isReal(id)) return loadPh(id);
   const a = ASSETS[id];
   const kit = id.split('/')[0];
   const p = new Promise((resolve) => {
@@ -72,12 +96,60 @@ export function loadAsset(id) {
   return p;
 }
 
+/**
+ * Modèle photoréaliste Poly Haven : on garde ses vraies matières (couleur, relief, rugosité, occlusion)
+ * → [{ geometry, material }] (déjà posé au sol et centré, en mètres).
+ */
+function loadPh(id) {
+  const p = new Promise((resolve) => {
+    if (!known(id)) { done.set(id, []); resolve([]); return; }
+    loader.load(`${BASE}${id}.glb`, (gltf) => {
+      const out = [];
+      gltf.scene.updateMatrixWorld(true);
+      gltf.scene.traverse((o) => {
+        if (!o.isMesh) return;
+        // les fichiers sont quantifiés (entiers normalisés) : on repasse en flottants avant de les placer
+        const g = o.geometry.clone();
+        for (const k of Object.keys(g.attributes)) {
+          const a = g.attributes[k];
+          if (a.array instanceof Float32Array && !a.isInterleavedBufferAttribute) continue;
+          const f = new Float32Array(a.count * a.itemSize);
+          for (let i = 0; i < a.count; i++) for (let c = 0; c < a.itemSize; c++) f[i * a.itemSize + c] = a.getComponent ? a.getComponent(i, c) : [a.getX(i), a.getY(i), a.getZ(i), a.getW(i)][c];
+          g.setAttribute(k, new THREE.BufferAttribute(f, a.itemSize));
+        }
+        g.applyMatrix4(o.matrixWorld);
+        const m0 = o.material;
+        if (m0.name === 'leaves') {
+          // feuillage : normales « en boule » (éclairage doux et volumineux) + vent
+          g.computeBoundingBox(); const c = new THREE.Vector3(); g.boundingBox.getCenter(c);
+          const P = g.attributes.position; const N = new Float32Array(P.count * 3); const v = new THREE.Vector3();
+          for (let i = 0; i < P.count; i++) { v.set(P.getX(i) - c.x, (P.getY(i) - c.y) * 0.7 + 0.3, P.getZ(i) - c.z).normalize(); N[i * 3] = v.x; N[i * 3 + 1] = v.y; N[i * 3 + 2] = v.z; }
+          g.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+          windify(m0);
+        }
+        if (!g.attributes.normal) g.computeVertexNormals();
+        g.computeBoundingSphere();
+        const m = o.material;
+        for (const t of [m.map, m.normalMap, m.roughnessMap, m.metalnessMap, m.aoMap]) if (t) t.anisotropy = 8;
+        m.envMapIntensity = 1;
+        if (m.transparent && m.opacity > 0.95 && !m.alphaMap) m.transparent = false;
+        if (m.alphaMap || m.transparent) { m.alphaTest = 0.4; m.transparent = false; m.side = THREE.DoubleSide; }
+        out.push({ geometry: g, material: m, name: m.name || '' });
+      });
+      done.set(id, out);
+      resolve(out);
+    }, undefined, () => { done.set(id, []); resolve([]); });
+  });
+  raw.set(id, p);
+  return p;
+}
+
 /** Résultat du chargement s'il est terminé (sinon undefined). */
 export const loadedAsset = (id) => done.get(id);
 
 /** Précharge une liste de modèles ; onProgress(fait, total). */
 export async function preloadAssets(ids, onProgress) {
-  const list = [...new Set(ids)].filter((id) => ASSETS[id]);
+  const list = [...new Set(ids)].filter(known);
   let done = 0;
   await Promise.all(list.map((id) => loadAsset(id).then((r) => { done += 1; onProgress?.(done, list.length); return r; })));
   return list.length;

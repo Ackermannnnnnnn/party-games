@@ -172,3 +172,23 @@ export function getTexture(name, size = 256) {
 }
 
 export const TEXTURE_NAMES = Object.keys(GEN);
+
+// ───────── textures photographiques (Poly Haven, CC0) ─────────
+const BASE = `${import.meta.env?.BASE_URL || '/'}ph-assets/tex/`;
+const phCache = new Map();
+let texLoader = null;
+/** { map, normalMap, arm } d'une surface Poly Haven (chargées en arrière-plan, répétées). */
+export function getPhSurface(id) {
+  if (phCache.has(id)) return phCache.get(id);
+  if (typeof document === 'undefined') return null;
+  texLoader = texLoader || new THREE.TextureLoader();
+  const load = (k, srgb) => {
+    const t = texLoader.load(`${BASE}${id}_${k}.webp`);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8;
+    if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  };
+  const out = { map: load('c', true), normalMap: load('n', false), arm: load('arm', false) };
+  phCache.set(id, out);
+  return out;
+}

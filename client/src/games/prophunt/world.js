@@ -9,7 +9,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { MODELS, MATS, modelBounds, partHalf, partMat, resolveMat, PLAYER } from './shared.js';
-import { getTexture, COLORED } from './textures.js';
+import { getTexture, getPhSurface, COLORED } from './textures.js';
 import { loadedAsset, matKeyFor } from './assets3d.js';
 
 const tmpColor = new THREE.Color();
@@ -34,6 +34,16 @@ export function material(key) {
     m = QUALITY === 'low'
       ? new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: def.glass, depthWrite: false })
       : new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: def.glass, roughness: def.r ?? 0.05, metalness: 0.2, envMapIntensity: 2.2, depthWrite: false });
+  } else if (def.pt && QUALITY !== 'low') {
+    // surface photographique : couleur, relief, occlusion / rugosité / métal (carte ARM)
+    const t = getPhSurface(def.pt);
+    m = new THREE.MeshStandardMaterial({
+      vertexColors: true, map: t.map, normalMap: t.normalMap, aoMap: t.arm, roughnessMap: t.arm,
+      metalnessMap: def.m ? t.arm : null, roughness: def.rk ?? 1, metalness: def.m ? 1 : 0, envMapIntensity: def.env ?? 1,
+    });
+    m.aoMapIntensity = 0.9;
+    m.normalScale.set(def.ns ?? 1, def.ns ?? 1);
+    if (def.em) m.emissive = new THREE.Color().setScalar(def.em * 0.6);
   } else {
     const tex = def.t ? getTexture(def.t, QUALITY === 'high' ? 512 : 256) : null;
     if (QUALITY === 'low') {
@@ -64,9 +74,10 @@ function finish(g, spec, { scale = 1, aoBottom = null } = {}) {
   const n = pos.count;
   const uv = new Float32Array(n * 2);
   const col = new Float32Array(n * 3);
-  const ts = (def.s || 1) / scale;
-  tmpColor.setHex(color).convertSRGBToLinear();
-  if (COLORED.has(def.t)) { baseColor.setHex(def.c).convertSRGBToLinear(); tmpColor.setRGB(tmpColor.r / Math.max(0.02, baseColor.r), tmpColor.g / Math.max(0.02, baseColor.g), tmpColor.b / Math.max(0.02, baseColor.b)); }
+  const ts = ((def.pt && QUALITY !== 'low' ? def.ps : 0) || def.s || 1) / scale;
+  // (double conversion voulue en qualité moyenne/haute : c'est le rendu sur lequel les couleurs ont été réglées)
+  tmpColor.setHex(color); if (QUALITY !== 'low') tmpColor.convertSRGBToLinear();
+  if (COLORED.has(def.t) || (def.pt && QUALITY !== 'low')) { baseColor.setHex(def.pt && QUALITY !== 'low' && def.pc ? def.pc : def.c).convertSRGBToLinear(); tmpColor.setRGB(tmpColor.r / Math.max(0.02, baseColor.r), tmpColor.g / Math.max(0.02, baseColor.g), tmpColor.b / Math.max(0.02, baseColor.b)); }
   for (let i = 0; i < n; i++) {
     const x = pos.getX(i); const y = pos.getY(i); const z = pos.getZ(i);
     const ax = Math.abs(nor.getX(i)); const ay = Math.abs(nor.getY(i)); const az = Math.abs(nor.getZ(i));
@@ -103,6 +114,14 @@ export function modelParts(id) {
   const buckets = new Map();
   const b = modelBounds(id);
   const h = b ? b.size[1] : 1;
+  if (m?.ph) {
+    // modèle photoréaliste : ses propres matières (pas de fusion)
+    const raw = loadedAsset(m.glb);
+    if (!raw) return [];
+    const out = raw.map((r, i) => ({ key: `${id}#${i}`, geometry: r.geometry, material: r.material }));
+    modelCache.set(ck, out);
+    return out;
+  }
   if (m?.glb) {
     // modèle Kenney : seulement une fois le fichier chargé (sinon rien à dessiner pour l'instant)
     const raw = loadedAsset(m.glb);
@@ -181,6 +200,7 @@ export function buildMapMeshes(map) {
   }
   const m4 = new THREE.Matrix4(); const q = new THREE.Quaternion(); const up = new THREE.Vector3(0, 1, 0); const v3 = new THREE.Vector3(); const sc = new THREE.Vector3();
   for (const o of map.objects) {
+    if (MODELS[o.m]?.ph) continue; // dessinés à part (instanciés, avec leurs textures)
     m4.compose(v3.set(o.x, o.y, o.z), q.setFromAxisAngle(up, o.ry || 0), sc.setScalar(o.s || 1));
     for (const { key, geometry } of modelParts(o.m)) {
       const g = geometry.clone().applyMatrix4(m4);
@@ -193,6 +213,29 @@ export function buildMapMeshes(map) {
     geometry.computeBoundingSphere();
     return { key, geometry, shadow };
   });
+}
+
+/**
+ * Objets photoréalistes de la map, regroupés par modèle : [{ geometry, material, matrices: Matrix4[] }]
+ * (un InstancedMesh par pièce de modèle → peu d'appels de dessin, textures conservées).
+ */
+export function buildPhInstances(map) {
+  const groups = new Map();
+  const q = new THREE.Quaternion(); const up = new THREE.Vector3(0, 1, 0); const v3 = new THREE.Vector3(); const sc = new THREE.Vector3();
+  for (const o of map.objects) {
+    if (!MODELS[o.m]?.ph) continue;
+    const parts = modelParts(o.m);
+    const mat = new THREE.Matrix4().compose(v3.set(o.x, o.y, o.z), q.setFromAxisAngle(up, o.ry || 0), sc.setScalar(o.s || 1));
+    // regroupés par zones de 24 m : la caméra ne dessine que les zones dans son champ
+    const cell = `${Math.floor(o.x / 24)},${Math.floor(o.z / 24)}`;
+    const b = modelBounds(o.m); const big = b ? Math.max(...b.size) * (o.s || 1) > 0.45 : true;
+    parts.forEach((p) => {
+      const k = `${p.key}@${cell}`;
+      if (!groups.has(k)) groups.set(k, { key: k, geometry: p.geometry, material: p.material, matrices: [], cast: big, far: b ? (Math.max(...b.size) * (o.s || 1) < 0.5 ? 38 : Math.max(...b.size) * (o.s || 1) < 1.5 ? 75 : 1e9) : 1e9 });
+      groups.get(k).matrices.push(mat);
+    });
+  }
+  return [...groups.values()];
 }
 
 // ───────────────────────── Collisions ─────────────────────────

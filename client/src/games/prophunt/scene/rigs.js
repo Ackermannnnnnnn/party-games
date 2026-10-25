@@ -1,49 +1,45 @@
 /**
- * Prop Hunt — personnages animés (Kenney Animated Characters, CC0) et armes (Kenney Weapon Pack, CC0).
- * Les bras sont placés par cinématique inverse sur la poignée et le garde-main de l'arme :
- * le fusil suit le regard du joueur (haut / bas) pendant que les jambes courent.
+ * Prop Hunt — chasseurs réalistes : soldat animé (modèle « Vanguard » de Mixamo, exemple three.js)
+ * et armes photoréalistes (Poly Haven, CC0). Les bras sont placés par cinématique inverse sur la
+ * poignée et le garde-main de l'arme : l'arme suit le regard pendant que les jambes courent.
  */
 import * as THREE from 'three';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 const BASE = `${import.meta.env?.BASE_URL || '/'}ph-assets/`;
+/** Tenues : teinte de l'armure (les identifiants restent ceux des profils déjà enregistrés). */
 export const SKINS = [
-  { id: 'survivorMaleB', name: 'Survivant', level: 1 }, { id: 'survivorFemaleA', name: 'Survivante', level: 1 },
-  { id: 'skaterMaleA', name: 'Skateur', level: 3 }, { id: 'skaterFemaleA', name: 'Skateuse', level: 5 },
-  { id: 'criminalMaleA', name: 'Truand', level: 8 }, { id: 'cyborgFemaleA', name: 'Cyborg', level: 12 },
-  { id: 'zombieA', name: 'Zombie', level: 16 }, { id: 'zombieC', name: 'Zombie vert', level: 20 },
+  { id: 'survivorMaleB', name: 'Désert', level: 1, tint: 0xffffff }, { id: 'survivorFemaleA', name: 'Forêt', level: 1, tint: 0x9db08a },
+  { id: 'skaterMaleA', name: 'Urbain', level: 3, tint: 0xa7adb5 }, { id: 'skaterFemaleA', name: 'Arctique', level: 5, tint: 0xeef3ff, light: 0.25 },
+  { id: 'criminalMaleA', name: 'Commando', level: 8, tint: 0x4f5763 }, { id: 'cyborgFemaleA', name: 'Cobalt', level: 12, tint: 0x7d9bd8 },
+  { id: 'zombieA', name: 'Rouille', level: 16, tint: 0xc58a68 }, { id: 'zombieC', name: 'Or', level: 20, tint: 0xffd56b, metal: 0.65 },
 ];
+const SKIN = Object.fromEntries(SKINS.map((k) => [k.id, k]));
+
+const gltfLoader = new GLTFLoader();
 
 // ───── armes
-/** Armes : modèle, échelle, poignée (main droite) et garde-main (main gauche) dans le repère de l'arme (avant = -z). */
+/** Armes : fichier, poignée (main droite) et garde-main (main gauche) dans le repère de l'arme (avant = -z), bout du canon. */
 export const WEAPON_MODELS = {
-  smg: { file: 'machinegun', scale: 9, grip: [0, -0.06, 0.12], fore: [0, -0.04, -0.2] },
-  shotgun: { file: 'shotgun', scale: 10, grip: [0, -0.04, 0.12], fore: [0, -0.03, -0.18] },
-  grenade: { file: 'grenade', scale: 9, grip: [0, 0, 0], fore: null },
-  knife: { file: 'knife_sharp', scale: 7, grip: [0, 0, 0], fore: null },
+  smg: { file: 'pistol', grip: [0, 0.0, 0.03], fore: [-0.035, -0.005, 0.03], muzzle: [0, 0.075, -0.18] },
+  shotgun: { file: 'rifle', grip: [0, -0.02, 0.06], fore: [0, -0.01, -0.34], muzzle: [0, 0.05, -0.81] },
+  grenade: { file: 'grenade', grip: [0, 0.02, 0], fore: null, muzzle: [0, 0.2, 0] },
+  knife: { file: 'machete', grip: [0, 0.02, 0], fore: null, muzzle: [0, 0.5, 0] },
 };
 const weaponCache = new Map();
 export function loadWeapon(id) {
   if (weaponCache.has(id)) return weaponCache.get(id);
   const w = WEAPON_MODELS[id];
-  const p = (async () => {
-    const mtl = await new MTLLoader().setPath(`${BASE}weapons/`).loadAsync(`${w.file}.mtl`);
-    mtl.preload();
-    const o = await new OBJLoader().setMaterials(mtl).setPath(`${BASE}weapons/`).loadAsync(`${w.file}.obj`);
-    o.traverse((m) => {
+  const p = gltfLoader.loadAsync(`${BASE}weapons3/${w.file}.glb`).then((g) => {
+    g.scene.traverse((m) => {
       if (!m.isMesh) return;
-      const mats = (Array.isArray(m.material) ? m.material : [m.material]).map((x) => new THREE.MeshStandardMaterial({ color: x.color, roughness: 0.45, metalness: x.color.getHSL({}).l < 0.4 ? 0.6 : 0.2 }));
-      m.material = Array.isArray(m.material) ? mats : mats[0];
       m.castShadow = true;
+      for (const t of [m.material.map, m.material.normalMap]) if (t) t.anisotropy = 8;
     });
-    o.scale.setScalar(w.scale);
-    if (id === 'knife') o.rotation.x = -Math.PI / 2;
-    const g = new THREE.Group(); g.add(o);
-    return g;
-  })();
+    const grp = new THREE.Group(); grp.add(g.scene);
+    return grp;
+  });
   weaponCache.set(id, p);
   return p;
 }
@@ -54,22 +50,24 @@ export async function weaponInstance(id) { return (await loadWeapon(id)).clone(t
 let basePromise = null;
 export function loadCharacterBase() {
   if (basePromise) return basePromise;
-  basePromise = (async () => {
-    const l = new FBXLoader();
-    const [model, idle, run, jump] = await Promise.all(['character', 'idle', 'run', 'jump'].map((n) => l.loadAsync(`${BASE}characters/${n}.fbx`)));
-    const clip = (g) => g.animations.find((a) => !a.name.includes('Targeting')) || g.animations[0];
-    return { model, clips: { idle: clip(idle), run: clip(run), jump: clip(jump) } };
-  })();
+  basePromise = gltfLoader.loadAsync(`${BASE}characters/soldier.glb`).then((g) => {
+    const clip = (n) => g.animations.find((a) => a.name === n);
+    // pas d'animation de saut : la pose de repos suffit en l'air
+    return { model: g.scene, clips: { idle: clip('Idle'), run: clip('Run'), walk: clip('Walk') } };
+  });
   return basePromise;
 }
-const skinCache = new Map();
-function skinTexture(id) {
-  if (!skinCache.has(id)) {
-    const t = new THREE.TextureLoader().load(`${BASE}characters/${id}.png`);
-    t.colorSpace = THREE.SRGBColorSpace;
-    skinCache.set(id, t);
+const skinMats = new Map();
+function skinMaterials(src, skinId) {
+  const key = `${src.uuid}:${skinId}`;
+  if (!skinMats.has(key)) {
+    const k = SKIN[skinId] || SKINS[0];
+    const m = src.clone();
+    if (!/visor/i.test(src.name)) { m.color = new THREE.Color(k.tint); if (k.metal) { m.metalness = k.metal; m.roughness = 0.35; } if (k.light) m.emissive = new THREE.Color(k.tint).multiplyScalar(k.light * 0.15); }
+    m.envMapIntensity = 1.1;
+    skinMats.set(key, m);
   }
-  return skinCache.get(id);
+  return skinMats.get(key);
 }
 
 const v1 = new THREE.Vector3(); const v2 = new THREE.Vector3(); const v3 = new THREE.Vector3(); const v4 = new THREE.Vector3();
@@ -101,66 +99,80 @@ function twoBoneIK(upper, lower, hand, target, pole) {
 }
 
 /**
- * Crée un chasseur : { root, setWeapon(id), update(dt, { speed, pitch, air }), muzzleWorld() }.
- * root regarde vers -z, pieds en y = 0.
+ * Crée un chasseur : { root, setWeapon(id), update(dt, { speed, pitch, air }), muzzleWorld(), armsTo(grip, fore) }.
+ * root regarde vers -z, pieds en y = 0. firstPerson : tête masquée (vue à la première personne).
  */
-export function createHunterRig(base, skinId) {
+export function createHunterRig(base, skinId, { firstPerson = false } = {}) {
   const root = new THREE.Group();
   const body = SkeletonUtils.clone(base.model);
-  body.scale.setScalar(1.8 / 376);
-  body.rotation.y = Math.PI; // le modèle regarde +z, nos joueurs -z
-  const mat = new THREE.MeshStandardMaterial({ map: skinTexture(skinId), roughness: 0.8 });
-  body.traverse((o) => { if (o.isMesh) { o.material = mat; o.castShadow = true; o.frustumCulled = false; } });
+  body.traverse((o) => {
+    if (!o.isMesh) return;
+    o.material = skinMaterials(o.material, skinId);
+    o.castShadow = !firstPerson; o.receiveShadow = true; o.frustumCulled = false;
+  });
   root.add(body);
   const bones = {};
-  body.traverse((o) => { if (o.isBone) bones[o.name] = o; });
+  body.traverse((o) => { if (o.isBone) bones[o.name.replace(/^mixamorig:?/, '')] = o; });
   const mixer = new THREE.AnimationMixer(body);
-  const actions = Object.fromEntries(Object.entries(base.clips).map(([k, c]) => [k, mixer.clipAction(c)]));
+  const actions = Object.fromEntries(Object.entries(base.clips).filter(([, c]) => c).map(([k, c]) => [k, mixer.clipAction(c)]));
   for (const a of Object.values(actions)) { a.play(); a.setEffectiveWeight(0); }
   actions.idle.setEffectiveWeight(1);
-  const weights = { idle: 1, run: 0, jump: 0 };
+  const weights = Object.fromEntries(Object.keys(actions).map((k) => [k, k === 'idle' ? 1 : 0]));
   // arme tenue devant la poitrine, pivote avec le regard
-  const aim = new THREE.Group(); aim.position.set(0, 1.32, 0); root.add(aim);
-  const gunHolder = new THREE.Group(); gunHolder.position.set(0.16, -0.12, -0.32); aim.add(gunHolder);
+  const aim = new THREE.Group(); aim.position.set(0, 1.42, 0); root.add(aim);
+  const gunHolder = new THREE.Group(); gunHolder.position.set(0.12, -0.08, -0.38); aim.add(gunHolder);
   let weapon = null; let weaponId = null;
   const pole = new THREE.Vector3(); const tR = new THREE.Vector3(); const tL = new THREE.Vector3();
-  const muzzle = new THREE.Object3D(); muzzle.position.set(0, 0.02, -0.55); gunHolder.add(muzzle);
+  const muzzle = new THREE.Object3D(); gunHolder.add(muzzle);
+  // doigts repliés autour de la poignée
+  const FINGERS = ['Index', 'Middle', 'Ring', 'Pinky'];
+  const curl = (side, amount) => {
+    for (const f of FINGERS) for (let i = 1; i <= 3; i++) { const b = bones[`${side}Hand${f}${i}`]; if (b) b.rotateZ(side === 'Right' ? -amount : amount); }
+    const t = bones[`${side}HandThumb2`]; if (t) t.rotateZ(side === 'Right' ? -amount * 0.4 : amount * 0.4);
+  };
+  const arms = (gripW, foreW) => {
+    root.localToWorld(pole.set(0.7, 0.5, 0.6));
+    twoBoneIK(bones.RightArm, bones.RightForeArm, bones.RightHand, gripW, pole);
+    curl('Right', 1.1);
+    if (foreW) { root.localToWorld(pole.set(-0.7, 0.4, 0.4)); twoBoneIK(bones.LeftArm, bones.LeftForeArm, bones.LeftHand, foreW, pole); curl('Left', 0.9); }
+    root.updateMatrixWorld(true);
+  };
   return {
-    root,
+    root, bones,
     async setWeapon(id) {
       if (id === weaponId) return; weaponId = id;
       const w = await weaponInstance(id);
       if (weaponId !== id) return;
       if (weapon) gunHolder.remove(weapon);
       weapon = w; gunHolder.add(w);
+      muzzle.position.set(...WEAPON_MODELS[id].muzzle);
+      gunHolder.rotation.set(id === 'knife' ? -1.2 : id === 'grenade' ? -0.3 : 0, 0, 0);
     },
     muzzleWorld() { muzzle.updateMatrixWorld(true); return muzzle.getWorldPosition(new THREE.Vector3()).toArray(); },
-    update(dt, { speed = 0, pitch = 0, air = false } = {}) {
-      const want = air ? 'jump' : speed > 0.8 ? 'run' : 'idle';
+    /** Place les mains (coordonnées monde) — utilisé par la vue à la première personne. */
+    armsTo(gripW, foreW) { if (bones.RightArm) arms(gripW, foreW); },
+    update(dt, { speed = 0, pitch = 0, air = false, hands = true } = {}) {
+      const want = air ? 'idle' : speed > 3.2 ? 'run' : speed > 0.6 ? 'walk' : 'idle';
       for (const k of Object.keys(weights)) {
-        weights[k] += ((k === want ? 1 : 0) - weights[k]) * Math.min(1, dt * 10);
+        weights[k] += ((k === want ? 1 : 0) - weights[k]) * Math.min(1, dt * 8);
         actions[k].setEffectiveWeight(weights[k]);
       }
-      actions.run.setEffectiveTimeScale(Math.max(0.6, Math.min(1.6, speed / 5)));
+      if (actions.run) actions.run.setEffectiveTimeScale(Math.max(0.7, Math.min(1.4, speed / 6)));
+      if (actions.walk) actions.walk.setEffectiveTimeScale(Math.max(0.7, Math.min(1.5, speed / 2.5)));
       mixer.update(dt);
+      if (firstPerson && bones.Head) bones.Head.scale.setScalar(0.001);
       root.updateMatrixWorld(true);
       // buste et tête suivent le regard
-      if (bones.Spine) { bones.Spine.rotateX(-pitch * 0.25); }
-      if (bones.Chest) { bones.Chest.rotateX(-pitch * 0.25); }
-      if (bones.Neck) bones.Neck.rotateX(-pitch * 0.3);
+      if (bones.Spine1) bones.Spine1.rotateX(pitch * 0.3);
+      if (bones.Spine2) bones.Spine2.rotateX(pitch * 0.3);
+      if (bones.Neck) bones.Neck.rotateX(pitch * 0.3);
       aim.rotation.x = pitch;
       root.updateMatrixWorld(true);
-      // bras sur l'arme
       const wm = WEAPON_MODELS[weaponId];
-      if (!wm || !bones.RightArm) return;
+      if (!hands || !wm || !bones.RightArm || !weapon) return;
       gunHolder.localToWorld(tR.set(...wm.grip));
-      root.localToWorld(pole.set(0.6, 0.6, 0.4));
-      twoBoneIK(bones.RightArm, bones.RightForeArm, bones.RightHand, tR, pole);
-      if (wm.fore) {
-        gunHolder.localToWorld(tL.set(...wm.fore));
-        root.localToWorld(pole.set(-0.6, 0.5, 0.2));
-        twoBoneIK(bones.LeftArm, bones.LeftForeArm, bones.LeftHand, tL, pole);
-      }
+      if (wm.fore) gunHolder.localToWorld(tL.set(...wm.fore));
+      arms(tR, wm.fore ? tL : null);
     },
   };
 }

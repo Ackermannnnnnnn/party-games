@@ -2,3 +2,13 @@ Modèles 3D : Kenney (https://kenney.nl) — Furniture Kit, Food Kit, Nature Kit
 Graveyard Kit, Animated Characters, Weapon Pack.
 Licence : Creative Commons Zero (CC0 1.0 Universal) — domaine public.
 Merci Kenney !
+
+---
+Modèles, textures et HDRI photoréalistes (dossiers ph/, tex/, hdri/, weapons3/) : Poly Haven — https://polyhaven.com
+Licence CC0 (domaine public). Textures dérivées (render_g, paintmetal_g, plaster_g) : modifiées à partir de Poly Haven.
+
+Arbres et buissons (tree/) : générés avec EZ-Tree de Daniel Greenheck (licence MIT, https://github.com/dgreenheck/ez-tree),
+écorces Poly Haven / TextureCan (CC0). Texture de haie (tex/hedge_*) composée à partir des feuillages EZ-Tree.
+
+Soldat animé (characters/soldier.glb) : modèle « Vanguard » et animations Mixamo (Adobe), tel que distribué
+dans les exemples de three.js (https://github.com/mrdoob/three.js) — utilisable dans des projets selon les conditions Mixamo.

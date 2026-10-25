@@ -1,6 +1,7 @@
 /**
  * Prop Hunt — les maps (partagé client / serveur, copié tel quel côté serveur).
  */
+import { realize } from './realism.js';
 import { builder, local, PI } from './build.js';
 import { manor } from './map-manor.js';
 import { school } from './map-school.js';
@@ -203,7 +204,7 @@ function suburb() {
     sky: 0x9fd0f2, fog: [0xc7dff0, 45, 120], area: [-38, 38, -32, 32],
     solids: b.solids, deco: b.deco, objects: b.objects, lights: b.lights,
     spawns: {
-      hunters: [[-28, 0.3, 0], [-28, 0.3, 2], [-28, 0.3, -2], [-27, 0.3, 1], [-27, 0.3, -1]],
+      hunters: [[-28, 0.3, 0], [-28, 0.3, 2], [-28, 0.3, -2], [-27.6, 0.3, 1], [-27.6, 0.3, -1]],
       props: [[0, 0.3, -7.5], [0, 0.3, 7.5], [-12, 0.3, -3.5], [12, 0.3, 3.5], [20, 0.3, 0], [8, 0.3, -6]],
     },
   };
@@ -484,6 +485,6 @@ export const hasMap = (id) => !!BUILDERS[id];
 
 export function getMap(id) {
   if (!BUILDERS[id]) id = 'suburb';
-  if (!cache.has(id)) cache.set(id, BUILDERS[id]());
+  if (!cache.has(id)) cache.set(id, realize(BUILDERS[id]()));
   return cache.get(id);
 }

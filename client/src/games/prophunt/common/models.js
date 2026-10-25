@@ -16,6 +16,9 @@
  */
 import { ASSETS } from './assets.js';
 import { assetName } from './assetNames.js';
+import { PH_ASSETS } from './assetsPh.js';
+import { PH_NAMES } from './phNames.js';
+import { TREE_ASSETS } from './assetsTrees.js';
 
 /** Matières : couleur de base, texture procédurale, rugosité, métal, émission, verre, nc = on passe au travers. */
 export const MATS = {
@@ -23,9 +26,9 @@ export const MATS = {
   wood: { c: 0x9a6b3f, t: 'wood', r: 0.7 },
   woodD: { c: 0x6b4526, t: 'wood', r: 0.65 },
   woodL: { c: 0xc8a06a, t: 'wood', r: 0.7 },
-  plank: { c: 0xb08458, t: 'plank', r: 0.78, s: 2 },
-  metal: { c: 0xa8adb5, t: 'metal', m: 0.75, r: 0.38 },
-  steel: { c: 0x6e747c, t: 'metal', m: 0.7, r: 0.45 },
+  plank: { c: 0xb08458, t: 'plank', r: 0.78, s: 2, pt: 'wood_floor', ps: 2.4 },
+  metal: { c: 0xa8adb5, t: 'metal', m: 0.75, r: 0.38, pt: 'paintmetal_g', ps: 1.5, pc: 0xc7c7c7, rk: 0.9 },
+  steel: { c: 0x6e747c, t: 'metal', m: 0.7, r: 0.45, pt: 'paintmetal_g', ps: 1.5, pc: 0xc7c7c7, rk: 0.9 },
   chrome: { c: 0xdfe3e8, m: 1, r: 0.12 },
   plastic: { c: 0x2b2d33, r: 0.4 },
   rubber: { c: 0x1d1d20, r: 0.95 },
@@ -34,23 +37,62 @@ export const MATS = {
   glass: { c: 0xcfe9f5, glass: 0.28, r: 0.05 },
   window: { c: 0x1d2a35, r: 0.08, m: 0.5 },
   water: { c: 0x2f8fc4, glass: 0.7, r: 0.05 },
-  leaf: { c: 0x3f8f3a, t: 'leaf', r: 0.9, nc: true, s: 1.2 },
-  grass: { c: 0x6ea84f, t: 'grass', r: 1, s: 3 },
-  dirt: { c: 0x7a5c3e, t: 'grass', r: 1, s: 3 },
-  asphalt: { c: 0x6a6c70, t: 'asphalt', r: 0.95, s: 4 },
-  concrete: { c: 0xb9b6ae, t: 'concrete', r: 0.9, s: 3 },
-  tile: { c: 0xe8e4dc, t: 'tile', r: 0.3, s: 1.2 },
-  tileS: { c: 0xe6f0f0, t: 'tileS', r: 0.25, s: 0.6 },
-  brick: { c: 0xd08a6c, t: 'brick', r: 0.9, s: 1.6 },
-  plaster: { c: 0xe9e4da, t: 'plaster', r: 0.9, s: 2 },
-  ceiling: { c: 0xf2f0ea, t: 'plaster', r: 0.95, s: 2, em: 0.32 },
-  siding: { c: 0xb7d0e0, t: 'siding', r: 0.7, s: 1.5 },
-  roof: { c: 0x8c3a2f, t: 'roof', r: 0.85, s: 1.5 },
-  carpet: { c: 0x6b7280, t: 'carpet', r: 1, s: 1.5 },
+  leaf: { c: 0x3f8f3a, t: 'leaf', r: 0.9, nc: true, s: 1.2, pt: 'hedge', ps: 1.4 },
+  grass: { c: 0x6ea84f, t: 'grass', r: 1, s: 3, pt: 'leafy_grass', ps: 2.5, pc: 0x9aa06a },
+  dirt: { c: 0x7a5c3e, t: 'grass', r: 1, s: 3, pt: 'forest_ground_04', ps: 3 },
+  asphalt: { c: 0x6a6c70, t: 'asphalt', r: 0.95, s: 4, pt: 'asphalt_02', ps: 5 },
+  concrete: { c: 0xb9b6ae, t: 'concrete', r: 0.9, s: 3, pt: 'concrete_floor_worn_001', ps: 3 },
+  tile: { c: 0xe8e4dc, t: 'tile', r: 0.3, s: 1.2, pt: 'floor_tiles_06', ps: 1.8, env: 1.3 },
+  tileS: { c: 0xe6f0f0, t: 'tileS', r: 0.25, s: 0.6, pt: 'interior_tiles', ps: 1.2, env: 1.3 },
+  brick: { c: 0xd08a6c, t: 'brick', r: 0.9, s: 1.6, pt: 'red_brick_03', ps: 2.4 },
+  plaster: { c: 0xe9e4da, t: 'plaster', r: 0.9, s: 2, pt: 'beige_wall_001', ps: 2.5 },
+  ceiling: { c: 0xf2f0ea, t: 'plaster', r: 0.95, s: 2, em: 0.32, pt: 'white_plaster_02', ps: 2.5 },
+  siding: { c: 0xb7d0e0, t: 'siding', r: 0.7, s: 1.5, pt: 'render_g', ps: 2.5, pc: 0xd1d1d1 },
+  roof: { c: 0x8c3a2f, t: 'roof', r: 0.85, s: 1.5, pt: 'clay_roof_tiles_02', ps: 2.5 },
+  carpet: { c: 0x6b7280, t: 'carpet', r: 1, s: 1.5, pt: 'dirty_carpet', ps: 2 },
   card: { c: 0xc49a62, t: 'card', r: 0.9, s: 0.8 },
   light: { c: 0xfffbea, e: 1.6 },
   screen: { c: 0x2c5e8f, e: 0.55, r: 0.15 },
   ceramic: { c: 0xf4f4f2, r: 0.18 },
+  // surfaces photographiques (Poly Haven) — couleur neutre : 'parquet' = la vraie couleur, 'parquet:c08060' = teinté
+  parquet: { c: 0xffffff, t: 'plank', s: 1.5, pt: 'herringbone_parquet', ps: 2 },
+  laminate: { c: 0xffffff, t: 'plank', s: 2, pt: 'laminate_floor_02', ps: 2.4 },
+  darkPlank: { c: 0xffffff, t: 'plank', s: 2, pt: 'dark_wooden_planks', ps: 2.4 },
+  wornPlank: { c: 0xffffff, t: 'plank', s: 2, pt: 'wood_floor_worn', ps: 2.4 },
+  plankFloor: { c: 0xffffff, t: 'plank', s: 2, pt: 'plank_flooring_04', ps: 2.4 },
+  deck: { c: 0xffffff, t: 'plank', s: 2, pt: 'wood_planks', ps: 2.4 },
+  oldPlank: { c: 0xffffff, t: 'plank', s: 2, pt: 'weathered_planks', ps: 2.4 },
+  marble: { c: 0xffffff, t: 'tile', s: 1.2, pt: 'marble_01', ps: 2.5, env: 1.4 },
+  granite: { c: 0xffffff, t: 'tile', s: 1.2, pt: 'granite_tile', ps: 2 },
+  greyTiles: { c: 0xffffff, t: 'tile', s: 1.2, pt: 'large_grey_tiles', ps: 2.5 },
+  tiles8: { c: 0xffffff, t: 'tileS', s: 0.6, pt: 'floor_tiles_08', ps: 1.5, env: 1.3 },
+  rubberFloor: { c: 0xffffff, t: 'carpet', s: 1.5, pt: 'rubber_tiles', ps: 2 },
+  garageFloor: { c: 0xffffff, t: 'concrete', s: 3, pt: 'garage_floor', ps: 3 },
+  stone: { c: 0xffffff, t: 'brick', s: 1.6, pt: 'stone_wall', ps: 3 },
+  blocks: { c: 0xffffff, t: 'brick', s: 1.6, pt: 'medieval_blocks_03', ps: 3 },
+  cobble: { c: 0xffffff, t: 'asphalt', s: 3, pt: 'cobblestone_floor_04', ps: 3 },
+  paving: { c: 0xffffff, t: 'concrete', s: 3, pt: 'hexagonal_concrete_paving', ps: 2.5 },
+  pavement: { c: 0xffffff, t: 'concrete', s: 3, pt: 'pavement_02', ps: 3 },
+  concretePave: { c: 0xffffff, t: 'concrete', s: 3, pt: 'concrete_pavement', ps: 3 },
+  asphalt4: { c: 0xffffff, t: 'asphalt', s: 4, pt: 'asphalt_04', ps: 5 },
+  redBrick: { c: 0xffffff, t: 'brick', s: 1.6, pt: 'red_brick', ps: 2.4 },
+  brickWall: { c: 0xffffff, t: 'brick', s: 1.6, pt: 'brick_wall_001', ps: 2.4 },
+  factoryBrick: { c: 0xffffff, t: 'brick', s: 1.6, pt: 'factory_brick', ps: 2.4 },
+  concreteWall: { c: 0xffffff, t: 'concrete', s: 3, pt: 'concrete_wall_003', ps: 3 },
+  paintedWall: { c: 0xffffff, t: 'plaster', s: 2, pt: 'painted_plaster_wall', ps: 2.5 },
+  whitePlaster: { c: 0xffffff, t: 'plaster', s: 2, pt: 'white_plaster_02', ps: 2.5 },
+  beigeWall: { c: 0xffffff, t: 'plaster', s: 2, pt: 'beige_wall_002', ps: 2.5 },
+  plasterWall: { c: 0xffffff, t: 'plaster', s: 2, pt: 'plastered_wall_04', ps: 2.5 },
+  corrugated: { c: 0xffffff, t: 'siding', s: 1.5, pt: 'corrugated_iron', ps: 2, m: 1 },
+  metalPlate: { c: 0xffffff, t: 'metal', s: 1.5, pt: 'metal_plate', ps: 2, m: 1 },
+  blueMetal: { c: 0xffffff, t: 'metal', s: 1.5, pt: 'blue_metal_plate', ps: 2, m: 1 },
+  shutter: { c: 0xffffff, t: 'siding', s: 1.5, pt: 'painted_metal_shutter', ps: 2.5, m: 1 },
+  garageDoor: { c: 0xffffff, t: 'siding', s: 1.5, pt: 'wooden_garage_door', ps: 2.5 },
+  mud: { c: 0xffffff, t: 'grass', s: 3, pt: 'brown_mud_leaves_01', ps: 3 },
+  trail: { c: 0xffffff, t: 'grass', s: 3, pt: 'rocky_trail', ps: 3 },
+  sparseGrass: { c: 0xffffff, t: 'grass', s: 3, pt: 'sparse_grass', ps: 3 },
+  slate: { c: 0xffffff, t: 'roof', s: 1.5, pt: 'roof_slates_03', ps: 2.5 },
+  greyRoof: { c: 0xffffff, t: 'roof', s: 1.5, pt: 'grey_roof_tiles_02', ps: 2.5 },
 };
 
 const W = 'wood'; const WD = 'woodD'; const WL = 'woodL';
@@ -270,6 +312,24 @@ const M = {
 const KENNEY_STATIC = /^(furniture\/(wall|floor|stairs|doorway|paneling)|cars\/|nature\/(tree_|tent_|statue_(obelisk|column)|fence_)|graveyard\/(ironFence|lightpost|altar))/;
 for (const [id, a] of Object.entries(ASSETS)) {
   M[id] = { name: assetName(id), glb: id, static: KENNEY_STATIC.test(id), parts: a.b.map((b) => ['b', b[0], b[1], b[2], b[3] * 2, b[4] * 2, b[5] * 2, null]) };
+}
+
+// Modèles photoréalistes Poly Haven : « ph/<id> ». Les petits objets n'ont qu'une boîte de collision.
+const PH_STATIC = /^ph\/(street_lamp|modular_chainlink_fence|large_iron_gate|rollershutter_door|fire_hydrant|quiver_tree|dead_tree_trunk|boulder|exterior_aircon|utility_box|korean_public_payphone|covered_car|modular_street_seating|concrete_road_barrier|water_manhole|service_pistol|bolt_action|stick_grenade|machete)/;
+const PH_SKIP = /^$/;
+for (const [id, a] of Object.entries(PH_ASSETS)) {
+  if (PH_SKIP.test(id)) continue;
+  const key = `ph/${id}`;
+  const small = Math.max(...a.size) < 0.6;
+  const boxes = small ? [[0, a.size[1] / 2, 0, a.size[0] / 2, a.size[1] / 2, a.size[2] / 2]] : a.b;
+  M[key] = { name: PH_NAMES[id] || id, glb: key, ph: true, static: PH_STATIC.test(key), parts: boxes.map((b) => ['b', b[0], b[1], b[2], b[3] * 2, b[4] * 2, b[5] * 2, null]) };
+}
+
+// Arbres et buissons réalistes (feuillage traversable, tronc solide)
+const TREE_NAMES = { oak: 'Chêne', oakBig: 'Grand chêne', ash: 'Frêne', aspen: 'Bouleau', pine: 'Pin', bushA: 'Buisson', bushB: 'Petit buisson', bushC: 'Haie' };
+for (const [id, a] of Object.entries(TREE_ASSETS)) {
+  const key = `tree/${id}`;
+  M[key] = { name: TREE_NAMES[id] || id, glb: key, ph: true, static: !id.startsWith('bush'), parts: a.b.map((b) => ['b', b[0], b[1], b[2], b[3] * 2, b[4] * 2, b[5] * 2, null]) };
 }
 
 function carParts(color) {

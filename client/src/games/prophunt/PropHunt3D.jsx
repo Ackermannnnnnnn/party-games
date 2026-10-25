@@ -6,11 +6,12 @@ import { socket, SERVER_URL } from '../../lib/socket.js';
 import { serverNow } from '../blindtest/audio.js';
 import { reloadForUpdate } from '../../lib/version.js';
 import { getMap, hasMap, PLAYER, WEAPONS, WEAPON_ORDER, ABILITIES, TAUNTS, MODELS, modelBounds, canDisguiseAs } from './shared.js';
-import { World, buildMapMeshes, material, modelParts, rayModel, disguiseCollider, hitNormal, grenadePath, setQuality as setWorldQuality } from './world.js';
+import { World, buildMapMeshes, buildPhInstances, material, modelParts, rayModel, disguiseCollider, hitNormal, grenadePath, setQuality as setWorldQuality } from './world.js';
 import { createInput, attachDesktop, attachTouch, isTouch } from './controls.js';
 import { sfx, loadCustomSounds } from './sfx.js';
 import { Environment } from './scene/env.jsx';
 import { PropModel, NameTag } from './scene/characters.jsx';
+import { GrassField } from './scene/grass.jsx';
 import { loadCharacterBase, createHunterRig, loadWeapon } from './scene/rigs.js';
 import { Effects, createFx } from './scene/effects.jsx';
 import { createViewmodel } from './scene/viewmodel.js';
@@ -238,9 +239,9 @@ export default function PropHunt3D({ p, playerId, isHost }) {
         <TopBar p={p} left={left} mapName={map.name} />
         <KillFeed p={p} person={person} />
 
-        {alive && !blind && playing && (
-          <div className="absolute left-1/2 top-1/2"><Crosshair role={role} spread={hud.spread} hitMark={hitMark} target={hud.target} /></div>
-        )}
+        {alive && !blind && playing && (hud.scoped
+          ? <ScopeOverlay hitMark={hitMark} />
+          : <div className="absolute left-1/2 top-1/2"><Crosshair role={role} spread={hud.spread} hitMark={hitMark} target={hud.target} /></div>)}
         {role === 'prop' && alive && playing && (hud.target || now - hud.noRoom < 1500) && (
           <p className={`absolute left-1/2 top-[57%] -translate-x-1/2 rounded-full bg-black/55 backdrop-blur px-3 py-1 text-sm whitespace-nowrap ${now - hud.noRoom < 1500 ? 'text-amber-300' : 'text-teal-200'}`}>
             {now - hud.noRoom < 1500 ? 'Pas assez de place ici pour cet objet' : <>{isTouch ? 'Touche « Devenir »' : 'E ou clic'} : devenir <b>{hud.target.name}</b></>}
@@ -280,16 +281,48 @@ export default function PropHunt3D({ p, playerId, isHost }) {
   );
 }
 
+/** Toutes les copies d'un modèle photoréaliste dans la map (un seul appel de dessin). */
+function PhInstances({ g, shadows }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const im = ref.current; if (!im) return;
+    g.matrices.forEach((m, i) => im.setMatrixAt(i, m));
+    im.instanceMatrix.needsUpdate = true; im.computeBoundingSphere();
+  }, [g]);
+  // les petits objets lointains ne sont plus dessinés (on ne les verrait pas)
+  useFrame(({ camera }) => {
+    const im = ref.current; if (!im?.boundingSphere || g.far > 1e8) return;
+    im.visible = im.boundingSphere.center.distanceTo(camera.position) - im.boundingSphere.radius < g.far;
+  });
+  if (import.meta.env.DEV && typeof localStorage !== 'undefined' && localStorage.getItem('phLite')) return null;
+  return <instancedMesh ref={ref} args={[g.geometry, g.material, g.matrices.length]} castShadow={shadows && g.cast} receiveShadow={shadows} frustumCulled />;
+}
+
+/** Lunette du fusil : on voit à travers (cercle net, bords noirs, réticule). */
+function ScopeOverlay({ hitMark }) {
+  const c = hitMark ? '#fb7185' : 'rgba(10,10,10,0.9)';
+  return (
+    <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(circle at 50% 50%, transparent 0, transparent min(38vh, 38vw), rgba(0,0,0,0.55) calc(min(38vh, 38vw) + 3px), #000 calc(min(38vh, 38vw) + 14px))' }}>
+      <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2" style={{ background: c }} />
+      <div className="absolute top-1/2 left-0 right-0 h-px -translate-y-1/2" style={{ background: c }} />
+      <div className="absolute left-1/2 top-1/2 w-2 h-2 -translate-x-1/2 -translate-y-1/2 rounded-full border" style={{ borderColor: c }} />
+    </div>
+  );
+}
+
 // ───────────────────────── Scène 3D ─────────────────────────
 function Scene({ p, playerId, world, map, input, me, net, fx, pRef, setHud, quality, boardRef, setBoard, pickRef, soundListRef }) {
   const meshes = useMemo(() => buildMapMeshes(map), [map, quality]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => meshes.forEach((m) => m.geometry.dispose()), [meshes]);
+  const phGroups = useMemo(() => buildPhInstances(map), [map, quality]); // eslint-disable-line react-hooks/exhaustive-deps
   const overlay = useRef(null);
   const viewer = p.players.find((x) => x.id === playerId);
   return (
     <>
       <Environment map={map} quality={quality} overlay={overlay} />
       {meshes.map((m, i) => <mesh key={`${m.key}-${i}`} geometry={m.geometry} material={material(m.key)} castShadow={m.shadow && quality !== 'low'} receiveShadow={quality !== 'low'} />)}
+      {phGroups.map((g) => <PhInstances key={g.key} g={g} shadows={quality !== 'low'} />)}
+      {!(import.meta.env.DEV && typeof localStorage !== 'undefined' && localStorage.getItem('phLite')) && <GrassField map={map} quality={quality} />}
       {(p.decoys || []).map((d) => <group key={d.id} position={d.p} rotation={[0, d.ry, 0]}><PropModel m={d.m} s={d.s} /></group>)}
       {p.players.filter((x) => x.id !== playerId && x.role).map((x) => <Remote key={x.id} pl={x} net={net} me={me} input={input} viewerRole={viewer?.role} />)}
       <Local p={p} playerId={playerId} world={world} input={input} me={me} net={net} fx={fx} pRef={pRef} setHud={setHud} overlay={overlay}
@@ -347,7 +380,7 @@ function Remote({ pl, net, me, input, viewerRole }) {
   );
 }
 
-/** Chasseur animé (modèle Kenney chargé une fois, une copie par joueur). */
+/** Chasseur animé (soldat chargé une fois, une copie par joueur). */
 function HunterRig({ state, skin }) {
   const holder = useRef();
   const rig = useRef(null);
@@ -471,7 +504,7 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
     const dir = new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
     const firstPerson = alive && role === 'hunter';
     m.shake *= Math.exp(-dt * 5);
-    const fov = aiming ? 52 : 74;
+    const fov = aiming ? (m.weapon === 'shotgun' ? 26 : 50) : 74;
     if (Math.abs(camera.fov - fov) > 0.1) { camera.fov += (fov - camera.fov) * Math.min(1, dt * 12); camera.updateProjectionMatrix(); }
     if (firstPerson) {
       bob.current += dt * (m.onGround ? hSpeed * 1.6 : 0);
@@ -509,7 +542,7 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
 
     // ── arme du chasseur
     vm.scene.environment = scene.environment;
-    vm.update(camera, dt, { yaw, pitch, moving: Math.min(1, hSpeed / 6), grounded: m.onGround, visible: firstPerson && P.phase === 'HUNT', aim: aiming });
+    vm.setSkin(meP?.skin); vm.update(camera, dt, { yaw, pitch, moving: Math.min(1, hSpeed / 6), speed: hSpeed, grounded: m.onGround, visible: firstPerson && P.phase === 'HUNT' && !(aiming && m.weapon === 'shotgun' && Math.abs(camera.fov - 26) < 6), aim: aiming });
     if (m.reloadUntil && now >= m.reloadUntil) { m.reloadUntil = 0; if (m.reloadW) m.ammo[m.reloadW] = WEAPONS[m.reloadW].mag; }
     m.spread = Math.max(0, m.spread - dt * 0.05);
     // mes grenades : quand la mèche est consumée, on annonce l'explosion
@@ -616,12 +649,12 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
       lastHud.current = now;
       const reloading = m.reloadUntil > now;
       const next = {
-        target: targetRef.current, locked: m.lockedYaw !== null, ammo: m.ammo[m.weapon] ?? 0, weapon: m.weapon, ammoAll: { ...m.ammo }, reloading,
+        scoped: aiming && m.weapon === 'shotgun' && Math.abs(camera.fov - 26) < 6, target: targetRef.current, locked: m.lockedYaw !== null, ammo: m.ammo[m.weapon] ?? 0, weapon: m.weapon, ammoAll: { ...m.ammo }, reloading,
         reloadPct: reloading && m.reloadW ? 1 - (m.reloadUntil - now) / WEAPONS[m.reloadW].reloadMs : 0,
-        spread: Math.min(0.03, (aiming ? 0.3 : 1) * (m.spread + (hSpeed > 1 ? 0.004 : 0) + (m.onGround ? 0 : 0.01))) + (m.weapon === 'shotgun' ? 0.02 : 0), noRoom: noRoomAt.current,
+        spread: Math.min(0.03, (aiming ? 0.3 : 1) * (m.spread + (hSpeed > 1 ? 0.004 : 0) + (m.onGround ? 0 : 0.01))) * (m.weapon === 'shotgun' ? 0.4 : 1), noRoom: noRoomAt.current,
       };
       setHud((h) => (h.target?.index === next.target?.index && h.locked === next.locked && h.ammo === next.ammo && h.weapon === next.weapon && h.reloading === next.reloading
-        && h.ammoAll.grenade === next.ammoAll.grenade && Math.abs(h.reloadPct - next.reloadPct) < 0.04 && Math.abs(h.spread - next.spread) < 0.001 && h.noRoom === next.noRoom ? h : next));
+        && h.ammoAll.grenade === next.ammoAll.grenade && Math.abs(h.reloadPct - next.reloadPct) < 0.04 && Math.abs(h.spread - next.spread) < 0.001 && h.noRoom === next.noRoom && h.scoped === next.scoped ? h : next));
     }
 
     // ── envoi de ma position
@@ -699,8 +732,9 @@ function shoot(camera, aim, P, playerId, world, net, fx, vm, m, hSpeed, aiming) 
     if (i === 0 && best && best.hit.kind !== 'player') sfx.impact(to, { x: origin.x, z: origin.z, yaw: 0 });
   }
   fx.muzzle(from, false);
-  vm.kick(W.pellets > 1 ? 2.4 : 1);
-  if (W.pellets > 1) { sfx.shotgun(null, null, true); m.shake = Math.max(m.shake, 0.35); } else sfx.shot(null, null, true);
+  const heavy = W.pellets > 1 || W.id === 'shotgun';
+  vm.kick(heavy ? 2.4 : 1);
+  if (heavy) { sfx.shotgun(null, null, true); m.shake = Math.max(m.shake, 0.35); } else sfx.shot(null, null, true);
   if (penalty && !playerHit) sfx.penalty();
   socket.emit('game:action', { type: 'shoot', payload: { w: m.weapon, hits, from: r2(from), to: W.pellets > 1 ? tos : tos[0] } });
 }

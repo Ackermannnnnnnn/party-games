@@ -87,7 +87,7 @@ const httpServer = http.createServer(app);
 
 const io = new IOServer(httpServer, {
   cors: { origin: CORS_ORIGIN, methods: ['GET', 'POST'] },
-  pingTimeout: 20000,
+  pingTimeout: Number(process.env.PING_TIMEOUT) || 20000,
   pingInterval: 10000,
   maxHttpBufferSize: 1e6,
   // Reprise de connexion transparente après une courte coupure (événements rejoués)

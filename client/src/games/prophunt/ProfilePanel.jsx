@@ -6,7 +6,7 @@ import { fetchProfile } from '../../lib/profile.js';
 /**
  * Profil Prop Hunt : niveau, XP, titre, statistiques, succès et tenue du chasseur (débloquées par niveau).
  */
-const SKIN_NAMES = { survivorMaleB: 'Survivant', survivorFemaleA: 'Survivante', skaterMaleA: 'Skateur', skaterFemaleA: 'Skateuse', criminalMaleA: 'Truand', cyborgFemaleA: 'Cyborg', zombieA: 'Zombie', zombieC: 'Zombie vert' };
+const SKIN_NAMES = { survivorMaleB: 'Désert', survivorFemaleA: 'Forêt', skaterMaleA: 'Urbain', skaterFemaleA: 'Arctique', criminalMaleA: 'Commando', cyborgFemaleA: 'Cobalt', zombieA: 'Rouille', zombieC: 'Or' };
 
 export default function ProfilePanel({ onClose }) {
   const [data, setData] = useState(null);
@@ -47,7 +47,7 @@ export default function ProfilePanel({ onClose }) {
               ))}
             </div>
             <section>
-              <p className="text-sm font-semibold text-slate-200 mb-2">Tenue du chasseur</p>
+              <p className="text-sm font-semibold text-slate-200 mb-2">Armure du chasseur</p>
               <div className="grid sm:grid-cols-[180px_1fr] gap-3 items-start">
                 <SkinPreview skin={skin} />
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

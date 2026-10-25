@@ -102,7 +102,7 @@ export function PropModel({ m, s = 1, castShadow = true }) {
   const parts = useMemo(() => modelParts(m), [m]);
   return (
     <group scale={s}>
-      {parts.map(({ key, geometry }) => <mesh key={key} geometry={geometry} material={material(key)} castShadow={castShadow} receiveShadow />)}
+      {parts.map(({ key, geometry, material: mat }) => <mesh key={key} geometry={geometry} material={mat || material(key)} castShadow={castShadow} receiveShadow />)}
     </group>
   );
 }
