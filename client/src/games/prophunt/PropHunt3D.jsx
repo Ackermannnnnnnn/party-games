@@ -4,7 +4,8 @@ import { AnimatePresence } from 'framer-motion';
 import * as THREE from 'three';
 import { socket, SERVER_URL } from '../../lib/socket.js';
 import { serverNow } from '../blindtest/audio.js';
-import { getMap, PLAYER, WEAPONS, WEAPON_ORDER, ABILITIES, TAUNTS, MODELS, modelBounds, canDisguiseAs } from './shared.js';
+import { reloadForUpdate } from '../../lib/version.js';
+import { getMap, hasMap, PLAYER, WEAPONS, WEAPON_ORDER, ABILITIES, TAUNTS, MODELS, modelBounds, canDisguiseAs } from './shared.js';
 import { World, buildMapMeshes, material, modelParts, rayModel, disguiseCollider, hitNormal, grenadePath, setQuality as setWorldQuality } from './world.js';
 import { createInput, attachDesktop, attachTouch, isTouch } from './controls.js';
 import { sfx, loadCustomSounds } from './sfx.js';
@@ -57,6 +58,9 @@ export default function PropHunt3D({ p, playerId, isHost }) {
   const worldRef = useRef(world); worldRef.current = world;
   const self = p.players.find((x) => x.id === playerId);
   if (import.meta.env.DEV && typeof window !== 'undefined') window.__ph = Object.assign(window.__ph || {}, { me, input, world, net });
+
+  // Map inconnue de ce client = onglet resté sur une ancienne version : on recharge (la room est rejointe automatiquement)
+  useEffect(() => { if (p.mapId && !hasMap(p.mapId)) reloadForUpdate(); }, [p.mapId]);
 
   // Modèles 3D de la map (chargés une fois, avant d'afficher la scène)
   const [assetsReady, setAssetsReady] = useState(null);

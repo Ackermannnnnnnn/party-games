@@ -4,7 +4,7 @@
 import { MODELS, modelBounds } from './models.js';
 
 export { MODELS, MATS, modelBounds, modelHp, partHalf, partMat, resolveMat } from './models.js';
-export { getMap, MAP_LIST } from './maps.js';
+export { getMap, hasMap, MAP_LIST } from './maps.js';
 export { ASSETS } from './assets.js';
 
 const MAX_DISGUISE = 3.2;

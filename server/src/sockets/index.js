@@ -6,6 +6,8 @@ import { logger } from '../utils/logger.js';
 import { storePhoto } from '../utils/photos.js';
 import { profileStore, KEY_RE, SKIN_LEVELS, levelOf } from '../profiles/profiles.js';
 
+/** Version du code client attendue (à monter quand le protocole Prop Hunt change). */
+const CLIENT_VERSION = 4;
 const KICK_BAN_MS = 10 * 60 * 1000;
 
 /** Temps laissé à un joueur déconnecté pour revenir (écran verrouillé, réseau qui saute…). */
@@ -57,6 +59,7 @@ export function registerSocketHandlers(io, socket) {
   on('profile:hello', (data) => {
     const key = typeof data?.key === 'string' ? data.key.toLowerCase() : '';
     const { room, player } = _getContext(socket);
+    if (player) player.clientV = Number(data?.v) || 0; // version du code client (onglets restés ouverts)
     if (!KEY_RE.test(key) || !player) return;
     player.profileKey = key;
     profileStore.get(key).then((p) => {
@@ -248,6 +251,14 @@ export function registerSocketHandlers(io, socket) {
     const connectedCount = [...room.players.values()].filter((p) => p.connected).length;
     if (connectedCount < GameClass.minPlayers) {
       return socket.emit('error', { code: 'NOT_ENOUGH_PLAYERS', message: `Minimum ${GameClass.minPlayers} joueurs connectés.` });
+    }
+    // Prop Hunt : tout le monde doit avoir le même code (maps, règles) — sinon chacun joue sur une map différente
+    if (gameId === 'prophunt') {
+      const old = [...room.players.values()].filter((p) => p.connected && (p.clientV || 0) < CLIENT_VERSION);
+      if (old.length) {
+        for (const p of old) if (p.socketId) socket.nsp.to(p.socketId).emit('client:outdated');
+        return socket.emit('error', { code: 'CLIENT_OUTDATED', message: `${old.map((p) => p.pseudo).join(', ')} ${old.length > 1 ? 'ont' : 'a'} une ancienne version du jeu : recharge la page (F5) puis relance.` });
+      }
     }
     room.startGame(GameClass, parsed.options);
   });

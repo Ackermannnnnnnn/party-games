@@ -8,6 +8,8 @@ import GameRoom from './pages/GameRoom.jsx';
 import Admin from './pages/Admin.jsx';
 import VolumeToggle from './components/VolumeToggle.jsx';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from 'react';
+import { watchUpdates, reloadForUpdate } from './lib/version.js';
 
 const REDIRECT_LABELS = {
   HOST_LEFT:        "L'hôte a quitté la room.",
@@ -29,6 +31,15 @@ export default function App() {
   const resetRoom    = useGameStore((s) => s.resetRoom);
   const notice       = useGameStore((s) => s.notice);
   const setNotice    = useGameStore((s) => s.setNotice);
+  const gameState    = useGameStore((s) => s.gameState);
+  const [update, setUpdate] = useState(false);
+
+  // Nouvelle version en ligne : rechargement automatique hors partie (la room est rejointe toute seule),
+  // sinon bandeau avec bouton. Tout le monde doit avoir le même code pour jouer ensemble.
+  useEffect(() => watchUpdates(() => setUpdate(true)), []);
+  useEffect(() => {
+    if (update && !gameState) reloadForUpdate();
+  }, [update, gameState]);
 
   // Watcher : si le serveur déclenche un retour au menu, on navigate
   useEffect(() => {
@@ -95,6 +106,13 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
+
+      {update && (
+        <button type="button" onClick={() => { try { sessionStorage.removeItem('updateReloadAt'); } catch {} reloadForUpdate(); }}
+          className="fixed z-[60] top-[4.25rem] left-1/2 -translate-x-1/2 rounded-full bg-amber-300 text-slate-900 px-4 py-2 text-sm font-semibold shadow-2xl">
+          ✨ Nouvelle version disponible — cliquer pour recharger
+        </button>
+      )}
 
       <AnimatePresence>
         {notice && !serverError && (

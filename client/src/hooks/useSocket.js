@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { socket } from '../lib/socket.js';
 import { useGameStore } from '../store/gameStore.js';
 import { getProfileKey } from '../lib/profile.js';
+import { CLIENT_VERSION, reloadForUpdate } from '../lib/version.js';
 
 /** Codes d'erreur qui invalident notre session de room (clean + redirect home). */
 const FATAL_ROOM_ERRORS = new Set(['ROOM_NOT_FOUND', 'PLAYER_NOT_FOUND', 'KICKED']);
@@ -59,7 +60,7 @@ export function useSocket() {
       localStorage.setItem('roomCode', code);
       setPlayerId(playerId);
       const key = getProfileKey();
-      if (key) socket.emit('profile:hello', { key });
+      socket.emit('profile:hello', { key: key || '', v: CLIENT_VERSION });
     };
     const onRoomState  = (room) => setRoom(room);
     const onRoomClosed = ({ reason }) => {
@@ -97,6 +98,8 @@ export function useSocket() {
     socket.on('game:state', onGameState);
     socket.on('game:end', onGameEnd);
     socket.on('error', onError);
+    const onOutdated = () => reloadForUpdate();
+    socket.on('client:outdated', onOutdated);
     document.addEventListener('visibilitychange', onWake);
     window.addEventListener('online', onWake);
 
@@ -111,6 +114,7 @@ export function useSocket() {
       socket.off('game:state', onGameState);
       socket.off('game:end', onGameEnd);
       socket.off('error', onError);
+      socket.off('client:outdated', onOutdated);
       document.removeEventListener('visibilitychange', onWake);
       window.removeEventListener('online', onWake);
     };

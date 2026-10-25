@@ -479,6 +479,9 @@ export { MAP_LIST };
 
 const cache = new Map();
 /** Map construite (mise en cache). */
+/** Ce client connaît-il cette map ? (sinon : ancienne version → rechargement) */
+export const hasMap = (id) => !!BUILDERS[id];
+
 export function getMap(id) {
   if (!BUILDERS[id]) id = 'suburb';
   if (!cache.has(id)) cache.set(id, BUILDERS[id]());
