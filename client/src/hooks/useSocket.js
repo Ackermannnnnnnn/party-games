@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { socket } from '../lib/socket.js';
 import { useGameStore } from '../store/gameStore.js';
+import { getProfileKey } from '../lib/profile.js';
 
 /** Codes d'erreur qui invalident notre session de room (clean + redirect home). */
 const FATAL_ROOM_ERRORS = new Set(['ROOM_NOT_FOUND', 'PLAYER_NOT_FOUND', 'KICKED']);
@@ -57,6 +58,8 @@ export function useSocket() {
     const onRoomJoined = ({ code, playerId }) => {
       localStorage.setItem('roomCode', code);
       setPlayerId(playerId);
+      const key = getProfileKey();
+      if (key) socket.emit('profile:hello', { key });
     };
     const onRoomState  = (room) => setRoom(room);
     const onRoomClosed = ({ reason }) => {

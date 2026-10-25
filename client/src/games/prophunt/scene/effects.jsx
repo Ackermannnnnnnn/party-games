@@ -6,7 +6,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-const MAX_SPARKS = 400;
+const MAX_SPARKS = 700;
 const MAX_DECALS = 120;
 
 /** File d'effets partagée entre la logique de jeu et le rendu. */
@@ -17,6 +17,7 @@ export function createFx() {
     decals: [],  // { p, n }
     sprites: [], // { kind: 'note'|'poof', p, at }
     flash: null, // { p, at }
+    grenades: [], // { gid, path, at }
     decalDirty: true,
     tracer(from, to) { this.tracers.push({ from, to, at: performance.now() }); },
     impact(p, n, { decal = true, color = 0xffd27a, count = 8 } = {}) {
@@ -39,7 +40,19 @@ export function createFx() {
     },
     note(p, forced) { this.sprites.push({ kind: 'note', p, at: performance.now(), forced }); },
     muzzle(p, sprite = true) { this.flash = { p, at: performance.now(), sprite }; },
-    clear() { this.tracers = []; this.sparks = []; this.decals = []; this.sprites = []; this.decalDirty = true; },
+    grenade(gid, path) { this.grenades.push({ gid, path, at: performance.now() }); },
+    explosion(p) {
+      this.grenades = this.grenades.filter((g) => performance.now() - g.at < g.path.length * 16.7 - 30);
+      const cols = [0xffd27a, 0xff8a3a, 0xff5a2a, 0xfff2c0];
+      for (let i = 0; i < 90; i++) {
+        const a = Math.random() * Math.PI * 2; const e = Math.random() * 1.2; const sp = 3 + Math.random() * 9;
+        this.sparks.push({ p: [...p], v: [Math.cos(a) * Math.cos(e) * sp, Math.sin(e) * sp + 2, Math.sin(a) * Math.cos(e) * sp], life: 0, max: 0.4 + Math.random() * 0.5, color: cols[i % 4] });
+      }
+      for (let i = 0; i < 40; i++) this.sparks.push({ p: [p[0], p[1] + 0.3, p[2]], v: [(Math.random() - 0.5) * 4, 1 + Math.random() * 3, (Math.random() - 0.5) * 4], life: 0, max: 1.4 + Math.random(), color: 0x6a6a6a, dust: true });
+      this.flash = { p: [p[0], p[1] + 0.5, p[2]], at: performance.now(), sprite: true, big: true };
+      this.sprites.push({ kind: 'poof', p: [p[0], p[1] - 0.4, p[2]], at: performance.now() });
+    },
+    clear() { this.tracers = []; this.sparks = []; this.decals = []; this.sprites = []; this.grenades = []; this.decalDirty = true; },
   };
 }
 
@@ -94,6 +107,9 @@ export function Effects({ fx, quality }) {
   const spriteGroup = useRef();
   const sprites = useRef([]);
   const light = useRef();
+  const gren = useRef();
+  const grenGeo = useMemo(() => new THREE.SphereGeometry(0.08, 10, 8).scale(1, 1.3, 1), []);
+  const grenMat = useMemo(() => new THREE.MeshStandardMaterial({ color: 0x4a5a2a, roughness: 0.5, metalness: 0.4 }), []);
   const flashSprite = useRef();
   const tmp = useMemo(() => ({ o: new THREE.Object3D(), c: new THREE.Color(), n: new THREE.Vector3() }), []);
 
@@ -132,9 +148,19 @@ export function Effects({ fx, quality }) {
       im.count = fx.decals.length; im.instanceMatrix.needsUpdate = true;
     }
     // éclair du canon
-    const f = fx.flash; const on = f && now - f.at < 55;
-    if (light.current) { light.current.intensity = on ? 6 : 0; if (on) light.current.position.set(...f.p); }
-    if (flashSprite.current) { flashSprite.current.visible = !!on && f.sprite; if (on && f.sprite) { flashSprite.current.position.set(...f.p); flashSprite.current.material.rotation = Math.random() * 6; } }
+    const f = fx.flash; const on = f && now - f.at < (f?.big ? 220 : 55);
+    if (light.current) { light.current.intensity = on ? (f.big ? 40 : 6) : 0; light.current.distance = f?.big ? 16 : 7; if (on) light.current.position.set(...f.p); }
+    if (flashSprite.current) { flashSprite.current.visible = !!on && f.sprite; if (on && f.sprite) { flashSprite.current.scale.setScalar(f.big ? 4 : 0.5); flashSprite.current.position.set(...f.p); flashSprite.current.material.rotation = Math.random() * 6; } }
+    // grenades en vol
+    if (gren.current) {
+      fx.grenades = fx.grenades.filter((g) => now - g.at < g.path.length * 16.7);
+      const im = gren.current;
+      fx.grenades.forEach((g, i) => {
+        const k = Math.min(g.path.length - 1, Math.floor((now - g.at) / 16.7));
+        tmp.o.position.set(...g.path[k]); tmp.o.rotation.set(k * 0.3, k * 0.2, 0); tmp.o.scale.setScalar(1); tmp.o.updateMatrix(); im.setMatrixAt(i, tmp.o.matrix);
+      });
+      im.count = fx.grenades.length; im.instanceMatrix.needsUpdate = true;
+    }
     // notes de moquerie, explosions
     fx.sprites = fx.sprites.filter((s) => now - s.at < 1600);
     while (sprites.current.length < fx.sprites.length) { const s = new THREE.Sprite(noteMat.clone()); spriteGroup.current.add(s); sprites.current.push(s); }
@@ -153,6 +179,7 @@ export function Effects({ fx, quality }) {
       <lineSegments geometry={lineGeo} material={lineMat} frustumCulled={false} />
       <points geometry={sparkGeo} material={sparkMat} frustumCulled={false} />
       <instancedMesh ref={decals} args={[decalGeo, decalMat, MAX_DECALS]} frustumCulled={false} />
+      <instancedMesh ref={gren} args={[grenGeo, grenMat, 16]} frustumCulled={false} castShadow />
       <group ref={spriteGroup} />
       {quality !== 'low' && <pointLight ref={light} color={0xffc070} distance={7} decay={2} intensity={0} />}
       <sprite ref={flashSprite} scale={[0.5, 0.5, 1]} visible={false}><spriteMaterial map={FLASH_TEXTURE} transparent depthWrite={false} blending={THREE.AdditiveBlending} fog={false} toneMapped={false} /></sprite>

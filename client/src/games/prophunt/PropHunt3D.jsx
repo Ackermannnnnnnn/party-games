@@ -4,18 +4,19 @@ import { AnimatePresence } from 'framer-motion';
 import * as THREE from 'three';
 import { socket, SERVER_URL } from '../../lib/socket.js';
 import { serverNow } from '../blindtest/audio.js';
-import { getMap, PLAYER, WEAPON, TAUNTS, MODELS, modelBounds, canDisguiseAs } from './shared.js';
-import { World, buildMapMeshes, material, modelParts, rayModel, disguiseCollider, hitNormal, setQuality as setWorldQuality } from './world.js';
+import { getMap, PLAYER, WEAPONS, WEAPON_ORDER, ABILITIES, TAUNTS, MODELS, modelBounds, canDisguiseAs } from './shared.js';
+import { World, buildMapMeshes, material, modelParts, rayModel, disguiseCollider, hitNormal, grenadePath, setQuality as setWorldQuality } from './world.js';
 import { createInput, attachDesktop, attachTouch, isTouch } from './controls.js';
 import { sfx, loadCustomSounds } from './sfx.js';
 import { Environment } from './scene/env.jsx';
-import { HunterModel, PropModel, NameTag } from './scene/characters.jsx';
+import { PropModel, NameTag } from './scene/characters.jsx';
+import { loadCharacterBase, createHunterRig, loadWeapon } from './scene/rigs.js';
 import { Effects, createFx } from './scene/effects.jsx';
 import { createViewmodel } from './scene/viewmodel.js';
 import { preloadAssets } from './assets3d.js';
 import {
   RoleIntro, HunterBlind, TopBar, KillFeed, Crosshair, HealthCard, AmmoCard, PropCard, Soundboard,
-  DamageIndicator, RoundEnd, Scoreboard, Menu, TouchControls, PortraitHint,
+  DamageIndicator, RoundEnd, Scoreboard, Menu, TouchControls, PortraitHint, WeaponBar, RadarMarkers,
 } from './hud.jsx';
 
 /**
@@ -32,16 +33,17 @@ const defaultQuality = () => { try { return localStorage.getItem(QUALITY_KEY) ||
 export default function PropHunt3D({ p, playerId, isHost }) {
   const input = useMemo(() => createInput(), []);
   const fx = useMemo(() => createFx(), []);
-  const net = useRef({ snaps: new Map(), shown: new Map(), hitAt: 0, hurtAt: 0, hurtAngle: null });
+  const net = useRef({ snaps: new Map(), shown: new Map(), hitAt: 0, hurtAt: 0, hurtAngle: null, radar: null, notice: null });
   const me = useRef({
     pos: new THREE.Vector3(), vel: new THREE.Vector3(), onGround: false, lockedYaw: null, spawnKey: null, specIdx: 0,
-    safe: new THREE.Vector3(), safeAt: 0, colKey: '', ammo: WEAPON.mag, reloadUntil: 0, lastShot: 0, spread: 0, emptyClick: false, lastTaunt: 0, stepAt: 0,
+    safe: new THREE.Vector3(), safeAt: 0, colKey: '', ammo: { smg: WEAPONS.smg.mag, shotgun: WEAPONS.shotgun.mag, grenade: WEAPONS.grenade.mag }, weapon: 'smg', lastWeapon: 'shotgun',
+    reloadUntil: 0, reloadW: null, lastShot: 0, spread: 0, emptyClick: false, lastTaunt: 0, lastVentri: 0, stepAt: 0, myGrenades: new Map(), shake: 0,
   });
   const pRef = useRef(p); pRef.current = p;
   const [quality, setQualityState] = useState(defaultQuality);
   setWorldQuality(quality);
   const setQuality = (q) => { try { localStorage.setItem(QUALITY_KEY, q); } catch { /* */ } setQualityState(q); };
-  const [hud, setHud] = useState({ target: null, locked: false, ammo: WEAPON.mag, reloading: false, reloadPct: 0, spread: 0, noRoom: 0 });
+  const [hud, setHud] = useState({ target: null, locked: false, ammo: WEAPONS.smg.mag, weapon: 'smg', ammoAll: {}, reloading: false, reloadPct: 0, spread: 0, noRoom: 0 });
   const [scoreboard, setScoreboard] = useState(false);
   const [menu, setMenu] = useState(false);
   const [board, setBoard] = useState(false);
@@ -52,6 +54,7 @@ export default function PropHunt3D({ p, playerId, isHost }) {
   const [intro, setIntro] = useState(null);
   const layerRef = useRef(null);
   const world = useMemo(() => (p.mapId ? new World(getMap(p.mapId)) : null), [p.mapId]);
+  const worldRef = useRef(world); worldRef.current = world;
   const self = p.players.find((x) => x.id === playerId);
   if (import.meta.env.DEV && typeof window !== 'undefined') window.__ph = Object.assign(window.__ph || {}, { me, input, world, net });
 
@@ -107,17 +110,18 @@ export default function PropHunt3D({ p, playerId, isHost }) {
       const n = net.current;
       const listener = { x: me.current.pos.x, z: me.current.pos.z, yaw: input.yaw };
       if (e.type === 'snap') {
-        for (const [id, x, y, z, ry, pi, alive] of e.s) {
+        for (const [id, x, y, z, ry, pi, alive, w] of e.s) {
           if (id === playerId) continue;
           const arr = n.snaps.get(id) || [];
-          arr.push({ t: e.t, p: [x, y, z], ry, pi, alive });
+          arr.push({ t: e.t, p: [x, y, z], ry, pi, alive, w: w || 0 });
           while (arr.length > 8) arr.shift();
           n.snaps.set(id, arr);
         }
       } else if (e.type === 'shot') {
         if (e.by === playerId) return;
-        if (e.from && e.to) { fx.tracer(e.from, e.to); fx.impact(e.to, null, { decal: false, count: 5 }); fx.muzzle(e.from); }
-        sfx.shot(e.from, listener, false);
+        const tos = Array.isArray(e.to?.[0]) ? e.to : e.to ? [e.to] : [];
+        if (e.from) { for (const to of tos) { fx.tracer(e.from, to); fx.impact(to, null, { decal: false, count: 4 }); } fx.muzzle(e.from); }
+        if (e.w === 'shotgun') sfx.shotgun(e.from, listener, false); else sfx.shot(e.from, listener, false);
       } else if (e.type === 'hit') {
         if (e.by === playerId) { n.hitAt = performance.now(); sfx.hit(); }
         if (e.target === playerId) {
@@ -139,6 +143,20 @@ export default function PropHunt3D({ p, playerId, isHost }) {
         sfx.disguise(pos, listener);
       } else if (e.type === 'reload') {
         if (e.by !== playerId && e.p) sfx.reload();
+      } else if (e.type === 'throw') {
+        if (e.by !== playerId && worldRef.current) { fx.grenade(e.gid, grenadePath(worldRef.current, e.p, e.v, WEAPONS.grenade.fuseMs)); sfx.throwG(e.p, listener); }
+        else if (e.by === playerId) { const mine = me.current.myGrenades.get('pending'); if (mine) { me.current.myGrenades.delete('pending'); me.current.myGrenades.set(e.gid, mine); } }
+      } else if (e.type === 'boom') {
+        fx.explosion(e.p); sfx.explosion(e.p, listener);
+        const d = Math.hypot(e.p[0] - me.current.pos.x, e.p[2] - me.current.pos.z); me.current.shake = Math.max(me.current.shake, Math.max(0, 1 - d / 14));
+      } else if (e.type === 'melee') {
+        if (e.by !== playerId) sfx.swish(n.shown.get(e.by)?.p, listener);
+      } else if (e.type === 'radar') {
+        const myRole = pRef.current.players.find((x) => x.id === playerId)?.role;
+        if (myRole === 'hunter') { n.radar = { pts: e.pts, at: performance.now() }; sfx.radar(); } else n.notice = { text: '📡 Radar : les chasseurs voient où vous êtes !', at: performance.now() };
+      } else if (e.type === 'infected') {
+        sfx.infected();
+        n.notice = { text: e.target === playerId ? '🧟 Tu as été infecté : chasse les autres !' : `🧟 ${pRef.current.players.find((x) => x.id === e.target)?.pseudo || '?'} rejoint les chasseurs`, at: performance.now() };
       } else if (e.type === 'release') sfx.horn();
     };
     socket.on('game:event', onEv);
@@ -227,7 +245,11 @@ export default function PropHunt3D({ p, playerId, isHost }) {
 
         {alive && role && <HealthCard self={self} role={role} hud={hud} isTouch={isTouch} />}
         {alive && role === 'hunter' && !blind && <AmmoCard hud={hud} isTouch={isTouch} />}
-        {alive && role === 'prop' && <PropCard hud={hud} decoysLeft={(p.options?.decoys || 0) - myDecoys} tauntLeft={tauntLeft} isTouch={isTouch} />}
+        {alive && role === 'hunter' && !blind && <WeaponBar hud={hud} isTouch={isTouch} />}
+        {alive && role === 'hunter' && net.current.radar && now - net.current.radar.at < 3500 && <RadarMarkers pts={net.current.radar.pts} me={me.current} yaw={input.yaw} at={net.current.radar.at} />}
+        {net.current.notice && now - net.current.notice.at < 3500 && <p className="absolute left-1/2 top-24 -translate-x-1/2 rounded-full bg-black/65 backdrop-blur px-4 py-1.5 text-sm text-amber-200 whitespace-nowrap">{net.current.notice.text}</p>}
+        {p.options?.mode === 'infection' && <p className="absolute left-1/2 top-[86px] -translate-x-1/2 text-[11px] text-lime-300/90 drop-shadow">🧟 Mode infection</p>}
+        {alive && role === 'prop' && <PropCard hud={hud} decoysLeft={(p.options?.decoys || 0) - myDecoys} tauntLeft={tauntLeft} ventriLeft={Math.max(0, ABILITIES.ventriloquistMs - (Date.now() - me.current.lastVentri))} isTouch={isTouch} />}
         {(!alive || !role) && playing && (
           <p className="absolute bottom-24 left-1/2 -translate-x-1/2 rounded-full bg-black/60 backdrop-blur px-4 py-1.5 text-sm text-slate-200 whitespace-nowrap">
             {role ? '💀 Éliminé' : '👀 Tu joues à la prochaine manche'} · {isTouch ? 'touche « Suivant »' : 'clic'} pour changer de joueur
@@ -276,8 +298,8 @@ function Scene({ p, playerId, world, map, input, me, net, fx, pRef, setHud, qual
 /** Autre joueur : position interpolée entre deux instantanés du serveur. */
 function Remote({ pl, net, me, input, viewerRole }) {
   const g = useRef();
-  const anim = useRef({ speed: 0, pitch: 0 });
-  const last = useRef({ x: 0, z: 0, stepAt: 0 });
+  const anim = useRef({ speed: 0, pitch: 0, air: false, w: 0 });
+  const last = useRef({ x: 0, y: 0, z: 0, stepAt: 0 });
   useFrame((_, dt) => {
     const o = g.current; if (!o) return;
     const arr = net.current.snaps.get(pl.id);
@@ -292,9 +314,12 @@ function Remote({ pl, net, me, input, viewerRole }) {
     o.visible = pl.alive;
     const L = last.current;
     const sp = dt > 0 ? Math.hypot(o.position.x - L.x, o.position.z - L.z) / dt : 0;
+    const vy = dt > 0 ? (o.position.y - L.y) / dt : 0;
     anim.current.speed += (Math.min(9, sp) - anim.current.speed) * Math.min(1, dt * 8);
+    anim.current.air = Math.abs(vy) > 1.5;
     anim.current.pitch = a.pi + (b.pi - a.pi) * k;
-    L.x = o.position.x; L.z = o.position.z;
+    anim.current.w = b.w || 0;
+    L.x = o.position.x; L.y = o.position.y; L.z = o.position.z;
     // bruits de pas des chasseurs (les cachés, eux, se déplacent sans bruit)
     if (pl.role === 'hunter' && pl.alive && anim.current.speed > 1.5 && performance.now() - L.stepAt > (anim.current.speed > 6 ? 300 : 400)) {
       L.stepAt = performance.now();
@@ -312,10 +337,31 @@ function Remote({ pl, net, me, input, viewerRole }) {
   }
   return (
     <group ref={g}>
-      <HunterModel state={anim} />
-      <NameTag name={pl.pseudo} />
+      <HunterRig state={anim} skin={pl.skin || 'survivorMaleB'} />
+      <NameTag name={pl.level ? `${pl.pseudo} · niv. ${pl.level}` : pl.pseudo} y={2.25} />
     </group>
   );
+}
+
+/** Chasseur animé (modèle Kenney chargé une fois, une copie par joueur). */
+function HunterRig({ state, skin }) {
+  const holder = useRef();
+  const rig = useRef(null);
+  useEffect(() => {
+    let off = false;
+    loadCharacterBase().then((base) => {
+      if (off || !holder.current) return;
+      const r = createHunterRig(base, skin);
+      rig.current = r; holder.current.add(r.root);
+    }).catch(() => {});
+    return () => { off = true; if (rig.current && holder.current) holder.current.remove(rig.current.root); rig.current = null; };
+  }, [skin]);
+  useFrame((_, dt) => {
+    const r = rig.current; if (!r) return;
+    r.setWeapon(WEAPON_ORDER[state.current.w] || 'smg');
+    r.update(Math.min(0.05, dt), { speed: state.current.speed, pitch: state.current.pitch, air: state.current.air });
+  });
+  return <group ref={holder} />;
 }
 
 // ───────────────────────── Ton personnage ─────────────────────────
@@ -335,24 +381,34 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
   const self = p.players.find((x) => x.id === playerId);
   const [hlModel, setHlModel] = useState(null);
   useEffect(() => { overlay.current = vm.scene; return () => { overlay.current = null; }; }, [vm, overlay]);
+  useEffect(() => { for (const w of WEAPON_ORDER) loadWeapon(w).catch(() => {}); vm.setWeapon(me.current.weapon); }, [vm]); // eslint-disable-line react-hooks/exhaustive-deps
   if (import.meta.env.DEV && window.__ph) { window.__ph.camera = camera; window.__ph.scene = scene; }
 
-  // nouvelle manche : on se place au point de départ
+  // nouvelle manche (ou retour en jeu après infection) : on se place au point de départ
+  const sp = p.spawns?.[playerId];
+  const spawnKey = `${p.round}-${p.gameNo}-${sp?.[3] || 0}`;
   useEffect(() => {
-    const sp = p.spawns?.[playerId];
-    const key = `${p.round}-${p.gameNo}`;
-    if (sp && me.current.spawnKey !== key) {
+    if (sp && me.current.spawnKey !== spawnKey) {
       const m = me.current;
-      m.spawnKey = key;
+      m.spawnKey = spawnKey;
       m.pos.set(sp[0], sp[1], sp[2]); m.safe.copy(m.pos);
       m.vel.set(0, 0, 0); m.lockedYaw = null; m.colKey = '';
-      m.ammo = WEAPON.mag; m.reloadUntil = 0; m.spread = 0;
+      m.ammo = { smg: WEAPONS.smg.mag, shotgun: WEAPONS.shotgun.mag, grenade: WEAPONS.grenade.mag }; m.reloadUntil = 0; m.spread = 0; m.myGrenades.clear();
+      m.weapon = 'smg'; vm.setWeapon('smg');
       const [x1, x2, z1, z2] = world.map.area;
       input.yaw = Math.atan2(sp[0] - (x1 + x2) / 2, sp[2] - (z1 + z2) / 2); // face au centre de la map
       input.pitch = -0.05;
-      net.current.snaps.clear();
+      if (!sp[3]) net.current.snaps.clear();
     }
-  }, [p.round, p.gameNo, p.spawns]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [spawnKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const selectWeapon = (w) => {
+    const m = me.current;
+    if (!WEAPONS[w] || m.weapon === w) return;
+    if (w === 'grenade' && m.ammo.grenade <= 0) return;
+    m.lastWeapon = m.weapon; m.weapon = w; m.reloadUntil = 0; m.lastShot = 0;
+    vm.setWeapon(w); sfx.switchW();
+  };
 
   useFrame((_, rawDt) => {
     const dt = Math.min(0.05, rawDt);
@@ -365,6 +421,7 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
     const dis = meP?.disguise;
     const col = role === 'prop' && dis ? disguiseCollider(dis.m, dis.s) : { rx: PLAYER.radius, h: PLAYER.height };
     const now = performance.now();
+    const W = WEAPONS[m.weapon];
 
     // ── les autres joueurs sont solides (un chasseur ne traverse pas un objet… qui est un joueur)
     world.dynBoxes = [];
@@ -382,8 +439,9 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
 
     // ── déplacement
     const wish = input.wish();
+    const aiming = role === 'hunter' && input.aim && (m.weapon === 'smg' || m.weapon === 'shotgun');
     if (canMove) {
-      const speed = (input.sprint ? PLAYER.sprint : PLAYER.speed) * (role === 'prop' ? 1.05 : 1);
+      const speed = (input.sprint && !aiming ? PLAYER.sprint : PLAYER.speed) * (role === 'prop' ? 1.05 : 1) * (aiming ? 0.6 : 1) * (m.weapon === 'knife' ? 1.1 : 1);
       const fxv = -Math.sin(input.yaw); const fzv = -Math.cos(input.yaw);
       const rxv = Math.cos(input.yaw); const rzv = -Math.sin(input.yaw);
       const tx = (rxv * wish.x + fxv * wish.y) * speed; const tz = (rzv * wish.x + fzv * wish.y) * speed;
@@ -408,11 +466,14 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
     const yaw = input.yaw; const pitch = input.pitch;
     const dir = new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
     const firstPerson = alive && role === 'hunter';
+    m.shake *= Math.exp(-dt * 5);
+    const fov = aiming ? 52 : 74;
+    if (Math.abs(camera.fov - fov) > 0.1) { camera.fov += (fov - camera.fov) * Math.min(1, dt * 12); camera.updateProjectionMatrix(); }
     if (firstPerson) {
       bob.current += dt * (m.onGround ? hSpeed * 1.6 : 0);
-      const by = Math.sin(bob.current * 2) * 0.035 * Math.min(1, hSpeed / 5);
+      const by = Math.sin(bob.current * 2) * 0.035 * Math.min(1, hSpeed / 5) * (aiming ? 0.3 : 1);
       camera.position.set(m.pos.x, m.pos.y + PLAYER.eye + by, m.pos.z);
-      camera.rotation.set(pitch, yaw, 0, 'YXZ');
+      camera.rotation.set(pitch + (Math.random() - 0.5) * m.shake * 0.05, yaw + (Math.random() - 0.5) * m.shake * 0.05, 0, 'YXZ');
     } else {
       // 3ᵉ personne : derrière toi (ou derrière le joueur que tu regardes si tu es éliminé)
       let pivot; let size = 1.5;
@@ -444,9 +505,16 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
 
     // ── arme du chasseur
     vm.scene.environment = scene.environment;
-    vm.update(camera, dt, { yaw, pitch, moving: Math.min(1, hSpeed / 6), grounded: m.onGround, visible: firstPerson && P.phase === 'HUNT' });
-    if (m.reloadUntil && now >= m.reloadUntil) { m.reloadUntil = 0; m.ammo = WEAPON.mag; }
+    vm.update(camera, dt, { yaw, pitch, moving: Math.min(1, hSpeed / 6), grounded: m.onGround, visible: firstPerson && P.phase === 'HUNT', aim: aiming });
+    if (m.reloadUntil && now >= m.reloadUntil) { m.reloadUntil = 0; if (m.reloadW) m.ammo[m.reloadW] = WEAPONS[m.reloadW].mag; }
     m.spread = Math.max(0, m.spread - dt * 0.05);
+    // mes grenades : quand la mèche est consumée, on annonce l'explosion
+    for (const [gid, g] of m.myGrenades) {
+      if (gid !== 'pending' && now - g.at >= WEAPONS.grenade.fuseMs) {
+        m.myGrenades.delete(gid);
+        socket.emit('game:action', { type: 'boom', payload: { gid, p: g.path[g.path.length - 1].map((v) => Math.round(v * 100) / 100) } });
+      }
+    }
 
     // ── objet visé (cachés)
     if (role === 'prop' && alive && playing) {
@@ -466,21 +534,22 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
       if ((target?.m || null) !== (hlModel || null)) setHlModel(target?.m || null);
     } else if (hl.current) { hl.current.visible = false; targetRef.current = null; }
 
-    // ── tir automatique (chasseur)
-    if (role === 'hunter' && alive && P.phase === 'HUNT') {
+    // ── tir (chasseur)
+    const hunting = role === 'hunter' && alive && P.phase === 'HUNT';
+    if (hunting && W.auto) {
       const reloading = m.reloadUntil > now;
       if (input.fire && !reloading) {
-        if (m.ammo <= 0) {
+        if (m.ammo[m.weapon] <= 0) {
           if (!m.emptyClick) { m.emptyClick = true; sfx.empty(); startReload(m, vm); }
         } else {
           // plusieurs tirs par image si l'appareil est lent (cadence constante)
-          if (now - m.lastShot > WEAPON.fireMs * 3) m.lastShot = now - WEAPON.fireMs;
+          if (now - m.lastShot > W.fireMs * 3) m.lastShot = now - W.fireMs;
           let n = 0;
-          while (now - m.lastShot >= WEAPON.fireMs && m.ammo > 0 && n < 3) {
-            m.lastShot += WEAPON.fireMs; m.ammo -= 1; n += 1;
-            shoot(camera, dir, P, playerId, world, net, fx, vm, m, hSpeed);
+          while (now - m.lastShot >= W.fireMs && m.ammo[m.weapon] > 0 && n < 3) {
+            m.lastShot += W.fireMs; m.ammo[m.weapon] -= 1; n += 1;
+            shoot(camera, dir, P, playerId, world, net, fx, vm, m, hSpeed, aiming);
           }
-          if (m.ammo === 0) setTimeout(() => startReload(m, vm), 250);
+          if (m.ammo[m.weapon] === 0) setTimeout(() => startReload(m, vm), 250);
         }
       }
       if (!input.fire) m.emptyClick = false;
@@ -489,7 +558,30 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
     // ── actions
     for (const a of input.take()) {
       if (!alive || !role) { if (a === 'action' || a === 'next') m.specIdx += 1; continue; }
-      if (role === 'hunter' && (a === 'lock' || a === 'reload')) startReload(m, vm);
+      if (role === 'hunter') {
+        if (a === 'lock' || a === 'reload') startReload(m, vm);
+        if (a.startsWith('num:')) selectWeapon(WEAPON_ORDER[Number(a.slice(4)) - 1]);
+        if (a === 'wheel+' || a === 'wheel-') {
+          const list = WEAPON_ORDER.filter((w) => w !== 'grenade' || m.ammo.grenade > 0);
+          const i = list.indexOf(m.weapon); selectWeapon(list[(i + (a === 'wheel+' ? 1 : list.length - 1)) % list.length]);
+        }
+        if (a === 'lastWeapon') selectWeapon(m.lastWeapon);
+        if (a === 'action' && hunting && !W.auto && now - m.lastShot >= W.fireMs) {
+          if (m.weapon === 'shotgun') {
+            if (m.reloadUntil > now) continue;
+            if (m.ammo.shotgun <= 0) { sfx.empty(); startReload(m, vm); continue; }
+            m.lastShot = now; m.ammo.shotgun -= 1;
+            shoot(camera, dir, P, playerId, world, net, fx, vm, m, hSpeed, aiming);
+            if (m.ammo.shotgun === 0) setTimeout(() => startReload(m, vm), 600);
+          } else if (m.weapon === 'knife') {
+            m.lastShot = now; melee(camera, dir, P, playerId, world, net, fx, vm);
+          } else if (m.weapon === 'grenade' && m.ammo.grenade > 0) {
+            m.lastShot = now; m.ammo.grenade -= 1;
+            throwGrenade(camera, dir, world, fx, vm, m);
+            if (m.ammo.grenade <= 0) setTimeout(() => selectWeapon('smg'), 600);
+          }
+        }
+      }
       if (role === 'prop') {
         if (a === 'board') { setBoard((b) => !b); continue; }
         if (a.startsWith('num:') && boardRef.current) { const s = soundListRef.current[Number(a.slice(4)) - 1]; if (s) pickRef.current(s.id); continue; }
@@ -503,6 +595,15 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
         if (a === 'lock' || a === 'alt') m.lockedYaw = m.lockedYaw === null ? yaw : null;
         if (a === 'taunt') { const l = soundListRef.current; if (l.length) pickRef.current(l[Math.floor(Math.random() * l.length)].id); }
         if (a === 'decoy') socket.emit('game:action', { type: 'decoy', payload: {} });
+        if (a === 'ventri' && P.phase === 'HUNT' && Date.now() - m.lastVentri >= ABILITIES.ventriloquistMs) {
+          // ventriloque : la moquerie retentit là où tu regardes (jusqu'à 30 m)
+          const hit = world.raycast(camera.position, dir, ABILITIES.ventriloquistRange + 8);
+          const pt = camera.position.clone().addScaledVector(dir, hit ? Math.max(0.5, hit.t - 0.3) : ABILITIES.ventriloquistRange);
+          if (pt.distanceTo(m.pos) > ABILITIES.ventriloquistRange) pt.sub(m.pos).setLength(ABILITIES.ventriloquistRange).add(m.pos);
+          m.lastVentri = Date.now();
+          const l = soundListRef.current;
+          socket.emit('game:action', { type: 'ventriloquist', payload: { p: [pt.x, pt.y, pt.z].map((v) => Math.round(v * 100) / 100), sound: l.length ? l[Math.floor(Math.random() * l.length)].id : null } });
+        }
       }
     }
 
@@ -511,19 +612,19 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
       lastHud.current = now;
       const reloading = m.reloadUntil > now;
       const next = {
-        target: targetRef.current, locked: m.lockedYaw !== null, ammo: m.ammo, reloading,
-        reloadPct: reloading ? 1 - (m.reloadUntil - now) / WEAPON.reloadMs : 0,
-        spread: Math.min(0.03, m.spread + (hSpeed > 1 ? 0.004 : 0) + (m.onGround ? 0 : 0.01)), noRoom: noRoomAt.current,
+        target: targetRef.current, locked: m.lockedYaw !== null, ammo: m.ammo[m.weapon] ?? 0, weapon: m.weapon, ammoAll: { ...m.ammo }, reloading,
+        reloadPct: reloading && m.reloadW ? 1 - (m.reloadUntil - now) / WEAPONS[m.reloadW].reloadMs : 0,
+        spread: Math.min(0.03, (aiming ? 0.3 : 1) * (m.spread + (hSpeed > 1 ? 0.004 : 0) + (m.onGround ? 0 : 0.01))) + (m.weapon === 'shotgun' ? 0.02 : 0), noRoom: noRoomAt.current,
       };
-      setHud((h) => (h.target?.index === next.target?.index && h.locked === next.locked && h.ammo === next.ammo && h.reloading === next.reloading
-        && Math.abs(h.reloadPct - next.reloadPct) < 0.04 && Math.abs(h.spread - next.spread) < 0.001 && h.noRoom === next.noRoom ? h : next));
+      setHud((h) => (h.target?.index === next.target?.index && h.locked === next.locked && h.ammo === next.ammo && h.weapon === next.weapon && h.reloading === next.reloading
+        && h.ammoAll.grenade === next.ammoAll.grenade && Math.abs(h.reloadPct - next.reloadPct) < 0.04 && Math.abs(h.spread - next.spread) < 0.001 && h.noRoom === next.noRoom ? h : next));
     }
 
     // ── envoi de ma position
     if (alive && playing && now - lastSend.current > SEND_MS) {
       lastSend.current = now;
       const ry = role === 'prop' ? (m.lockedYaw ?? yaw) : yaw;
-      socket.volatile.emit('game:action', { type: 'pos', payload: { p: [m.pos.x, m.pos.y, m.pos.z], ry, pi: pitch } });
+      socket.volatile.emit('game:action', { type: 'pos', payload: { p: [m.pos.x, m.pos.y, m.pos.z], ry, pi: pitch, w: WEAPON_ORDER.indexOf(m.weapon) } });
     }
   });
 
@@ -539,46 +640,87 @@ function Local({ p, playerId, world, input, me, net, fx, pRef, setHud, overlay, 
 
 function startReload(m, vm) {
   const now = performance.now();
-  if (m.reloadUntil > now || m.ammo >= WEAPON.mag) return;
-  m.reloadUntil = now + WEAPON.reloadMs;
-  vm.reload(WEAPON.reloadMs);
+  const w = m.weapon;
+  const W = WEAPONS[w];
+  if (!W.reloadMs || m.reloadUntil > now || m.ammo[w] >= W.mag) return;
+  m.reloadUntil = now + W.reloadMs; m.reloadW = w;
+  vm.reload(W.reloadMs);
   sfx.reload();
-  socket.emit('game:action', { type: 'reload', payload: {} });
+  socket.emit('game:action', { type: 'reload', payload: { w } });
 }
 
-/** Tir du chasseur : ce que vise le centre de l'écran (joueur caché, leurre, objet ou mur), avec dispersion. */
-function shoot(camera, aim, P, playerId, world, net, fx, vm, m, hSpeed) {
-  const origin = camera.position.clone();
-  const spread = WEAPON.spread + m.spread + (hSpeed > 1 ? 0.004 : 0);
-  const dir = aim.clone().add(new THREE.Vector3((Math.random() - 0.5) * 2 * spread, (Math.random() - 0.5) * 2 * spread, (Math.random() - 0.5) * 2 * spread)).normalize();
-  m.spread = Math.min(0.025, m.spread + 0.0035);
+const r2 = (v) => v.map((x) => Math.round(x * 100) / 100);
+
+/** Ce que touche un rayon : joueur caché, leurre ou décor (objet qu'on peut imiter = pénalité). */
+function traceShot(origin, dir, P, playerId, world, net, range) {
   let best = null;
   for (const pl of P.players) {
     const shown = net.current.shown.get(pl.id);
     if (pl.id === playerId || pl.role !== 'prop' || !pl.alive || !shown || !pl.disguise) continue;
     const t = rayModel(origin, dir, pl.disguise.m, pl.disguise.s, shown.p, shown.ry);
-    if (t !== null && t < WEAPON.range && (!best || t < best.t)) best = { t, hit: { kind: 'player', id: pl.id } };
+    if (t !== null && t < range && (!best || t < best.t)) best = { t, hit: { kind: 'player', id: pl.id } };
   }
   for (const d of P.decoys || []) {
     const t = rayModel(origin, dir, d.m, d.s, d.p, d.ry);
-    if (t !== null && t < WEAPON.range && (!best || t < best.t)) best = { t, hit: { kind: 'decoy', id: d.id } };
+    if (t !== null && t < range && (!best || t < best.t)) best = { t, hit: { kind: 'decoy', id: d.id } };
   }
-  const w = world.raycast(origin, dir, WEAPON.range);
+  const w = world.raycast(origin, dir, range);
   let wn = null;
   if (w && (!best || w.t < best.t)) {
     const o = w.kind === 'object' ? world.objects[w.index].o : null;
     best = { t: w.t, hit: { kind: o && !w.static && canDisguiseAs(o) ? 'object' : 'world' } };
     wn = hitNormal(w, origin.clone().addScaledVector(dir, w.t));
   }
-  const t = best ? best.t : WEAPON.range;
-  const to = origin.clone().addScaledVector(dir, t).toArray();
+  return { best, wn };
+}
+
+/** Tir (mitraillette : une balle ; fusil à pompe : 8 plombs). */
+function shoot(camera, aim, P, playerId, world, net, fx, vm, m, hSpeed, aiming) {
+  const W = WEAPONS[m.weapon];
+  const origin = camera.position.clone();
+  const spread = (W.spread + (W.pellets > 1 ? 0 : m.spread) + (hSpeed > 1 ? 0.004 : 0)) * (aiming ? (W.pellets > 1 ? 0.7 : 0.3) : 1);
+  if (W.pellets === 1) m.spread = Math.min(0.025, m.spread + 0.0035);
   const from = vm.muzzleWorld();
-  fx.tracer(from, to);
-  if (best) fx.impact(to, wn, { decal: !!wn && best.hit.kind !== 'player', color: best.hit.kind === 'player' ? 0x5eead4 : 0xffd27a });
+  const hits = []; const tos = [];
+  let penalty = false; let playerHit = false;
+  for (let i = 0; i < W.pellets; i++) {
+    const dir = aim.clone().add(new THREE.Vector3((Math.random() - 0.5) * 2 * spread, (Math.random() - 0.5) * 2 * spread, (Math.random() - 0.5) * 2 * spread)).normalize();
+    const { best, wn } = traceShot(origin, dir, P, playerId, world, net, W.range);
+    const to = origin.clone().addScaledVector(dir, best ? best.t : W.range).toArray();
+    tos.push(r2(to)); hits.push(best?.hit || { kind: 'none' });
+    if (i < 4 || W.pellets === 1) fx.tracer(from, to);
+    if (best) fx.impact(to, wn, { decal: !!wn && best.hit.kind !== 'player', color: best.hit.kind === 'player' ? 0x5eead4 : 0xffd27a, count: W.pellets > 1 ? 3 : 8 });
+    if (best?.hit.kind === 'object' || best?.hit.kind === 'decoy') penalty = true;
+    if (best?.hit.kind === 'player') playerHit = true;
+    if (i === 0 && best && best.hit.kind !== 'player') sfx.impact(to, { x: origin.x, z: origin.z, yaw: 0 });
+  }
   fx.muzzle(from, false);
-  vm.kick();
-  sfx.shot(null, null, true);
-  if (best && best.hit.kind !== 'player') sfx.impact(to, { x: origin.x, z: origin.z, yaw: 0 });
-  if (best?.hit.kind === 'object' || best?.hit.kind === 'decoy') sfx.penalty();
-  socket.emit('game:action', { type: 'shoot', payload: { hit: best?.hit || { kind: 'none' }, from: from.map((v) => Math.round(v * 100) / 100), to: to.map((v) => Math.round(v * 100) / 100) } });
+  vm.kick(W.pellets > 1 ? 2.4 : 1);
+  if (W.pellets > 1) { sfx.shotgun(null, null, true); m.shake = Math.max(m.shake, 0.35); } else sfx.shot(null, null, true);
+  if (penalty && !playerHit) sfx.penalty();
+  socket.emit('game:action', { type: 'shoot', payload: { w: m.weapon, hits, from: r2(from), to: W.pellets > 1 ? tos : tos[0] } });
+}
+
+/** Coup de couteau : ce qui est devant, à portée de bras. */
+function melee(camera, dir, P, playerId, world, net, fx, vm) {
+  vm.swing(); sfx.swish(null, null);
+  const { best, wn } = traceShot(camera.position.clone(), dir, P, playerId, world, net, WEAPONS.knife.range);
+  if (best) {
+    const to = camera.position.clone().addScaledVector(dir, best.t).toArray();
+    fx.impact(to, wn, { decal: false, count: 6, color: best.hit.kind === 'player' ? 0x5eead4 : 0xcccccc });
+    sfx.impact(to, null);
+  }
+  socket.emit('game:action', { type: 'melee', payload: { hit: best?.hit || { kind: 'none' } } });
+}
+
+/** Lancer de grenade : trajectoire calculée ici (et chez les autres à partir du même départ). */
+function throwGrenade(camera, dir, world, fx, vm, m) {
+  vm.throwAnim(); sfx.pin(); sfx.throwG(null, null);
+  const start = camera.position.clone().addScaledVector(dir, 0.5); start.y -= 0.1;
+  const v = dir.clone().multiplyScalar(WEAPONS.grenade.speed); v.y += 3;
+  const p0 = r2(start.toArray()); const v0 = r2(v.toArray());
+  const path = grenadePath(world, p0, v0, WEAPONS.grenade.fuseMs);
+  fx.grenade('mine', path);
+  m.myGrenades.set('pending', { path, at: performance.now() });
+  socket.emit('game:action', { type: 'throw', payload: { p: p0, v: v0 } });
 }

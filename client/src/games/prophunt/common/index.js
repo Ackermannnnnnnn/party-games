@@ -30,5 +30,18 @@ export const TAUNTS = [
 
 export const PLAYER = { radius: 0.32, height: 1.8, eye: 1.62, speed: 5.2, sprint: 7.6, jump: 5.6, gravity: 16, step: 0.45 };
 
-/** Arme des chasseurs : fusil automatique. */
-export const WEAPON = { mag: 30, fireMs: 105, reloadMs: 2000, damage: 12, penalty: 3, range: 80, spread: 0.006 };
+/**
+ * Armes des chasseurs. penalty = vie perdue par plomb/balle qui touche un vrai objet ou un leurre.
+ * grenade : dégâts au centre, décroissants jusqu'au rayon ; 2 par manche.
+ */
+export const WEAPONS = {
+  smg: { id: 'smg', name: 'Mitraillette', slot: 1, mag: 30, fireMs: 105, reloadMs: 2000, damage: 12, pellets: 1, spread: 0.006, range: 80, auto: true, penalty: 3, icon: '🔫' },
+  shotgun: { id: 'shotgun', name: 'Fusil à pompe', slot: 2, mag: 6, fireMs: 850, reloadMs: 2500, damage: 10, pellets: 8, spread: 0.05, range: 35, auto: false, penalty: 1, icon: '💥' },
+  grenade: { id: 'grenade', name: 'Grenade', slot: 3, mag: 2, fireMs: 1000, damage: 95, radius: 4.5, fuseMs: 2000, speed: 14, perRound: true, icon: '💣' },
+  knife: { id: 'knife', name: 'Couteau', slot: 4, mag: 0, fireMs: 450, damage: 40, range: 2.3, penalty: 2, icon: '🔪' },
+};
+export const WEAPON_ORDER = ['smg', 'shotgun', 'grenade', 'knife'];
+/** Compatibilité : l'arme par défaut. */
+export const WEAPON = WEAPONS.smg;
+/** Capacités des cachés. */
+export const ABILITIES = { ventriloquistMs: 15000, ventriloquistRange: 30, radarFromMs: 60000, radarEveryMs: 15000 };

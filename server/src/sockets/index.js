@@ -4,6 +4,7 @@ import { schemas, validate } from '../utils/schemas.js';
 import { getGameClass, listGames } from '../games/registry.js';
 import { logger } from '../utils/logger.js';
 import { storePhoto } from '../utils/photos.js';
+import { profileStore, KEY_RE, SKIN_LEVELS, levelOf } from '../profiles/profiles.js';
 
 const KICK_BAN_MS = 10 * 60 * 1000;
 
@@ -50,6 +51,33 @@ export function registerSocketHandlers(io, socket) {
     if (parsed.avatar && parsed.avatar !== 'photo:local') return parsed.avatar;
     return fallback;
   };
+
+  // ───────── PROFIL (progression) ─────────
+  // Le navigateur envoie sa clé de profil après avoir rejoint une room
+  on('profile:hello', (data) => {
+    const key = typeof data?.key === 'string' ? data.key.toLowerCase() : '';
+    const { room, player } = _getContext(socket);
+    if (!KEY_RE.test(key) || !player) return;
+    player.profileKey = key;
+    profileStore.get(key).then((p) => {
+      player.skin = p.skin || 'survivorMaleB';
+      player.level = levelOf(p.xp);
+      if (room?.gameInstance) room.emitGameState();
+    }).catch(() => {});
+  });
+  on('profile:set', (data) => {
+    const { room, player } = _getContext(socket);
+    if (!player?.profileKey) return;
+    const skin = typeof data?.skin === 'string' ? data.skin : null;
+    profileStore.get(player.profileKey).then(async (p) => {
+      if (skin && SKIN_LEVELS[skin] && levelOf(p.xp) >= SKIN_LEVELS[skin]) {
+        await profileStore.update(player.profileKey, (pr) => { pr.skin = skin; });
+        player.skin = skin;
+        socket.emit('profile:updated', { skin });
+        if (room?.gameInstance) room.emitGameState();
+      }
+    }).catch(() => {});
+  });
 
   // ───────── ROOMS ─────────
   on('room:create', (data) => {

@@ -18,6 +18,7 @@ export function createInput() {
     jump: false,
     sprint: false,
     fire: false,           // clic maintenu (tir automatique)
+    aim: false,            // clic droit maintenu (viser)
     // actions ponctuelles (consommées par la boucle de jeu)
     queue: [],
     sensitivity: (() => { try { return Number(localStorage.getItem(SENS_KEY)) || 1; } catch { return 1; } })(),
@@ -62,6 +63,8 @@ export function attachDesktop(input, el, { onScoreboard } = {}) {
     if (e.code === 'KeyV') input.push('view');
     if (e.code === 'KeyT') input.push('board');
     if (e.code === 'KeyC') input.push('crouch');
+    if (e.code === 'KeyX') input.push('ventri');
+    if (e.code === 'KeyQ') input.push('lastWeapon');
     const dg = /^Digit([0-9])$/.exec(e.code) || /^Numpad([0-9])$/.exec(e.code);
     if (dg) input.push(`num:${dg[1] === '0' ? 10 : Number(dg[1])}`);
   };
@@ -76,10 +79,11 @@ export function attachDesktop(input, el, { onScoreboard } = {}) {
     if (!input.enabled) return;
     if (document.pointerLockElement !== el) { el.requestPointerLock?.()?.catch?.(() => {}); return; }
     if (e.button === 0) { input.push('action'); input.fire = true; }
-    if (e.button === 2) input.push('alt');
+    if (e.button === 2) { input.push('alt'); input.aim = true; }
   };
-  const release = (e) => { if (e.button === 0) input.fire = false; };
-  const lockChange = () => { input.locked = document.pointerLockElement === el; if (!input.locked) { input.keys.clear(); input.jump = false; input.sprint = false; input.fire = false; } };
+  const release = (e) => { if (e.button === 0) input.fire = false; if (e.button === 2) input.aim = false; };
+  const wheel = (e) => { if (document.pointerLockElement === el && input.enabled) input.push(e.deltaY > 0 ? 'wheel+' : 'wheel-'); };
+  const lockChange = () => { input.locked = document.pointerLockElement === el; if (!input.locked) { input.keys.clear(); input.jump = false; input.sprint = false; input.fire = false; input.aim = false; } };
   const ctx = (e) => e.preventDefault();
   window.addEventListener('keydown', down);
   window.addEventListener('keyup', up);
@@ -87,6 +91,7 @@ export function attachDesktop(input, el, { onScoreboard } = {}) {
   document.addEventListener('pointerlockchange', lockChange);
   el.addEventListener('mousedown', click);
   window.addEventListener('mouseup', release);
+  window.addEventListener('wheel', wheel, { passive: true });
   el.addEventListener('contextmenu', ctx);
   const blur = () => { input.keys.clear(); input.jump = false; input.sprint = false; input.fire = false; };
   window.addEventListener('blur', blur);
@@ -97,6 +102,7 @@ export function attachDesktop(input, el, { onScoreboard } = {}) {
     document.removeEventListener('pointerlockchange', lockChange);
     el.removeEventListener('mousedown', click);
     window.removeEventListener('mouseup', release);
+    window.removeEventListener('wheel', wheel);
     el.removeEventListener('contextmenu', ctx);
     window.removeEventListener('blur', blur);
     if (document.pointerLockElement === el) document.exitPointerLock?.();

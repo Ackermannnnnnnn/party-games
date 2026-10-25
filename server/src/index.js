@@ -10,6 +10,7 @@ import { createAdminRouter } from './admin/router.js';
 import { getPhoto } from './utils/photos.js';
 import { liveState, liveImage } from './admin/liveAvatars.js';
 import { liveSounds, soundFile } from './admin/sounds.js';
+import { profileStore, KEY_RE, ACHIEVEMENTS, SKIN_LEVELS, TITLES } from './profiles/profiles.js';
 
 const PORT = process.env.PORT || 3001;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://partygrid.click';
@@ -62,6 +63,21 @@ app.get('/sounds/file/:id', async (req, res) => {
     res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     res.send(f.buf);
   } catch { res.status(502).end(); }
+});
+
+// Profil de progression (clé secrète du navigateur)
+app.get('/profiles/:key', async (req, res) => {
+  const key = String(req.params.key).toLowerCase();
+  if (!KEY_RE.test(key)) return res.status(400).json({ error: 'Clé invalide' });
+  try {
+    const p = await profileStore.get(key);
+    res.set('Cache-Control', 'no-store');
+    res.json({
+      profile: profileStore.publicView(p),
+      achievements: Object.entries(ACHIEVEMENTS).map(([id, a]) => ({ id, name: a.name, desc: a.desc, icon: a.icon })),
+      skins: SKIN_LEVELS, titles: TITLES,
+    });
+  } catch { res.status(502).json({ error: 'Profil indisponible' }); }
 });
 
 // Routes admin (CRUD questions Quiz + paires Imposter)

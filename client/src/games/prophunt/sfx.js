@@ -128,6 +128,25 @@ export const sfx = {
     if (String(sound).startsWith('c:')) { const s = custom.get(sound.slice(2)); if (s) { playBuffer(s.buffer, s, d); return; } }
     (TAUNT_SOUNDS[sound] || TAUNT_SOUNDS.boing)(d, c.currentTime);
   },
+  shotgun(pos, listener, mine) {
+    const c = ac(); if (!c) return; const t = c.currentTime; const d = out(pos, listener, mine ? 0.9 : 1.1);
+    noise(d, t, 0.012, { type: 'highpass', freq: 900, gain: 1.4, attack: 0.0005 });
+    noise(d, t, 0.45, { type: 'lowpass', freq: 2200, sweep: 200, gain: 1.1, attack: 0.001 });
+    tone(d, t, 0.3, { freq: 110, end: 40, gain: 0.9, attack: 0.001 });
+    noise(d, t + 0.35, 0.06, { freq: 1500, q: 3, gain: 0.5 }); noise(d, t + 0.5, 0.06, { freq: 1100, q: 3, gain: 0.5 });
+  },
+  explosion(pos, listener) {
+    const c = ac(); if (!c) return; const t = c.currentTime; const d = out(pos, listener, 1.6);
+    noise(d, t, 1.4, { type: 'lowpass', freq: 1200, sweep: 60, gain: 1.4, attack: 0.002 });
+    tone(d, t, 0.8, { freq: 70, end: 25, gain: 1.0, attack: 0.002 });
+    noise(d, t, 0.05, { type: 'highpass', freq: 600, gain: 1.2, attack: 0.0005 });
+  },
+  swish(pos, listener) { const c = ac(); if (!c) return; const d = out(pos, listener, 0.6); noise(d, c.currentTime, 0.18, { type: 'bandpass', freq: 3000, sweep: 900, q: 2, gain: 0.6, attack: 0.03 }); },
+  throwG(pos, listener) { const c = ac(); if (!c) return; const t = c.currentTime; const d = out(pos, listener, 0.6); noise(d, t, 0.04, { freq: 4000, q: 6, gain: 0.5 }); noise(d, t + 0.1, 0.25, { type: 'bandpass', freq: 1800, sweep: 600, q: 2, gain: 0.35, attack: 0.03 }); },
+  pin() { const c = ac(); if (!c) return; const d = out(null, null, 0.5); tone(d, c.currentTime, 0.06, { freq: 2600, type: 'square', gain: 0.06 }); noise(d, c.currentTime, 0.04, { freq: 5000, q: 8, gain: 0.4 }); },
+  switchW() { const c = ac(); if (!c) return; const t = c.currentTime; const d = out(null, null, 0.4); noise(d, t, 0.04, { freq: 2200, q: 5, gain: 0.5 }); noise(d, t + 0.12, 0.05, { freq: 3200, q: 6, gain: 0.5 }); },
+  radar() { const c = ac(); if (!c) return; const t = c.currentTime; const d = out(null, null, 0.4); tone(d, t, 0.18, { freq: 1200, type: 'sine', gain: 0.2 }); tone(d, t + 0.2, 0.25, { freq: 1600, type: 'sine', gain: 0.15 }); },
+  infected() { const c = ac(); if (!c) return; const t = c.currentTime; const d = out(null, null, 0.6); tone(d, t, 0.8, { freq: 220, end: 110, type: 'sawtooth', gain: 0.2, vibrato: 15 }); tone(d, t + 0.1, 0.7, { freq: 330, end: 140, type: 'sawtooth', gain: 0.12, vibrato: 18 }); },
   reload() { const c = ac(); if (!c) return; const t = c.currentTime; const d = out(null, null, 0.6); noise(d, t, 0.05, { freq: 2500, q: 4, gain: 0.5 }); noise(d, t + 0.9, 0.06, { freq: 1800, q: 3, gain: 0.6 }); noise(d, t + 1.6, 0.05, { freq: 3200, q: 5, gain: 0.6 }); tone(d, t + 1.62, 0.05, { freq: 900, type: 'square', gain: 0.08 }); },
   empty() { const c = ac(); if (!c) return; const d = out(null, null, 0.5); noise(d, c.currentTime, 0.03, { freq: 3500, q: 6, gain: 0.5 }); },
   impact(pos, listener) { const c = ac(); if (!c) return; const d = out(pos, listener, 0.35); noise(d, c.currentTime, 0.07, { freq: 1600, q: 1.5, gain: 0.5 }); },

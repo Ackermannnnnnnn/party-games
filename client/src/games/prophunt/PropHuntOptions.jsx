@@ -1,14 +1,23 @@
 import { useGameOptions } from '../../hooks/useGameOptions.js';
+import { lazy, Suspense, useState } from 'react';
 import { MAP_LIST } from './common/mapList.js';
 
-const DEFAULT_OPTS = { map: 'rotate', rounds: 0, huntSec: 240, hideSec: 45, hunters: 'auto', tauntSec: 45, decoys: 2 };
+const ProfilePanel = lazy(() => import('./ProfilePanel.jsx'));
+
+const DEFAULT_OPTS = { map: 'rotate', mode: 'classic', rounds: 0, huntSec: 240, hideSec: 45, hunters: 'auto', tauntSec: 45, decoys: 2 };
 
 export default function PropHuntOptions({ playerCount, onStart }) {
   const [rawOpts, setOpts, isHost] = useGameOptions('prophunt', DEFAULT_OPTS);
   const opts = { ...DEFAULT_OPTS, ...rawOpts };
   const set = (k, v) => isHost && setOpts((o) => ({ ...DEFAULT_OPTS, ...o, [k]: v }));
+  const [profile, setProfile] = useState(false);
   return (
     <div className="space-y-5">
+      <button type="button" onClick={() => setProfile(true)} className="w-full flex items-center justify-between rounded-xl bg-gradient-to-r from-teal-400/15 to-amber-300/10 ring-1 ring-teal-300/30 px-4 py-3 text-left hover:from-teal-400/25">
+        <span><span className="block font-semibold text-slate-50">🎖️ Mon profil</span><span className="block text-xs text-slate-400">Niveau, XP, succès, tenues de chasseur à débloquer</span></span>
+        <span className="text-slate-300">›</span>
+      </button>
+      {profile && <Suspense fallback={null}><ProfilePanel onClose={() => setProfile(false)} /></Suspense>}
       <div className="rounded-xl bg-white/[0.03] ring-1 ring-white/[0.06] p-3 text-sm text-slate-300 space-y-1">
         <p><b className="text-slate-100">Les cachés</b> se transforment en objets du décor et se cachent. <b className="text-slate-100">Les chasseurs</b>, aveuglés pendant ce temps, tirent ensuite sur ce qui leur paraît suspect… mais chaque tir sur un vrai objet leur coûte de la vie.</p>
         <p className="text-xs text-slate-400">PC : ZQSD/WASD + souris. Téléphone et tablette : joystick et boutons à l'écran, à jouer en paysage.</p>
@@ -20,6 +29,19 @@ export default function PropHuntOptions({ playerCount, onStart }) {
           {[{ id: 'rotate', icon: '🔁', name: 'Chacune son tour', desc: 'Une map différente à chaque manche.' }, { id: 'random', icon: '🎲', name: 'Au hasard', desc: 'Surprise à chaque manche.' }, ...MAP_LIST].map((m) => (
             <button key={m.id} type="button" disabled={!isHost} onClick={() => set('map', m.id)} aria-pressed={opts.map === m.id}
               className={`text-left rounded-xl p-3 transition ${opts.map === m.id ? 'bg-teal-400/10 ring-2 ring-teal-300' : 'bg-white/[0.03] ring-1 ring-white/[0.06] hover:bg-white/[0.06]'}`}>
+              <span className="block font-semibold text-slate-50"><span aria-hidden="true">{m.icon}</span> {m.name}</span>
+              <span className="block text-[11px] text-slate-400 leading-snug mt-0.5">{m.desc}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <p className="text-sm font-semibold text-slate-200 mb-2">Mode</p>
+        <div className="grid grid-cols-2 gap-2">
+          {[{ id: 'classic', icon: '🫥', name: 'Classique', desc: 'Les cachés trouvés sont éliminés jusqu\'à la manche suivante.' }, { id: 'infection', icon: '🧟', name: 'Infection', desc: 'Un caché trouvé devient chasseur. Un seul chasseur au départ.' }].map((m) => (
+            <button key={m.id} type="button" disabled={!isHost} onClick={() => set('mode', m.id)} aria-pressed={opts.mode === m.id}
+              className={`text-left rounded-xl p-3 transition ${opts.mode === m.id ? 'bg-teal-400/10 ring-2 ring-teal-300' : 'bg-white/[0.03] ring-1 ring-white/[0.06] hover:bg-white/[0.06]'}`}>
               <span className="block font-semibold text-slate-50"><span aria-hidden="true">{m.icon}</span> {m.name}</span>
               <span className="block text-[11px] text-slate-400 leading-snug mt-0.5">{m.desc}</span>
             </button>

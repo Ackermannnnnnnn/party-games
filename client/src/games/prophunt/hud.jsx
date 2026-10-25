@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { socket } from '../../lib/socket.js';
-import { MODELS, WEAPON } from './shared.js';
+import { MODELS, WEAPONS, WEAPON_ORDER } from './shared.js';
 import { setVolume, getVolume } from './sfx.js';
 
 const panel = 'rounded-2xl bg-black/45 backdrop-blur-md ring-1 ring-white/10';
@@ -28,8 +28,8 @@ export function RoleIntro({ role, map, round, total, isTouch }) {
         </p>
         {!isTouch && (
           <div className="mt-4 flex flex-wrap justify-center gap-1.5 text-[11px] text-slate-300">
-            {(hunter ? [['Clic', 'tirer (maintenir)'], ['R', 'recharger'], ['Maj', 'courir'], ['Tab', 'scores']]
-              : [['E / clic', 'devenir l\'objet visé'], ['R', 'bloquer la rotation'], ['T', 'soundboard'], ['F', 'moquerie'], ['G', 'leurre']]).map(([k, v]) => (
+            {(hunter ? [['Clic', 'tirer'], ['Clic droit', 'viser'], ['R', 'recharger'], ['1-4 / molette', 'armes'], ['Maj', 'courir']]
+              : [['E / clic', 'devenir l\'objet visé'], ['R', 'bloquer la rotation'], ['T', 'soundboard'], ['X', 'ventriloque'], ['G', 'leurre']]).map(([k, v]) => (
               <span key={k} className="rounded-lg bg-white/[0.07] px-2 py-1"><b className="text-white">{k}</b> {v}</span>
             ))}
           </div>
@@ -79,8 +79,9 @@ export function KillFeed({ p, person }) {
           <motion.p key={f.id} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
             className={`${panel} !rounded-xl px-2.5 py-1 text-[11px] sm:text-xs text-slate-100 text-right`}>
             {f.kind === 'kill'
-              ? <><b className="text-rose-300">{person(f.by).pseudo}</b> <span className="opacity-70">🔫</span> <b className="text-teal-200">{person(f.target).pseudo}</b>{f.model ? <span className="opacity-60"> ({MODELS[f.model]?.name})</span> : null}</>
-              : <><b className="text-rose-300">{person(f.target).pseudo}</b> <span className="opacity-70">s'est épuisé à tirer partout 💀</span></>}
+              ? <><b className="text-rose-300">{person(f.by).pseudo}</b> <span className="opacity-70">{WEAPONS[f.w]?.icon || '🔫'}</span> <b className="text-teal-200">{person(f.target).pseudo}</b>{f.model ? <span className="opacity-60"> ({MODELS[f.model]?.name})</span> : null}</>
+              : f.kind === 'infected' ? <><b className="text-lime-300">{person(f.target).pseudo}</b> <span className="opacity-70">rejoint les chasseurs 🧟</span></>
+                : <><b className="text-rose-300">{person(f.target).pseudo}</b> <span className="opacity-70">s'est épuisé à tirer partout 💀</span></>}
           </motion.p>
         ))}
       </AnimatePresence>
@@ -128,30 +129,74 @@ export function HealthCard({ self, role, hud, isTouch }) {
 }
 
 export function AmmoCard({ hud, isTouch }) {
-  const ammo = hud.ammo ?? WEAPON.mag;
+  const W = WEAPONS[hud.weapon] || WEAPONS.smg;
+  const ammo = hud.ammo ?? 0;
   return (
     <div className={`absolute ${isTouch ? 'top-14 right-2' : 'bottom-3 right-3'} ${panel} px-3 py-2 text-right min-w-[150px]`}>
+      <p className="text-[11px] text-slate-400">{W.icon} {W.name}</p>
       {hud.reloading ? (
         <>
           <p className="text-xs text-amber-300">Rechargement…</p>
           <div className="mt-1.5 h-1.5 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-amber-300" style={{ width: `${(hud.reloadPct || 0) * 100}%` }} /></div>
         </>
-      ) : (
+      ) : W.mag ? (
         <>
-          <p className="leading-none"><span className={`font-display text-3xl tabular-nums ${ammo <= 5 ? 'text-rose-400' : 'text-white'}`}>{ammo}</span><span className="text-slate-400 text-sm"> / {WEAPON.mag}</span></p>
-          <div className="mt-1.5 flex justify-end gap-[2px]">{Array.from({ length: WEAPON.mag }, (_, i) => <span key={i} className={`h-2.5 w-[3px] rounded-sm ${i < ammo ? 'bg-amber-200' : 'bg-white/10'}`} />)}</div>
-          {ammo === 0 && !isTouch && <p className="mt-1 text-[11px] text-amber-300">R pour recharger</p>}
+          <p className="leading-none"><span className={`font-display text-3xl tabular-nums ${ammo <= Math.ceil(W.mag / 6) ? 'text-rose-400' : 'text-white'}`}>{ammo}</span><span className="text-slate-400 text-sm"> / {W.mag}</span></p>
+          {W.mag > 2 && <div className="mt-1.5 flex justify-end gap-[2px]">{Array.from({ length: W.mag }, (_, i) => <span key={i} className={`h-2.5 ${W.mag > 10 ? 'w-[3px]' : 'w-2'} rounded-sm ${i < ammo ? 'bg-amber-200' : 'bg-white/10'}`} />)}</div>}
+          {ammo === 0 && W.reloadMs && !isTouch && <p className="mt-1 text-[11px] text-amber-300">R pour recharger</p>}
         </>
-      )}
+      ) : <p className="font-display text-2xl text-white">∞</p>}
     </div>
   );
 }
 
-export function PropCard({ hud, decoysLeft, tauntLeft, isTouch }) {
+/** Armes du chasseur : 1 mitraillette · 2 fusil à pompe · 3 grenades · 4 couteau (molette pour changer). */
+export function WeaponBar({ hud, isTouch }) {
+  return (
+    <div className={`absolute ${isTouch ? 'top-36 right-2 flex-col' : 'bottom-3 left-1/2 -translate-x-1/2'} flex gap-1.5`}>
+      {WEAPON_ORDER.map((id, i) => {
+        const W = WEAPONS[id]; const on = hud.weapon === id;
+        const count = id === 'grenade' ? hud.ammoAll?.grenade ?? 0 : null;
+        return (
+          <div key={id} className={`relative ${panel} !rounded-xl px-2.5 py-1.5 text-center min-w-[54px] transition-all ${on ? '!bg-amber-300/25 ring-amber-300/60 scale-105' : 'opacity-70'} ${count === 0 ? '!opacity-30' : ''}`}>
+            {!isTouch && <span className="absolute top-0.5 left-1.5 text-[9px] text-slate-400">{i + 1}</span>}
+            <span className="text-lg">{W.icon}</span>
+            {count !== null && <span className="absolute bottom-0.5 right-1.5 text-[10px] font-bold text-amber-200">×{count}</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Radar (dernière minute) : flèches vers les cachés au bord de l'écran. */
+export function RadarMarkers({ pts, me, yaw, at }) {
+  const k = 1 - (performance.now() - at) / 3500;
+  return (
+    <div className="absolute inset-0" style={{ opacity: Math.max(0, Math.min(1, k * 2)) }}>
+      <p className="absolute left-1/2 top-[110px] -translate-x-1/2 rounded-full bg-rose-500/80 px-3 py-1 text-xs font-bold text-white">📡 RADAR</p>
+      {pts.map((p, i) => {
+        const a = Math.atan2(p[0] - me.pos.x, p[2] - me.pos.z) - (yaw + Math.PI);
+        const d = Math.round(Math.hypot(p[0] - me.pos.x, p[2] - me.pos.z));
+        return (
+          <div key={i} className="absolute left-1/2 top-1/2 w-0 h-0" style={{ transform: `rotate(${-a}rad)` }}>
+            <div className="absolute -left-4 -top-[min(38vh,240px)] w-8 text-center">
+              <span className="block text-2xl text-rose-400 drop-shadow">▲</span>
+              <span className="block text-[10px] font-bold text-white drop-shadow" style={{ transform: `rotate(${a}rad)` }}>{d} m</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function PropCard({ hud, decoysLeft, tauntLeft, ventriLeft = 0, isTouch }) {
   if (isTouch) return null;
   return (
     <div className={`absolute bottom-3 right-3 ${panel} px-3 py-2 text-[11px] text-slate-300 space-y-1 min-w-[190px]`}>
       <p className="flex justify-between gap-3"><span><b className="text-white">T</b> soundboard · <b className="text-white">F</b> au hasard</span><span className={tauntLeft > 0 ? 'text-slate-500' : 'text-teal-300'}>{tauntLeft > 0 ? `${Math.ceil(tauntLeft / 1000)} s` : 'prêt'}</span></p>
+      <p className="flex justify-between gap-3"><span><b className="text-white">X</b> ventriloque</span><span className={ventriLeft > 0 ? 'text-slate-500' : 'text-teal-300'}>{ventriLeft > 0 ? `${Math.ceil(ventriLeft / 1000)} s` : 'prêt'}</span></p>
       <p className="flex justify-between gap-3"><span><b className="text-white">G</b> leurre</span><span className={decoysLeft > 0 ? 'text-teal-300' : 'text-slate-500'}>{decoysLeft} restant{decoysLeft > 1 ? 's' : ''}</span></p>
       <p className="flex justify-between gap-3"><span><b className="text-white">R</b> rotation</span><span>{hud.locked ? '🔒 bloquée' : 'libre'}</span></p>
       <p><b className="text-white">E</b> / clic : devenir l'objet visé · <b className="text-white">Tab</b> scores</p>
@@ -292,11 +337,14 @@ export function TouchControls({ input, role, alive, stick, decoysLeft, hud, phas
               {role === 'prop' && decoysLeft > 0 && btn(`👥${decoysLeft}`, 'decoy', '!w-12 !h-12 text-sm')}
               {role === 'prop' && btn(hud.locked ? '🔒' : '🔓', 'lock', '!w-12 !h-12')}
               {role === 'hunter' && btn('⟳', 'lock', '!w-12 !h-12 text-xl')}
+              {role === 'hunter' && btn('⇄', 'wheel+', '!w-12 !h-12 text-xl')}
+              {role === 'hunter' && hold('🎯', (v) => { input.aim = v; }, '!w-12 !h-12')}
+              {role === 'prop' && btn('🗣️', 'ventri', '!w-12 !h-12')}
             </div>
             <div className="flex items-end gap-2">
               {hold('⤒', (v) => { input.jump = v; }, '!w-14 !h-14 text-xl')}
               {role === 'hunter'
-                ? hold('🔫', (v) => { input.fire = v; }, '!w-20 !h-20 text-3xl !bg-rose-500/80')
+                ? hold(WEAPONS[hud.weapon]?.icon || '🔫', (v) => { input.fire = v; if (v) input.push('action'); }, '!w-20 !h-20 text-3xl !bg-rose-500/80')
                 : <button type="button" className={`ph-btn !w-20 !h-20 !text-xs font-bold ${hud.target ? '!bg-teal-400/90 text-slate-900' : 'opacity-60'}`} onPointerDown={(e) => { e.preventDefault(); input.push('action'); }}>Devenir</button>}
             </div>
           </>

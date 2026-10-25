@@ -374,7 +374,7 @@ export function onGamePhase(game, phase) {
 // Avant l'arrêt du serveur (mise en veille Render), on écrit ce qui reste
 for (const sig of ['SIGTERM', 'SIGINT']) {
   process.once(sig, () => {
-    historyStore.flush().catch(() => {}).finally(() => setTimeout(() => process.exit(0), 200));
+    Promise.all([historyStore.flush(), ...(globalThis.__beforeExit || []).map((f) => f())].map((p) => Promise.resolve(p).catch(() => {}))).finally(() => setTimeout(() => process.exit(0), 200));
     setTimeout(() => process.exit(0), 8000).unref();
   });
 }

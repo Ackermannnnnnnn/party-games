@@ -483,3 +483,31 @@ export function disguiseCollider(model, scale = 1) {
   if (!b) return { rx: PLAYER.radius, h: PLAYER.height };
   return { rx: Math.max(0.1, Math.min(0.9, Math.min(b.size[0], b.size[2]) * scale / 2 * 0.92)), h: Math.max(0.12, Math.min(2.6, b.size[1] * scale)) };
 }
+
+/**
+ * Trajectoire d'une grenade (identique chez tous les joueurs) : gravité, rebonds amortis sur les murs
+ * et le sol. Renvoie les positions toutes les 1/60 s pendant `ms` millisecondes.
+ */
+export function grenadePath(world, p0, v0, ms) {
+  const pts = [];
+  const p = new THREE.Vector3(...p0); const v = new THREE.Vector3(...v0);
+  const d = new THREE.Vector3(); const dt = 1 / 60;
+  const steps = Math.ceil(ms / 1000 / dt);
+  for (let i = 0; i < steps; i++) {
+    v.y -= 9.8 * dt;
+    const len = v.length() * dt;
+    if (len > 1e-5) {
+      d.copy(v).normalize();
+      const hit = world.raycast(p, d, len + 0.08, { objects: true, glass: true });
+      if (hit) {
+        const n = hitNormal(hit, p.clone().addScaledVector(d, hit.t)) || [0, 1, 0];
+        const nv = new THREE.Vector3(...n);
+        p.addScaledVector(d, Math.max(0, hit.t - 0.08));
+        v.addScaledVector(nv, -2 * v.dot(nv)).multiplyScalar(0.42);
+        if (nv.y > 0.6 && Math.abs(v.y) < 0.8) { v.y = 0; v.x *= 0.85; v.z *= 0.85; }
+      } else p.addScaledVector(v, dt);
+    }
+    pts.push([p.x, p.y, p.z]);
+  }
+  return pts;
+}
