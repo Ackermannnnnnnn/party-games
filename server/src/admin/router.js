@@ -4,6 +4,7 @@ import { listCategories } from '../games/quiz/questions.js';
 import { listThemes } from '../games/imposter/themes.js';
 import { githubEnabled, sanitizeCadrage, sanitizePhotos, sanitizeCharacters, saveAvatars } from './avatars.js';
 import { historyStore } from '../history/history.js';
+import { allSounds, saveSound, deleteSound, reorderSounds } from './sounds.js';
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme';
 
@@ -25,6 +26,7 @@ export function createAdminRouter() {
   // (mot de passe vérifié AVANT de lire un gros envoi)
   router.use((req, res, next) => {
     if (req.path === '/avatars/save') return authMiddleware(req, res, () => express.json({ limit: '30mb' })(req, res, next));
+    if (req.path === '/sounds/save') return authMiddleware(req, res, () => express.json({ limit: '10mb' })(req, res, next));
     return express.json({ limit: '500kb' })(req, res, next);
   });
 
@@ -56,6 +58,13 @@ export function createAdminRouter() {
   };
   router.post('/avatars/save', saveHandler);
   router.post('/avatars/cadrage', saveHandler);
+
+  // ─────── SONS de moquerie (Prop Hunt) ───────
+  const soundErr = (res, e) => res.status(e.status || 500).json({ error: e.message || 'Erreur' });
+  router.get('/sounds', async (_req, res) => { try { res.json({ sounds: await allSounds() }); } catch (e) { soundErr(res, e); } });
+  router.post('/sounds/save', async (req, res) => { try { res.json({ ok: true, sound: await saveSound(req.body || {}) }); } catch (e) { soundErr(res, e); } });
+  router.post('/sounds/delete', async (req, res) => { try { await deleteSound(String(req.body?.id || '')); res.json({ ok: true }); } catch (e) { soundErr(res, e); } });
+  router.post('/sounds/order', async (req, res) => { try { await reorderSounds(Array.isArray(req.body?.ids) ? req.body.ids.map(String).slice(0, 200) : []); res.json({ ok: true }); } catch (e) { soundErr(res, e); } });
 
   // ─────── HISTORIQUE des parties ───────
   router.get('/history', async (req, res) => {

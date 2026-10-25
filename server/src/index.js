@@ -9,6 +9,7 @@ import { roomManager } from './core/RoomManager.js';
 import { createAdminRouter } from './admin/router.js';
 import { getPhoto } from './utils/photos.js';
 import { liveState, liveImage } from './admin/liveAvatars.js';
+import { liveSounds, soundFile } from './admin/sounds.js';
 
 const PORT = process.env.PORT || 3001;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://partygrid.click';
@@ -17,7 +18,7 @@ const app = express();
 app.use(cors({ origin: CORS_ORIGIN }));
 // Les photos d'avatars (admin) ont leur propre limite de taille, voir admin/router.js
 const jsonDefault = express.json();
-app.use((req, res, next) => (req.path === '/admin/avatars/save' ? next() : jsonDefault(req, res, next)));
+app.use((req, res, next) => (req.path === '/admin/avatars/save' || req.path === '/admin/sounds/save' ? next() : jsonDefault(req, res, next)));
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true, rooms: roomManager.size(), uptime: process.uptime() });
@@ -45,6 +46,21 @@ app.get('/avatars/live/:id', async (req, res) => {
     res.set('Cache-Control', 'public, max-age=300');
     res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     res.send(im.buf);
+  } catch { res.status(502).end(); }
+});
+
+// Sons de moquerie de Prop Hunt (ajoutés depuis l'admin)
+app.get('/sounds/live', async (_req, res) => {
+  try { res.set('Cache-Control', 'no-store'); res.json({ sounds: await liveSounds() }); } catch { res.json({ sounds: [] }); }
+});
+app.get('/sounds/file/:id', async (req, res) => {
+  try {
+    const f = await soundFile(String(req.params.id).toLowerCase());
+    if (!f) return res.status(404).end();
+    res.set('Content-Type', f.type);
+    res.set('Cache-Control', req.query.v ? 'public, max-age=31536000, immutable' : 'public, max-age=60');
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.send(f.buf);
   } catch { res.status(502).end(); }
 });
 

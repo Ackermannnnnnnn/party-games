@@ -1,7 +1,8 @@
 /**
  * Prop Hunt — commandes.
  *  PC : ZQSD / WASD (position des touches, donc AZERTY et QWERTY marchent pareil), souris (pointeur verrouillé),
- *       Espace saut, Maj sprint, clic / E action, R rotation, F moquerie, G leurre, Tab scores.
+ *       Espace saut, Maj sprint, clic / E action (maintenir le clic = tir automatique), R recharger / bloquer la rotation,
+ *       F moquerie au hasard, T soundboard (puis 1-9), G leurre, V vue, Tab scores.
  *  Tactile : joystick à gauche, glisser n'importe où ailleurs pour regarder, boutons à l'écran.
  */
 export const isTouch = typeof window !== 'undefined' && (window.matchMedia?.('(pointer: coarse)').matches || 'ontouchstart' in window);
@@ -16,6 +17,7 @@ export function createInput() {
     pitch: 0,
     jump: false,
     sprint: false,
+    fire: false,           // clic maintenu (tir automatique)
     // actions ponctuelles (consommées par la boucle de jeu)
     queue: [],
     sensitivity: (() => { try { return Number(localStorage.getItem(SENS_KEY)) || 1; } catch { return 1; } })(),
@@ -58,6 +60,10 @@ export function attachDesktop(input, el, { onScoreboard } = {}) {
     if (e.code === 'KeyF') input.push('taunt');
     if (e.code === 'KeyG') input.push('decoy');
     if (e.code === 'KeyV') input.push('view');
+    if (e.code === 'KeyT') input.push('board');
+    if (e.code === 'KeyC') input.push('crouch');
+    const dg = /^Digit([0-9])$/.exec(e.code) || /^Numpad([0-9])$/.exec(e.code);
+    if (dg) input.push(`num:${dg[1] === '0' ? 10 : Number(dg[1])}`);
   };
   const up = (e) => {
     if (e.code === 'Tab') { onScoreboard?.(false); return; }
@@ -69,18 +75,20 @@ export function attachDesktop(input, el, { onScoreboard } = {}) {
   const click = (e) => {
     if (!input.enabled) return;
     if (document.pointerLockElement !== el) { el.requestPointerLock?.()?.catch?.(() => {}); return; }
-    if (e.button === 0) input.push('action');
+    if (e.button === 0) { input.push('action'); input.fire = true; }
     if (e.button === 2) input.push('alt');
   };
-  const lockChange = () => { input.locked = document.pointerLockElement === el; if (!input.locked) { input.keys.clear(); input.jump = false; input.sprint = false; } };
+  const release = (e) => { if (e.button === 0) input.fire = false; };
+  const lockChange = () => { input.locked = document.pointerLockElement === el; if (!input.locked) { input.keys.clear(); input.jump = false; input.sprint = false; input.fire = false; } };
   const ctx = (e) => e.preventDefault();
   window.addEventListener('keydown', down);
   window.addEventListener('keyup', up);
   document.addEventListener('mousemove', mouse);
   document.addEventListener('pointerlockchange', lockChange);
   el.addEventListener('mousedown', click);
+  window.addEventListener('mouseup', release);
   el.addEventListener('contextmenu', ctx);
-  const blur = () => { input.keys.clear(); input.jump = false; input.sprint = false; };
+  const blur = () => { input.keys.clear(); input.jump = false; input.sprint = false; input.fire = false; };
   window.addEventListener('blur', blur);
   return () => {
     window.removeEventListener('keydown', down);
@@ -88,6 +96,7 @@ export function attachDesktop(input, el, { onScoreboard } = {}) {
     document.removeEventListener('mousemove', mouse);
     document.removeEventListener('pointerlockchange', lockChange);
     el.removeEventListener('mousedown', click);
+    window.removeEventListener('mouseup', release);
     el.removeEventListener('contextmenu', ctx);
     window.removeEventListener('blur', blur);
     if (document.pointerLockElement === el) document.exitPointerLock?.();

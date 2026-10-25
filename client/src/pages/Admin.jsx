@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import AvatarsAdmin from './AvatarsAdmin.jsx';
 import HistoryAdmin from './HistoryAdmin.jsx';
+import SoundsAdmin from './SoundsAdmin.jsx';
 
 const SERVER = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
@@ -94,6 +95,10 @@ export default function Admin() {
           className={`flex-1 px-3 py-2 rounded-lg font-medium ${tab === 'avatars' ? 'bg-brand text-white' : 'bg-slate-800 text-slate-300'}`}
         >🖼️ Avatars</button>
         <button
+          onClick={() => setTab('sounds')}
+          className={`flex-1 px-3 py-2 rounded-lg font-medium ${tab === 'sounds' ? 'bg-brand text-white' : 'bg-slate-800 text-slate-300'}`}
+        >🔊 Sons</button>
+        <button
           onClick={() => setTab('history')}
           className={`flex-1 px-3 py-2 rounded-lg font-medium ${tab === 'history' ? 'bg-brand text-white' : 'bg-slate-800 text-slate-300'}`}
         >📜 Historique</button>
@@ -103,6 +108,7 @@ export default function Admin() {
       {tab === 'imposter' && <ImposterAdmin password={password} />}
       {tab === 'avatars' && <AvatarsAdmin password={password} />}
       {tab === 'history' && <HistoryAdmin password={password} />}
+      {tab === 'sounds' && <SoundsAdmin password={password} />}
     </div>
   );
 }

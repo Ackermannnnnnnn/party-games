@@ -1,6 +1,7 @@
 import { BaseGame } from '../../core/BaseGame.js';
 import { logger } from '../../utils/logger.js';
-import { getMap, MAP_LIST, MODELS, modelHp, disguisableModels, TAUNTS } from './shared.js';
+import { getMap, MAP_LIST, MODELS, modelHp, disguisableModels, TAUNTS, WEAPON } from './shared.js';
+import { enabledSoundIds } from '../../admin/sounds.js';
 
 /**
  * Prop Hunt — cache-cache en 3D.
@@ -16,9 +17,7 @@ import { getMap, MAP_LIST, MODELS, modelHp, disguisableModels, TAUNTS } from './
 const PH = { HIDE: 'HIDE', HUNT: 'HUNT', ROUND_END: 'ROUND_END', GAME_OVER: 'GAME_OVER' };
 const SNAP_MS = 80;
 const ROUND_END_MS = 9000;
-const SHOT_DAMAGE = 25;
-const MISS_PENALTY = 5;
-const SHOT_COOLDOWN_MS = 180;
+const TAUNT_POINT_MS = 10000;
 const TAUNT_COOLDOWN_MS = 2500;
 const DISGUISE_COOLDOWN_MS = 1500;
 const HUNTER_HP = 100;
@@ -87,6 +86,9 @@ export class PropHuntGame extends BaseGame {
     this.log = [];
     this.lastTaunt = new Map();
     this.lastShot = new Map();
+    this.ammo = new Map();
+    this.reloadUntil = new Map();
+    this.lastTauntPoint = new Map();
     this.lastDisguise = new Map();
     this.endsAt = 0;
     this.result = null;
@@ -147,12 +149,13 @@ export class PropHuntGame extends BaseGame {
     this.alive = new Set(present);
     this.hp = new Map(); this.maxHp = new Map(); this.disguise = new Map(); this.decoys = []; this.feed = [];
     this.lastTaunt = new Map(); this.tf = new Map(); this.spawns = {}; this.result = null;
+    this.ammo = new Map(); this.reloadUntil = new Map();
     const hs = shuffle(map.spawns.hunters); const ps = shuffle(map.spawns.props);
     let hi = 0; let pi = 0;
     for (const id of present) {
       if (this.roles.get(id) === 'hunter') {
         this.huntedTimes.set(id, this.huntedTimes.get(id) + 1);
-        this.hp.set(id, HUNTER_HP); this.maxHp.set(id, HUNTER_HP);
+        this.hp.set(id, HUNTER_HP); this.maxHp.set(id, HUNTER_HP); this.ammo.set(id, WEAPON.mag);
         const s = hs[hi++ % hs.length]; this.spawns[id] = [s[0] + (Math.random() - 0.5) * 0.6, s[1], s[2] + (Math.random() - 0.5) * 0.6];
       } else {
         // déguisement de départ : un petit objet de la map, au hasard
@@ -235,10 +238,14 @@ export class PropHuntGame extends BaseGame {
 
   _taunt(id, sound, forced = false) {
     const now = Date.now();
-    const snd = TAUNTS.some((t) => t.id === sound) ? sound : TAUNTS[Math.floor(Math.random() * TAUNTS.length)].id;
+    const custom = enabledSoundIds().map((c) => `c:${c}`);
+    const pool = [...TAUNTS.map((t) => t.id), ...custom];
+    const ok = TAUNTS.some((t) => t.id === sound) || custom.includes(sound);
+    // moquerie forcée : de préférence un son ajouté depuis l'admin
+    const snd = ok ? sound : (forced && custom.length && Math.random() < 0.7 ? custom : pool)[Math.floor(Math.random() * (forced && custom.length ? custom.length : pool.length))] || 'boing';
     this.lastTaunt.set(id, now);
     this.stats.get(id).taunts += 1;
-    if (!forced) this._add(id, 1);
+    if (!forced && now - (this.lastTauntPoint.get(id) || 0) > TAUNT_POINT_MS) { this._add(id, 1); this.lastTauntPoint.set(id, now); }
     this.room.broadcast('game:event', { type: 'taunt', by: id, sound: snd, p: this.tf.get(id)?.p, forced });
   }
 
@@ -273,6 +280,9 @@ export class PropHuntGame extends BaseGame {
         if (!p) return;
         // un chasseur ne bouge pas pendant que les autres se cachent
         if (role === 'hunter' && this.phase === PH.HIDE) return;
+        const a = getMap(this.mapId).area;
+        if (a) { p[0] = Math.max(a[0], Math.min(a[1], p[0])); p[2] = Math.max(a[2], Math.min(a[3], p[2])); }
+        p[1] = Math.max(-3, Math.min(30, p[1]));
         this.tf.set(id, { p, ry: num(payload.ry) ?? 0, pi: num(payload.pi) ?? 0 });
         return;
       }
@@ -294,8 +304,15 @@ export class PropHuntGame extends BaseGame {
       case 'shoot': {
         if (role !== 'hunter' || !alive || this.phase !== PH.HUNT) return;
         const now = Date.now();
-        if (now - (this.lastShot.get(id) || 0) < SHOT_COOLDOWN_MS) return;
-        this.lastShot.set(id, now);
+        // cadence : au plus ~1 tir par WEAPON.fireMs sur une seconde glissante (rafales tolérées)
+        const times = (this.lastShot.get(id) || []).filter((t) => now - t < 1000);
+        if (times.length >= Math.floor(1000 / WEAPON.fireMs) + 2) return;
+        if (this.reloadUntil.get(id) > now) return;
+        if (this.reloadUntil.has(id)) { this.reloadUntil.delete(id); this.ammo.set(id, WEAPON.mag); }
+        const ammo = this.ammo.get(id) ?? WEAPON.mag;
+        if (ammo <= 0) return;
+        this.ammo.set(id, ammo - 1);
+        times.push(now); this.lastShot.set(id, times);
         const from = vec(payload?.from); const to = vec(payload?.to);
         this.room.broadcast('game:event', { type: 'shot', by: id, from, to });
         const hit = payload?.hit || {};
@@ -303,10 +320,18 @@ export class PropHuntGame extends BaseGame {
         if (hit.kind === 'object' || hit.kind === 'decoy') return this._miss(id, hit.kind);
         return;
       }
+      case 'reload': {
+        if (role !== 'hunter' || !alive) return;
+        const now = Date.now();
+        if (this.reloadUntil.get(id) > now || (this.ammo.get(id) ?? WEAPON.mag) >= WEAPON.mag) return;
+        this.reloadUntil.set(id, now + WEAPON.reloadMs - 150);
+        this.room.broadcast('game:event', { type: 'reload', by: id, p: this.tf.get(id)?.p });
+        return;
+      }
       case 'taunt': {
         if (role !== 'prop' || !alive || !playing) return;
         if (Date.now() - (this.lastTaunt.get(id) || 0) < TAUNT_COOLDOWN_MS && this.phase === PH.HUNT) return;
-        return this._taunt(id, payload?.sound);
+        return this._taunt(id, typeof payload?.sound === 'string' ? payload.sound.slice(0, 50) : null);
       }
       case 'decoy': {
         if (role !== 'prop' || !alive || !playing) return;
@@ -336,7 +361,7 @@ export class PropHuntGame extends BaseGame {
     // contrôle grossier : la cible doit être à portée du tireur
     const a = this.tf.get(hunter)?.p; const b = this.tf.get(target)?.p;
     if (a && b && Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) > 80) return;
-    const hp = Math.max(0, this.hp.get(target) - SHOT_DAMAGE);
+    const hp = Math.max(0, this.hp.get(target) - WEAPON.damage);
     this.hp.set(target, hp);
     this.room.broadcast('game:event', { type: 'hit', by: hunter, target, hp, at });
     if (hp <= 0) {
@@ -356,7 +381,7 @@ export class PropHuntGame extends BaseGame {
   }
 
   _miss(hunter, kind) {
-    const hp = Math.max(0, this.hp.get(hunter) - MISS_PENALTY);
+    const hp = Math.max(0, this.hp.get(hunter) - WEAPON.penalty);
     this.hp.set(hunter, hp);
     if (hp <= 0) {
       this.alive.delete(hunter);
