@@ -1,5 +1,77 @@
 [
  {
+  "id": "2026-10-25-6ffd61ef",
+  "game": "prophunt",
+  "label": "Prop Hunt",
+  "room": "GNJC6K",
+  "startedAt": 1792887770812,
+  "endedAt": 1792888130617,
+  "durationSec": 360,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "FEV",
+    "avatar": "img:perso/wolverine"
+   }
+  ],
+  "winner": "Mo",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": 10,
+    "detail": "1 trouvé(s) · 1 manche(s) survécue(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "FEV",
+    "avatar": "img:perso/wolverine",
+    "score": 0,
+    "detail": "0 trouvé(s) · 0 manche(s) survécue(s)",
+    "win": false
+   }
+  ],
+  "recap": {
+   "events": [
+    {
+     "round": 1,
+     "text": "Manche 1 · Supérette · chasseurs : FEV"
+    },
+    {
+     "text": "Les cachés gagnent : Mo ont survécu",
+     "accent": true
+    },
+    {
+     "round": 2,
+     "text": "Manche 2 · Supérette · chasseurs : Mo"
+    },
+    {
+     "text": "Mo a trouvé FEV (déguisé en Bouteille)",
+     "accent": true
+    },
+    {
+     "text": "Les chasseurs gagnent la manche",
+     "accent": true
+    }
+   ]
+  },
+  "options": {
+   "map": "store",
+   "rounds": 0,
+   "huntSec": 240,
+   "hideSec": 45,
+   "hunters": "auto",
+   "tauntSec": 45,
+   "decoys": 2
+  }
+ },
+ {
   "id": "2026-10-23-cbe53250",
   "game": "whoisit",
   "label": "Qui est-ce ?",
