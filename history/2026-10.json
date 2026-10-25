@@ -1,5 +1,69 @@
 [
  {
+  "id": "2026-10-25-1954dbe1",
+  "game": "prophunt",
+  "label": "Prop Hunt",
+  "room": "XTNX4W",
+  "startedAt": 1792928460009,
+  "endedAt": 1792928698792,
+  "durationSec": 239,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   }
+  ],
+  "winner": "Mo",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": 5,
+    "detail": "1 trouvé(s) · 0 manche(s) survécue(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "qea",
+    "avatar": "img:perso/thor",
+    "score": 0,
+    "detail": "0 trouvé(s) · 0 manche(s) survécue(s)",
+    "win": false
+   }
+  ],
+  "recap": {
+   "events": [
+    {
+     "round": 1,
+     "text": "Manche 1 · Open-space · chasseurs : Mo"
+    },
+    {
+     "text": "Mo a trouvé qea (déguisé en Frigo)",
+     "accent": true
+    },
+    {
+     "text": "Les chasseurs gagnent la manche",
+     "accent": true
+    },
+    {
+     "round": 2,
+     "text": "Manche 2 · Open-space · chasseurs : qea"
+    }
+   ]
+  },
+  "options": {
+   "map": "office",
+   "rounds": 0,
+   "huntSec": 240,
+   "hideSec": 45,
+   "hunters": "auto",
+   "tauntSec": 45,
+   "decoys": 2
+  }
+ },
+ {
   "id": "2026-10-25-247716ea",
   "game": "prophunt",
   "label": "Prop Hunt",
