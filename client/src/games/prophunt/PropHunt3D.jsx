@@ -12,6 +12,7 @@ import { Environment } from './scene/env.jsx';
 import { HunterModel, PropModel, NameTag } from './scene/characters.jsx';
 import { Effects, createFx } from './scene/effects.jsx';
 import { createViewmodel } from './scene/viewmodel.js';
+import { preloadAssets } from './assets3d.js';
 import {
   RoleIntro, HunterBlind, TopBar, KillFeed, Crosshair, HealthCard, AmmoCard, PropCard, Soundboard,
   DamageIndicator, RoundEnd, Scoreboard, Menu, TouchControls, PortraitHint,
@@ -53,6 +54,17 @@ export default function PropHunt3D({ p, playerId, isHost }) {
   const world = useMemo(() => (p.mapId ? new World(getMap(p.mapId)) : null), [p.mapId]);
   const self = p.players.find((x) => x.id === playerId);
   if (import.meta.env.DEV && typeof window !== 'undefined') window.__ph = Object.assign(window.__ph || {}, { me, input, world, net });
+
+  // Modèles 3D de la map (chargés une fois, avant d'afficher la scène)
+  const [assetsReady, setAssetsReady] = useState(null);
+  const [loadProg, setLoadProg] = useState([0, 0]);
+  useEffect(() => {
+    if (!p.mapId) return undefined;
+    let off = false;
+    const ids = getMap(p.mapId).objects.map((o) => MODELS[o.m]?.glb).filter(Boolean);
+    preloadAssets(ids, (d, t) => { if (!off) setLoadProg([d, t]); }).then(() => { if (!off) setAssetsReady(p.mapId); });
+    return () => { off = true; };
+  }, [p.mapId]);
 
   // Sons de moquerie ajoutés depuis l'admin
   useEffect(() => {
@@ -182,9 +194,16 @@ export default function PropHunt3D({ p, playerId, isHost }) {
       <Canvas key={quality} shadows={quality !== 'low'} dpr={quality === 'low' ? [1, 1] : quality === 'high' ? [1, 2] : [1, 1.5]}
         gl={{ antialias: quality !== 'low', powerPreference: 'high-performance' }}
         camera={{ fov: 74, near: 0.04, far: 400, position: [0, 2, 5] }}>
-        <Scene p={p} playerId={playerId} world={world} map={map} input={input} me={me} net={net} fx={fx} pRef={pRef} setHud={setHud}
-          quality={quality} boardRef={boardRef} setBoard={setBoard} pickRef={pickRef} soundListRef={soundListRef} />
+        {assetsReady === p.mapId && <Scene p={p} playerId={playerId} world={world} map={map} input={input} me={me} net={net} fx={fx} pRef={pRef} setHud={setHud}
+          quality={quality} boardRef={boardRef} setBoard={setBoard} pickRef={pickRef} soundListRef={soundListRef} />}
       </Canvas>
+      {assetsReady !== p.mapId && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950 text-slate-200">
+          <p className="font-display text-3xl">{map.name}</p>
+          <p className="mt-2 text-sm text-slate-400">Chargement des modèles 3D… {loadProg[1] ? `${loadProg[0]} / ${loadProg[1]}` : ''}</p>
+          <div className="mt-3 h-1.5 w-64 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-teal-300 transition-all" style={{ width: `${loadProg[1] ? (loadProg[0] / loadProg[1]) * 100 : 5}%` }} /></div>
+        </div>
+      )}
 
       {/* calque qui reçoit souris / doigts */}
       <div ref={layerRef} className="absolute inset-0" style={{ touchAction: 'none' }} />

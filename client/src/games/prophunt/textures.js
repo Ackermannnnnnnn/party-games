@@ -28,7 +28,7 @@ const GEN = {
   wood: (u, v) => {
     const n = fbm(u, v, 4, 4);
     const g = 0.5 + 0.5 * Math.sin((v * 22 + n * 5 + Math.sin(u * 6.283) * 0.6) * 3.1);
-    const l = 0.78 + 0.16 * g + 0.08 * (fbm(u, v * 4, 32, 2) - 0.5);
+    const l = 0.84 + 0.08 * g + 0.06 * (fbm(u, v * 4, 32, 2) - 0.5);
     return [l, l, l, g * 0.4];
   },
   plank: (u, v) => {

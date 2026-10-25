@@ -113,6 +113,7 @@ export class PropHuntGame extends BaseGame {
       return;
     }
     this.order = shuffle(ids);
+    this.mapOffset = Math.floor(Math.random() * MAP_LIST.length);
     for (const id of ids) this._ensurePlayer(id);
     this.totalRounds = this.options.rounds || Math.min(8, Math.max(2, ids.length));
     logger.info({ room: this.room.code, players: ids.length, opts: this.options }, 'Prop Hunt started');
@@ -134,7 +135,7 @@ export class PropHuntGame extends BaseGame {
     this.round += 1;
     // map : fixe, au hasard, ou chacune son tour
     const ids = MAP_LIST.map((m) => m.id);
-    this.mapId = this.options.map === 'rotate' ? ids[(this.round - 1) % ids.length]
+    this.mapId = this.options.map === 'rotate' ? ids[(this.round - 1 + this.mapOffset) % ids.length]
       : this.options.map === 'random' ? ids[Math.floor(Math.random() * ids.length)] : this.options.map;
     const map = getMap(this.mapId);
     this._allowed = new Set(disguisableModels(map));

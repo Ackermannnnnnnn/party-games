@@ -14,6 +14,8 @@
  * Chaque pièce sert aussi de volume de collision : un meuble creux (armoire, casier) est donc
  * vraiment creux, on peut s'y glisser.
  */
+import { ASSETS } from './assets.js';
+import { assetName } from './assetNames.js';
 
 /** Matières : couleur de base, texture procédurale, rugosité, métal, émission, verre, nc = on passe au travers. */
 export const MATS = {
@@ -246,8 +248,29 @@ const M = {
   trampoline: { name: 'Trampoline', static: true, parts: [['c', 0, 0.75, 0, 1.6, 0.06, 'rubber', 20], ['c', 0, 0.8, 0, 1.65, 0.05, 'plastic:3c74c9', 20], ...[[1.3, 0], [-1.3, 0], [0, 1.3], [0, -1.3]].map(([x, z]) => ['b', x, 0.37, z, 0.06, 0.74, 0.06, 'steel'])] },
   pingpong: { name: 'Table de ping-pong', static: true, parts: [['b', 0, 0.76, 0, 1.52, 0.04, 2.74, 'paint:2b6aa3'], ['b', 0, 0.84, 0, 1.6, 0.14, 0.02, 'fabric:f2f2f2'], ...legs(0.6, 1.1, 0.74, 'steel', 0.05)] },
   arcade: { name: 'Borne d\'arcade', static: true, parts: [['b', 0, 0.85, 0, 0.7, 1.7, 0.75, 'paint:2a2e52'], ['b', 0, 1.35, 0.3, 0.6, 0.45, 0.02, 'screen'], ['b', 0, 0.95, 0.35, 0.65, 0.05, 0.3, 'plastic:111111'], ['b', 0, 1.72, 0.2, 0.68, 0.2, 0.3, 'light:ff5ea8']] },
+  candles: { name: 'Chandelier', parts: [['c', 0, 0.02, 0, 0.08, 0.04, 'metal:c8a06a', 10], ['c', 0, 0.15, 0, 0.015, 0.26, 'metal:c8a06a', 6], ['b', 0, 0.28, 0, 0.3, 0.02, 0.02, 'metal:c8a06a'], ...[-0.14, 0, 0.14].map((x) => ['c', x, 0.36, 0, 0.018, 0.14, 'paint:f4efe0', 8]), ...[-0.14, 0, 0.14].map((x) => ['s', x, 0.45, 0, 0.018, 'light:ffb050'])] },
+  watering: { name: 'Arrosoir', parts: [['c', 0, 0.13, 0, 0.11, 0.26, 'metal:4f9a6a', 12], ['b', 0.17, 0.2, 0, 0.22, 0.03, 0.03, 'metal:4f9a6a', 0], ['b', -0.1, 0.27, 0, 0.03, 0.12, 0.1, 'metal:4f9a6a']] },
+  backpack: { name: 'Cartable', parts: [['b', 0, 0.22, 0, 0.32, 0.42, 0.16, 'fabric:c83c3c'], ['b', 0, 0.16, 0.1, 0.26, 0.2, 0.06, 'fabric:a02f2f'], ['b', 0, 0.44, -0.02, 0.2, 0.04, 0.04, 'plastic'], ['b', -0.1, 0.24, -0.09, 0.04, 0.34, 0.02, 'plastic'], ['b', 0.1, 0.24, -0.09, 0.04, 0.34, 0.02, 'plastic']] },
+  skeletonModel: { name: 'Squelette de SVT', static: true, parts: [['c', 0, 0.03, 0, 0.25, 0.06, 'plastic', 10], ['c', 0, 0.8, 0, 0.02, 1.5, 'chrome', 6], ['s', 0, 1.6, 0, 0.11, 'ceramic:efe8d6'], ['b', 0, 1.25, 0, 0.3, 0.38, 0.14, 'ceramic:efe8d6'], ['b', 0, 0.92, 0, 0.26, 0.12, 0.12, 'ceramic:efe8d6'], ['b', -0.2, 1.2, 0, 0.05, 0.55, 0.05, 'ceramic:efe8d6'], ['b', 0.2, 1.2, 0, 0.05, 0.55, 0.05, 'ceramic:efe8d6'], ['b', -0.08, 0.55, 0, 0.06, 0.65, 0.06, 'ceramic:efe8d6'], ['b', 0.08, 0.55, 0, 0.06, 0.65, 0.06, 'ceramic:efe8d6']] },
+  hoop: { name: 'Panier de basket', static: true, parts: [['b', 0, 1.5, -0.6, 0.12, 3.0, 0.12, 'steel:3a3d42'], ['b', 0, 3.05, -0.35, 1.8, 1.05, 0.06, 'paint:f4f4f0'], ['b', 0, 3.05, -0.318, 0.6, 0.45, 0.01, 'paint:d94141'], ['c', 0, 2.9, -0.02, 0.23, 0.03, 'metal:e8762c', 16], ['b', 0, 1.0, -0.6, 0.6, 0.06, 0.06, 'steel:3a3d42']] },
+  gymMat: { name: 'Tapis de gym', parts: [['b', 0, 0.1, 0, 1.0, 0.2, 2.0, 'fabric:2f6fb5']] },
+  gymMatStack: { name: 'Pile de tapis', parts: [['b', 0, 0.1, 0, 1.0, 0.2, 2.0, 'fabric:2f6fb5'], ['b', 0.02, 0.3, 0.03, 1.0, 0.2, 2.0, 'fabric:c83c3c'], ['b', -0.02, 0.5, -0.02, 1.0, 0.2, 2.0, 'fabric:2f6fb5']] },
+  vaultBox: { name: 'Plinth', parts: [['b', 0, 0.45, 0, 0.6, 0.9, 1.4, 'wood:c8a06a'], ['b', 0, 0.94, 0, 0.62, 0.08, 1.42, 'leather:6b4526']] },
+  globe: { name: 'Globe', parts: [['c', 0, 0.03, 0, 0.12, 0.06, 'wood:6b4526', 12], ['c', 0, 0.2, 0, 0.015, 0.3, 'metal:c8a06a', 6], ['s', 0, 0.42, 0, 0.2, 'paint:3c8ad6']] },
+  tray: { name: 'Plateau-repas', parts: [['b', 0, 0.015, 0, 0.45, 0.03, 0.32, 'plastic:7a8a99']] },
+  fountain: { name: 'Fontaine', static: true, parts: [['c', 0, 0.3, 0, 2.4, 0.6, 'concrete:c9c3b6', 24], ['c', 0, 0.55, 0, 2.1, 0.1, 'water', 24], ['c', 0, 1.2, 0, 0.3, 1.4, 'concrete:c9c3b6', 12], ['c', 0, 1.95, 0, 0.8, 0.15, 'concrete:c9c3b6', 18], ['s', 0, 2.2, 0, 0.25, 'concrete:c9c3b6']] },
+  piano: { name: 'Piano', static: true, parts: [['b', 0, 0.75, -0.2, 1.5, 1.3, 0.35, 'wood:2a1a12'], ['b', 0, 0.72, 0.12, 1.5, 0.05, 0.3, 'wood:2a1a12'], ['b', 0, 0.76, 0.14, 1.36, 0.04, 0.22, 'ceramic:f4f4f0'], ['b', -0.7, 0.36, 0.12, 0.08, 0.72, 0.3, 'wood:2a1a12'], ['b', 0.7, 0.36, 0.12, 0.08, 0.72, 0.3, 'wood:2a1a12']] },
+  fireplace: { name: 'Cheminée', static: true, parts: [['b', -0.8, 0.6, 0, 0.4, 1.2, 0.6, 'brick:b07060'], ['b', 0.8, 0.6, 0, 0.4, 1.2, 0.6, 'brick:b07060'], ['b', 0, 1.3, 0, 2.2, 0.2, 0.7, 'concrete:e8e2d6'], ['b', 0, 0.6, -0.25, 1.2, 1.2, 0.1, 'brick:5a3a30'], ['b', 0, 0.05, 0.05, 1.2, 0.1, 0.5, 'concrete:3a3a3a'], ['b', 0, 0.2, 0.05, 0.7, 0.15, 0.2, 'light:ff8a3a']] },
+  billiard: { name: 'Billard', static: true, parts: [['b', 0, 0.75, 0, 1.4, 0.1, 2.6, 'wood:5a3420'], ['b', 0, 0.805, 0, 1.24, 0.01, 2.44, 'fabric:1f7a45'], ...legs(0.55, 1.15, 0.72, 'wood:5a3420', 0.14)] },
+  chandelier: { name: 'Lustre', static: true, parts: [['c', 0, 0.6, 0, 0.02, 1.2, 'metal:c8a06a', 6], ['c', 0, 0.05, 0, 0.5, 0.06, 'metal:c8a06a', 16], ...[0, 1, 2, 3, 4, 5].map((i) => ['s', Math.cos(i) * 0.45, 0.14, Math.sin(i) * 0.45, 0.06, 'light:ffd9a0'])] },
   vending: { name: 'Distributeur', static: true, parts: [['b', 0, 0.95, 0, 0.9, 1.9, 0.8, 'paint:c8232c'], ['b', -0.12, 1.1, 0.402, 0.6, 1.2, 0.01, 'window:1e2a33'], ['b', 0.33, 1.2, 0.402, 0.16, 0.5, 0.01, DARK], ['b', -0.12, 1.75, 0.402, 0.6, 0.15, 0.01, 'light']] },
 };
+
+// ─────────── Modèles Kenney (CC0) : boîtes de collision précalculées, rendu par le fichier GLB ───────────
+const KENNEY_STATIC = /^(furniture\/(wall|floor|stairs|doorway|paneling)|cars\/|nature\/(tree_|tent_|statue_(obelisk|column)|fence_)|graveyard\/(ironFence|lightpost|altar))/;
+for (const [id, a] of Object.entries(ASSETS)) {
+  M[id] = { name: assetName(id), glb: id, static: KENNEY_STATIC.test(id), parts: a.b.map((b) => ['b', b[0], b[1], b[2], b[3] * 2, b[4] * 2, b[5] * 2, null]) };
+}
 
 function carParts(color) {
   const body = `metal:${color.toString(16).padStart(6, '0')}`;

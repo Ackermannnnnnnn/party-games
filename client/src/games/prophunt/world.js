@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { MODELS, MATS, modelBounds, partHalf, partMat, resolveMat, PLAYER } from './shared.js';
 import { getTexture, COLORED } from './textures.js';
+import { loadedAsset, matKeyFor } from './assets3d.js';
 
 const tmpColor = new THREE.Color();
 const baseColor = new THREE.Color();
@@ -56,6 +57,8 @@ export function material(key) {
 /** Ajoute uv (projection sur l'axe dominant de la normale, en mètres / échelle de la texture) et couleur. */
 function finish(g, spec, { scale = 1, aoBottom = null } = {}) {
   g = g.index ? g.toNonIndexed() : g;
+  for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal') g.deleteAttribute(k);
+  g.morphAttributes = {};
   const { key, color, def } = resolveMat(spec);
   const pos = g.attributes.position; const nor = g.attributes.normal;
   const n = pos.count;
@@ -100,6 +103,20 @@ export function modelParts(id) {
   const buckets = new Map();
   const b = modelBounds(id);
   const h = b ? b.size[1] : 1;
+  if (m?.glb) {
+    // modèle Kenney : seulement une fois le fichier chargé (sinon rien à dessiner pour l'instant)
+    const raw = loadedAsset(m.glb);
+    if (!raw) return [];
+    for (const r of raw) {
+      const { key, color } = matKeyFor(r.name, r.kit, r.color, r.id);
+      const { g } = finish(r.geometry.clone(), `${key}:${color.toString(16).padStart(6, '0')}`, { aoBottom: [0.75, 0, Math.min(0.5, h * 0.5) || 0.3] });
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(g);
+    }
+    const out = [...buckets].map(([key, gs]) => { const geometry = mergeGeometries(gs); geometry.computeBoundingSphere(); return { key, geometry }; });
+    modelCache.set(ck, out);
+    return out;
+  }
   for (const p of m ? m.parts : [['b', 0, 0.25, 0, 0.5, 0.5, 0.5, 0xff00ff]]) {
     const { g, key } = finish(partGeo(p), partMat(p), { aoBottom: [0.7, b ? b.min[1] : 0, Math.min(0.5, h * 0.5) || 0.3] });
     if (!buckets.has(key)) buckets.set(key, []);
@@ -108,6 +125,15 @@ export function modelParts(id) {
   const out = [...buckets].map(([key, gs]) => { const geometry = mergeGeometries(gs); geometry.computeBoundingSphere(); return { key, geometry }; });
   modelCache.set(ck, out);
   return out;
+}
+
+/** Recolore une géométrie (canapé bleu, vert…) en gardant ses ombres douces. */
+export function tintGeometry(g, hex) {
+  const c = g.attributes.color; if (!c) return;
+  const t = new THREE.Color(hex).convertSRGBToLinear();
+  let max = 0.001; for (let i = 0; i < c.count; i++) max = Math.max(max, c.getX(i) + c.getY(i) + c.getZ(i));
+  for (let i = 0; i < c.count; i++) { const k = (c.getX(i) + c.getY(i) + c.getZ(i)) / max; c.setXYZ(i, t.r * k, t.g * k, t.b * k); }
+  c.needsUpdate = true;
 }
 
 /** Prisme triangulaire (pignon d'un toit) : base w × d, hauteur h, faîte le long de X. */
@@ -158,6 +184,7 @@ export function buildMapMeshes(map) {
     m4.compose(v3.set(o.x, o.y, o.z), q.setFromAxisAngle(up, o.ry || 0), sc.setScalar(o.s || 1));
     for (const { key, geometry } of modelParts(o.m)) {
       const g = geometry.clone().applyMatrix4(m4);
+      if (o.t && (key === 'fabric' || key === 'leather')) tintGeometry(g, o.t);
       add(key, g, key !== 'glass' && !MATS[key]?.e);
     }
   }

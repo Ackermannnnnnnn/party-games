@@ -21,7 +21,7 @@ void main() {
 }`;
 const skyFrag = /* glsl */`
 varying vec3 vDir;
-uniform vec3 top; uniform vec3 horizon; uniform vec3 ground; uniform vec3 sunDir; uniform float time; uniform float clouds;
+uniform vec3 top; uniform vec3 horizon; uniform vec3 ground; uniform vec3 sunDir; uniform float time; uniform float clouds; uniform vec3 cloudCol; uniform float stars;
 float h(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float n(vec2 p) { vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(h(i), h(i + vec2(1, 0)), f.x), mix(h(i + vec2(0, 1)), h(i + vec2(1, 1)), f.x), f.y); }
@@ -36,8 +36,9 @@ void main() {
     vec2 uv = d.xz / (y + 0.12) * 1.4 + vec2(time * 0.004, time * 0.002);
     float c = smoothstep(0.48, 0.78, fbm(uv));
     float shade = 0.82 + 0.18 * fbm(uv * 2.0 + 3.0);
-    col = mix(col, vec3(1.02, 1.0, 0.98) * shade, c * clouds * smoothstep(0.0, 0.18, y));
+    col = mix(col, cloudCol * shade, c * clouds * smoothstep(0.0, 0.18, y));
   }
+  if (y > 0.0 && stars > 0.0) { vec2 sp = floor(d.xz / (y + 0.35) * 160.0); col += vec3(step(0.9965, h(sp)) * stars * smoothstep(0.05, 0.4, y)); }
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -48,7 +49,7 @@ function makeSky(map) {
   const sun = new THREE.Vector3(...map.sun).normalize();
   const mat = new THREE.ShaderMaterial({
     vertexShader: skyVert, fragmentShader: skyFrag, side: THREE.BackSide, depthWrite: false, fog: false,
-    uniforms: { top: { value: c(0x3f7fd0) }, horizon: { value: c(0xcfe6f7) }, ground: { value: c(0x7d8b6a) }, sunDir: { value: sun }, time: { value: 0 }, clouds: { value: 1 } },
+    uniforms: { top: { value: c(map.look?.top ?? 0x3f7fd0) }, horizon: { value: c(map.look?.horizon ?? 0xcfe6f7) }, ground: { value: c(map.look?.ground ?? 0x7d8b6a) }, sunDir: { value: sun }, time: { value: 0 }, clouds: { value: map.look?.clouds ?? 1 }, cloudCol: { value: c(map.look?.cloudCol ?? 0xfffcf8) }, stars: { value: map.look?.stars ?? 0 } },
   });
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(500, 32, 16), mat);
   mesh.frustumCulled = false; mesh.renderOrder = -1;
@@ -58,19 +59,21 @@ function makeSky(map) {
 export function Environment({ map, quality, overlay }) {
   const { gl, scene, camera, size } = useThree();
   const sunRef = useRef();
-  const outdoor = map.env === 'outdoor';
+  const outdoor = map.env === 'outdoor' || map.env === 'night';
+  const night = map.env === 'night';
+  const look = map.look || {};
   const sky = useMemo(() => (outdoor ? makeSky(map) : null), [map, outdoor]);
 
   // reflets (environnement) : le ciel dehors, une pièce neutre dedans
   useEffect(() => {
     gl.toneMapping = THREE.ACESFilmicToneMapping;
-    gl.toneMappingExposure = outdoor ? 0.95 : 1.05;
+    gl.toneMappingExposure = look.exposure ?? (outdoor ? 0.95 : 1.05);
     gl.shadowMap.enabled = quality !== 'low';
     gl.shadowMap.type = THREE.PCFSoftShadowMap;
     const pmrem = new THREE.PMREMGenerator(gl);
     let rt;
     if (outdoor) {
-      const s = new THREE.Scene(); const sk = makeSky(map); sk.material.uniforms.clouds.value = 0.5; s.add(sk);
+      const s = new THREE.Scene(); const sk = makeSky(map); sk.material.uniforms.clouds.value = (look.clouds ?? 1) * 0.5; s.add(sk);
       rt = pmrem.fromScene(s, 0.02, 0.1, 1000);
       scene.background = null;
     } else {
@@ -130,10 +133,10 @@ export function Environment({ map, quality, overlay }) {
   return (
     <>
       {sky && <primitive object={sky} />}
-      <hemisphereLight args={[outdoor ? 0xcfe4ff : 0xfff8ee, outdoor ? 0x6f6248 : 0x8a7c6c, outdoor ? 0.75 : 0.9]} />
-      <directionalLight ref={sunRef} position={shadow.pos} intensity={(outdoor ? 3.0 : 1.7) * k + (outdoor ? 0 : 0.2)} color={outdoor ? 0xfff0d8 : 0xffffff} castShadow={quality !== 'low'} />
+      <hemisphereLight args={look.hemi ? look.hemi : [outdoor ? 0xcfe4ff : 0xfff8ee, outdoor ? 0x6f6248 : 0x8a7c6c, outdoor ? 0.75 : 0.9]} />
+      <directionalLight ref={sunRef} position={shadow.pos} intensity={look.sun ?? ((outdoor ? 3.0 : 1.7) * k + (outdoor ? 0 : 0.2))} color={look.sunColor ?? (outdoor ? 0xfff0d8 : 0xffffff)} castShadow={quality !== 'low'} />
       {!outdoor && <directionalLight position={[-shadow.pos[0], 40, -shadow.pos[2]]} intensity={0.45} />}
-      {quality === 'low' && <ambientLight intensity={outdoor ? 0.5 : 0.6} />}
+      {quality === 'low' && <ambientLight intensity={night ? 0.25 : outdoor ? 0.5 : 0.6} />}
       {quality !== 'low' && (map.lights || []).map((l, i) => <pointLight key={i} position={[l[0], l[1], l[2]]} color={l[3]} intensity={l[4]} distance={l[5]} decay={1.6} />)}
     </>
   );

@@ -1,5 +1,5 @@
 import { useGameOptions } from '../../hooks/useGameOptions.js';
-import { MAP_LIST } from './shared.js';
+import { MAP_LIST } from './common/mapList.js';
 
 const DEFAULT_OPTS = { map: 'rotate', rounds: 0, huntSec: 240, hideSec: 45, hunters: 'auto', tauntSec: 45, decoys: 2 };
 
