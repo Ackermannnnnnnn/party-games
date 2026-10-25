@@ -1,5 +1,81 @@
 [
  {
+  "id": "2026-10-25-247716ea",
+  "game": "prophunt",
+  "label": "Prop Hunt",
+  "room": "XTNX4W",
+  "startedAt": 1792928239137,
+  "endedAt": 1792928442020,
+  "durationSec": 203,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "qea",
+    "avatar": "img:perso/thor"
+   }
+  ],
+  "winner": "Mo",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": 5,
+    "detail": "1 trouvé(s) · 0 manche(s) survécue(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "qea",
+    "avatar": "img:perso/thor",
+    "score": 5,
+    "detail": "1 trouvé(s) · 0 manche(s) survécue(s)",
+    "win": false
+   }
+  ],
+  "recap": {
+   "events": [
+    {
+     "round": 1,
+     "text": "Manche 1 · Lotissement · chasseurs : Mo"
+    },
+    {
+     "text": "Mo a trouvé qea (déguisé en Table de chevet)",
+     "accent": true
+    },
+    {
+     "text": "Les chasseurs gagnent la manche",
+     "accent": true
+    },
+    {
+     "round": 2,
+     "text": "Manche 2 · Supérette · chasseurs : qea"
+    },
+    {
+     "text": "qea a trouvé Mo (déguisé en Carton)",
+     "accent": true
+    },
+    {
+     "text": "Les chasseurs gagnent la manche",
+     "accent": true
+    }
+   ]
+  },
+  "options": {
+   "map": "rotate",
+   "rounds": 0,
+   "huntSec": 240,
+   "hideSec": 45,
+   "hunters": "auto",
+   "tauntSec": 45,
+   "decoys": 2
+  }
+ },
+ {
   "id": "2026-10-25-5f9635d3",
   "game": "blindtest",
   "label": "Blind Test",
