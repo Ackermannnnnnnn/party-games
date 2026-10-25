@@ -1,5 +1,110 @@
 [
  {
+  "id": "2026-10-25-0c624804",
+  "game": "whoisit",
+  "label": "Qui est-ce ?",
+  "room": "GNJC6K",
+  "startedAt": 1792888139044,
+  "endedAt": 1792888266608,
+  "durationSec": 128,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "FEV",
+    "avatar": "img:perso/wolverine"
+   }
+  ],
+  "winner": "FEV",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "FEV",
+    "avatar": "img:perso/wolverine",
+    "score": null,
+    "detail": "trouvé en 5 question(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": null,
+    "detail": "pas trouvé",
+    "win": false
+   }
+  ],
+  "recap": {
+   "mode": "Qui suis-je ?",
+   "events": [
+    {
+     "text": "Chacun a son personnage sur le front : à vous de trouver qui vous êtes !",
+     "accent": false
+    },
+    {
+     "text": "mohfr93n0aomwcrw : Sa couleur principale est-elle le rouge ? → non"
+    },
+    {
+     "text": "iyeo62dnnechjm6s : Est-ce un personnage masculin ? → oui"
+    },
+    {
+     "text": "mohfr93n0aomwcrw : Vient-il de l'univers Marvel ? → non"
+    },
+    {
+     "text": "iyeo62dnnechjm6s : Est-ce un personnage féminin ? → non"
+    },
+    {
+     "text": "mohfr93n0aomwcrw : Est-il sans cheveux visibles (chauve, casque, fourrure…) ? → oui"
+    },
+    {
+     "text": "iyeo62dnnechjm6s : Vient-il de l'univers Cinéma & séries ? → non"
+    },
+    {
+     "text": "mohfr93n0aomwcrw : Est-ce un animal ? → non"
+    },
+    {
+     "text": "iyeo62dnnechjm6s : A-t-il les cheveux colorés (bleu, rose, vert…) ? → non"
+    },
+    {
+     "text": "mohfr93n0aomwcrw : Vient-il de l'univers Disney & Pixar ? → oui"
+    },
+    {
+     "text": "iyeo62dnnechjm6s propose Olaf : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "mohfr93n0aomwcrw propose Buzz l'Éclair : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "iyeo62dnnechjm6s propose Gon : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "mohfr93n0aomwcrw propose Olaf : bonne réponse !",
+     "accent": true,
+     "danger": false
+    }
+   ]
+  },
+  "options": {
+   "mode": "postit",
+   "universes": [],
+   "boardSize": 24,
+   "questions": "both",
+   "wrongGuess": "skip",
+   "meneur": "app",
+   "rounds": 5,
+   "autoFlip": true
+  }
+ },
+ {
   "id": "2026-10-25-6ffd61ef",
   "game": "prophunt",
   "label": "Prop Hunt",
