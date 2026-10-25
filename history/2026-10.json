@@ -1,5 +1,82 @@
 [
  {
+  "id": "2026-10-25-017a0ea1",
+  "game": "prophunt",
+  "label": "Prop Hunt",
+  "room": "K88MY7",
+  "startedAt": 1792957624866,
+  "endedAt": 1792957806738,
+  "durationSec": 182,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Hittt",
+    "avatar": "img:perso/deadpool"
+   }
+  ],
+  "winner": "Mo",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": 5,
+    "detail": "1 trouvé(s) · 0 manche(s) survécue(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Hittt",
+    "avatar": "img:perso/deadpool",
+    "score": 5,
+    "detail": "1 trouvé(s) · 0 manche(s) survécue(s)",
+    "win": false
+   }
+  ],
+  "recap": {
+   "events": [
+    {
+     "round": 1,
+     "text": "Manche 1 · Supérette · chasseurs : Mo"
+    },
+    {
+     "text": "Mo a trouvé Hittt (déguisé en Bouteille de soda)",
+     "accent": true
+    },
+    {
+     "text": "Les chasseurs gagnent la manche",
+     "accent": true
+    },
+    {
+     "round": 2,
+     "text": "Manche 2 · Open-space · chasseurs : Hittt"
+    },
+    {
+     "text": "Hittt a trouvé Mo (déguisé en Tasse de thé)",
+     "accent": true
+    },
+    {
+     "text": "Les chasseurs gagnent la manche",
+     "accent": true
+    }
+   ]
+  },
+  "options": {
+   "map": "rotate",
+   "mode": "classic",
+   "rounds": 0,
+   "huntSec": 240,
+   "hideSec": 45,
+   "hunters": "auto",
+   "tauntSec": 45,
+   "decoys": 2
+  }
+ },
+ {
   "id": "2026-10-25-17f28727",
   "game": "prophunt",
   "label": "Prop Hunt",
