@@ -1,5 +1,78 @@
 [
  {
+  "id": "2026-10-25-17f28727",
+  "game": "prophunt",
+  "label": "Prop Hunt",
+  "room": "BVN25C",
+  "startedAt": 1792932006879,
+  "endedAt": 1792932361437,
+  "durationSec": 355,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "sss",
+    "avatar": "img:perso/black-panther"
+   }
+  ],
+  "winner": "sss",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "sss",
+    "avatar": "img:perso/black-panther",
+    "score": 9,
+    "detail": "1 trouvé(s) · 1 manche(s) survécue(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": 0,
+    "detail": "0 trouvé(s) · 0 manche(s) survécue(s)",
+    "win": false
+   }
+  ],
+  "recap": {
+   "events": [
+    {
+     "round": 1,
+     "text": "Manche 1 · Cuisine géante · chasseurs : sss"
+    },
+    {
+     "text": "sss a trouvé Mo (déguisé en Petit carton)",
+     "accent": true
+    },
+    {
+     "text": "Les chasseurs gagnent la manche",
+     "accent": true
+    },
+    {
+     "round": 2,
+     "text": "Manche 2 · École · chasseurs : Mo"
+    },
+    {
+     "text": "Les cachés gagnent : sss ont survécu",
+     "accent": true
+    }
+   ]
+  },
+  "options": {
+   "map": "rotate",
+   "mode": "classic",
+   "rounds": 0,
+   "huntSec": 240,
+   "hideSec": 45,
+   "hunters": "auto",
+   "tauntSec": 45,
+   "decoys": 2
+  }
+ },
+ {
   "id": "2026-10-25-1954dbe1",
   "game": "prophunt",
   "label": "Prop Hunt",
