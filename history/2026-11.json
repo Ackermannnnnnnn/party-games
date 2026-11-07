@@ -1,5 +1,147 @@
 [
  {
+  "id": "2026-11-07-91307c5c",
+  "game": "whoisit",
+  "label": "Qui est-ce ?",
+  "room": "RMB3QX",
+  "startedAt": 1794078001673,
+  "endedAt": 1794078360401,
+  "durationSec": 359,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769"
+   }
+  ],
+  "winner": "Eren foncé",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": null,
+    "detail": "trouvé en 11 question(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": null,
+    "detail": "pas trouvé",
+    "win": false
+   }
+  ],
+  "recap": {
+   "mode": "Qui suis-je ?",
+   "events": [
+    {
+     "text": "Chacun a son personnage sur le front : à vous de trouver qui vous êtes !",
+     "accent": false
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Vient-il de l'univers Cinéma & séries ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Est-ce un personnage féminin ? → non"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Vient-il de l'univers Marvel ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Est-ce un personnage masculin ? → oui"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : A-t-il des pouvoirs ou de la magie ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Vient-il de l'univers DC ? → non"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : FEMININ? → non (répondu par 7w35q53yk98ldhpl)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Vient-il de l'univers Anime ? → oui"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Est-ce un méchant ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : annimé connu → oui (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Est-ce un humain ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : naruto → oui (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : adolescnedf → non (répondu par 7w35q53yk98ldhpl)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : mechant → non (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : il a une cape → non (répondu par 7w35q53yk98ldhpl)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : il a un dojutsu → non (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf propose Thor : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7w35q53yk98ldhpl : cheveux d'une couleur unique → oui (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : vert → non (répondu par 7w35q53yk98ldhpl)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : cheveux jaune ? → oui (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf propose Wolverine : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7w35q53yk98ldhpl : vivant ? → oui (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : A-t-il une barbe ou une moustache ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose Naruto : bonne réponse !",
+     "accent": true,
+     "danger": false
+    }
+   ]
+  },
+  "options": {
+   "mode": "postit",
+   "universes": [
+    "anime",
+    "cinema",
+    "dc",
+    "marvel",
+    "gaming"
+   ],
+   "boardSize": 24,
+   "questions": "both",
+   "wrongGuess": "skip",
+   "meneur": "app",
+   "rounds": 5,
+   "autoFlip": true
+  }
+ },
+ {
   "id": "2026-11-07-e283d006",
   "game": "prophunt",
   "label": "Prop Hunt",
