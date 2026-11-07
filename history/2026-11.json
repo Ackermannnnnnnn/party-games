@@ -1,5 +1,207 @@
 [
  {
+  "id": "2026-11-07-313a5421",
+  "game": "blindtest",
+  "label": "Blind Test",
+  "room": "RMB3QX",
+  "startedAt": 1794081663636,
+  "endedAt": 1794082095726,
+  "durationSec": 432,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769"
+   },
+   {
+    "pseudo": "oui",
+    "avatar": "img:perso/batman"
+   }
+  ],
+  "winner": "Eren foncé",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": 1229,
+    "detail": "6 trouvé(s)"
+   },
+   {
+    "rank": 2,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": 1030,
+    "detail": "5 trouvé(s)"
+   },
+   {
+    "rank": 3,
+    "pseudo": "oui",
+    "avatar": "img:perso/batman",
+    "score": 909,
+    "detail": "4 trouvé(s)"
+   }
+  ],
+  "recap": {
+   "rounds": [
+    {
+     "universe": "film",
+     "answer": "Vaiana",
+     "artist": "Cerise Calixte",
+     "song": "Le bleu lumière",
+     "found": [
+      "oui",
+      "Mo"
+     ]
+    },
+    {
+     "universe": "musique",
+     "answer": "Ça (c'est vraiment toi)",
+     "artist": "Téléphone",
+     "song": "Ça (c'est vraiment toi)",
+     "found": []
+    },
+    {
+     "universe": "film",
+     "answer": "Men in Black",
+     "artist": "Will Smith",
+     "song": "Men in Black",
+     "found": [
+      "oui"
+     ]
+    },
+    {
+     "universe": "film",
+     "answer": "Star Wars",
+     "artist": "John Williams",
+     "song": "The Imperial March",
+     "found": [
+      "Eren foncé",
+      "oui",
+      "Mo"
+     ]
+    },
+    {
+     "universe": "film",
+     "answer": "Inception",
+     "artist": "Hans Zimmer",
+     "song": "Time",
+     "found": [
+      "Mo",
+      "oui",
+      "Eren foncé"
+     ]
+    },
+    {
+     "universe": "musique",
+     "answer": "One More Time",
+     "artist": "Daft Punk",
+     "song": "One More Time",
+     "found": [
+      "Mo",
+      "Eren foncé",
+      "oui"
+     ]
+    },
+    {
+     "universe": "musique",
+     "answer": "Smells Like Teen Spirit",
+     "artist": "Nirvana",
+     "song": "Smells Like Teen Spirit",
+     "found": [
+      "Eren foncé"
+     ]
+    },
+    {
+     "universe": "film",
+     "answer": "Spider-Man : New Generation",
+     "artist": "Post Malone",
+     "song": "Sunflower",
+     "found": [
+      "Eren foncé"
+     ]
+    },
+    {
+     "universe": "musique",
+     "answer": "Les Lacs du Connemara",
+     "artist": "Michel Sardou",
+     "song": "Les Lacs du Connemara",
+     "found": []
+    },
+    {
+     "universe": "film",
+     "answer": "Hercule",
+     "artist": "Hercule",
+     "song": "De zéro en héros",
+     "found": []
+    },
+    {
+     "universe": "serie",
+     "answer": "Dr House",
+     "artist": "Massive Attack",
+     "song": "Teardrop",
+     "found": []
+    },
+    {
+     "universe": "musique",
+     "answer": "Uptown Funk",
+     "artist": "Mark Ronson",
+     "song": "Uptown Funk",
+     "found": [
+      "Mo",
+      "Eren foncé",
+      "oui"
+     ]
+    },
+    {
+     "universe": "film",
+     "answer": "Kill Bill",
+     "artist": "Tomoyasu Hotei",
+     "song": "Battle Without Honor or Humanity",
+     "found": []
+    },
+    {
+     "universe": "musique",
+     "answer": "Without Me",
+     "artist": "Eminem",
+     "song": "Without Me",
+     "found": [
+      "Eren foncé",
+      "Mo",
+      "oui"
+     ]
+    },
+    {
+     "universe": "musique",
+     "answer": "Allumer le feu",
+     "artist": "Johnny Hallyday",
+     "song": "Allumer le feu",
+     "found": [
+      "Eren foncé",
+      "Mo",
+      "oui"
+     ]
+    }
+   ]
+  },
+  "options": {
+   "universes": [],
+   "formats": [
+    "audio"
+   ],
+   "popularity": "mainstream",
+   "playMode": "online",
+   "answerMode": "free",
+   "gameMaster": false,
+   "nbRounds": 15,
+   "roundSec": 25
+  }
+ },
+ {
   "id": "2026-11-07-78d3b63c",
   "game": "whoisit",
   "label": "Qui est-ce ?",
