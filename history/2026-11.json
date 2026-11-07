@@ -1,5 +1,74 @@
 [
  {
+  "id": "2026-11-07-74aebd8c",
+  "game": "whoisit",
+  "label": "Qui est-ce ?",
+  "room": "RMB3QX",
+  "startedAt": 1794078368375,
+  "endedAt": 1794078387813,
+  "durationSec": 19,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769"
+   }
+  ],
+  "winner": "Mo",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": null,
+    "detail": "trouvé en 0 question(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": null,
+    "detail": "pas trouvé",
+    "win": false
+   }
+  ],
+  "recap": {
+   "mode": "Qui suis-je ?",
+   "events": [
+    {
+     "text": "Chacun a son personnage sur le front : à vous de trouver qui vous êtes !",
+     "accent": false
+    },
+    {
+     "text": "7tn1ypojop6uqkyf propose Creeper : bonne réponse !",
+     "accent": true,
+     "danger": false
+    }
+   ]
+  },
+  "options": {
+   "mode": "postit",
+   "universes": [
+    "anime",
+    "cinema",
+    "dc",
+    "marvel",
+    "gaming"
+   ],
+   "boardSize": 24,
+   "questions": "both",
+   "wrongGuess": "skip",
+   "meneur": "app",
+   "rounds": 5,
+   "autoFlip": true
+  }
+ },
+ {
   "id": "2026-11-07-91307c5c",
   "game": "whoisit",
   "label": "Qui est-ce ?",
