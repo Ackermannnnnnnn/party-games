@@ -1,5 +1,96 @@
 [
  {
+  "id": "2026-11-07-75dfb5ae",
+  "game": "whoisit",
+  "label": "Qui est-ce ?",
+  "room": "RMB3QX",
+  "startedAt": 1794081041708,
+  "endedAt": 1794081154550,
+  "durationSec": 113,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769"
+   },
+   {
+    "pseudo": "oui",
+    "avatar": "img:perso/batman"
+   }
+  ],
+  "winner": "Eren foncé",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": null,
+    "detail": "trouvé en 0 question(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "oui",
+    "avatar": "img:perso/batman",
+    "score": null,
+    "detail": "trouvé en 0 question(s)",
+    "win": false
+   },
+   {
+    "rank": 3,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": null,
+    "detail": "pas trouvé",
+    "win": false
+   }
+  ],
+  "recap": {
+   "mode": "Qui suis-je ?",
+   "events": [
+    {
+     "text": "Chacun a son personnage sur le front : à vous de trouver qui vous êtes !",
+     "accent": false
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose Anya : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose Edward Elric : bonne réponse !",
+     "accent": true,
+     "danger": false
+    },
+    {
+     "text": "1a3d4vs74xktie5q propose Nezuko : bonne réponse !",
+     "accent": true,
+     "danger": false
+    }
+   ]
+  },
+  "options": {
+   "mode": "postit",
+   "universes": [
+    "anime",
+    "cinema",
+    "dc",
+    "marvel",
+    "gaming"
+   ],
+   "boardSize": 24,
+   "questions": "both",
+   "wrongGuess": "skip",
+   "meneur": "app",
+   "rounds": 5,
+   "autoFlip": true
+  }
+ },
+ {
   "id": "2026-11-07-d9f3cbb3",
   "game": "whoisit",
   "label": "Qui est-ce ?",
