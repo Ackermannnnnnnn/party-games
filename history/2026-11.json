@@ -1,5 +1,82 @@
 [
  {
+  "id": "2026-11-07-e283d006",
+  "game": "prophunt",
+  "label": "Prop Hunt",
+  "room": "RMB3QX",
+  "startedAt": 1794077487798,
+  "endedAt": 1794077976617,
+  "durationSec": 489,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769"
+   }
+  ],
+  "winner": "Mo",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": 13,
+    "detail": "1 trouvé(s) · 0 manche(s) survécue(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": 6,
+    "detail": "1 trouvé(s) · 0 manche(s) survécue(s)",
+    "win": false
+   }
+  ],
+  "recap": {
+   "events": [
+    {
+     "round": 1,
+     "text": "Manche 1 · Lotissement · chasseurs : Mo"
+    },
+    {
+     "text": "Mo a trouvé Eren foncé (déguisé en Niche)",
+     "accent": true
+    },
+    {
+     "text": "Les chasseurs gagnent la manche",
+     "accent": true
+    },
+    {
+     "round": 2,
+     "text": "Manche 2 · Supérette · chasseurs : Eren foncé"
+    },
+    {
+     "text": "Eren foncé a trouvé Mo (déguisé en Pot de miel)",
+     "accent": true
+    },
+    {
+     "text": "Les chasseurs gagnent la manche",
+     "accent": true
+    }
+   ]
+  },
+  "options": {
+   "map": "rotate",
+   "mode": "classic",
+   "rounds": 0,
+   "huntSec": 240,
+   "hideSec": 45,
+   "hunters": "auto",
+   "tauntSec": 45,
+   "decoys": 2
+  }
+ },
+ {
   "id": "2026-11-07-73a31027",
   "game": "liarsbar",
   "label": "Liar's Bar",
