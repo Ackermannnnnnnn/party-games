@@ -1,5 +1,273 @@
 [
  {
+  "id": "2026-11-07-d1fc8d00",
+  "game": "liarsbar",
+  "label": "Liar's Bar",
+  "room": "RMB3QX",
+  "startedAt": 1794076816260,
+  "endedAt": 1794077049311,
+  "durationSec": 233,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769"
+   },
+   {
+    "pseudo": "samsung ipoX3D3Pro",
+    "avatar": "img:perso/black-panther"
+   }
+  ],
+  "winner": "samsung ipoX3D3Pro",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "samsung ipoX3D3Pro",
+    "avatar": "img:perso/black-panther",
+    "score": null,
+    "detail": "2 tir(s) au revolver · survivant",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": null,
+    "detail": "4 tir(s) au revolver",
+    "win": false
+   },
+   {
+    "rank": 3,
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": null,
+    "detail": "3 tir(s) au revolver",
+    "win": false
+   }
+  ],
+  "recap": {
+   "events": [
+    {
+     "round": 1,
+     "text": "Manche 1 : table de Dames (3 joueurs)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl crie « Menteur ! » à xlans587u0k1a8mo → Dame : vérité",
+     "accent": true
+    },
+    {
+     "text": "7w35q53yk98ldhpl tire (1/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 2,
+     "text": "Manche 2 : table de Ass (3 joueurs)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl pose 2 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 3 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo crie « Menteur ! » à 7tn1ypojop6uqkyf → As, As, As : vérité",
+     "accent": true
+    },
+    {
+     "text": "xlans587u0k1a8mo tire (1/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 3,
+     "text": "Manche 3 : table de Dames (3 joueurs)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl pose 1 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 1 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 2 carte(s)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl pose 1 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 1 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo crie « Menteur ! » à 7tn1ypojop6uqkyf → Dame : vérité",
+     "accent": true
+    },
+    {
+     "text": "xlans587u0k1a8mo tire (2/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 4,
+     "text": "Manche 4 : table de Rois (3 joueurs)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl pose 1 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 1 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl pose 1 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 1 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl crie « Menteur ! » à xlans587u0k1a8mo → Roi : vérité",
+     "accent": true
+    },
+    {
+     "text": "7w35q53yk98ldhpl tire (2/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 5,
+     "text": "Manche 5 : table de Rois (3 joueurs)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl pose 2 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 3 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo crie « Menteur ! » à 7tn1ypojop6uqkyf → Dame, Dame, Dame : mensonge",
+     "accent": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf tire (1/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 6,
+     "text": "Manche 6 : table de Ass (3 joueurs)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 1 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl pose 2 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf crie « Menteur ! » à 7w35q53yk98ldhpl → As, As : vérité",
+     "accent": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf tire (2/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 7,
+     "text": "Manche 7 : table de Dames (3 joueurs)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 2 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl crie « Menteur ! » à xlans587u0k1a8mo → Dame : vérité",
+     "accent": true
+    },
+    {
+     "text": "7w35q53yk98ldhpl tire (3/6) : 💥 BANG, éliminé",
+     "danger": true
+    },
+    {
+     "round": 8,
+     "text": "Manche 8 : table de Rois (2 joueurs)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 1 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 2 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf crie « Menteur ! » à xlans587u0k1a8mo → Joker : vérité",
+     "accent": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf tire (3/6) : clic, survit",
+     "danger": false
+    },
+    {
+     "round": 9,
+     "text": "Manche 9 : table de Rois (2 joueurs)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 1 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 1 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf pose 1 carte(s)"
+    },
+    {
+     "text": "xlans587u0k1a8mo pose 1 carte(s)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf crie « Menteur ! » à xlans587u0k1a8mo → Roi : vérité",
+     "accent": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf tire (4/6) : 💥 BANG, éliminé",
+     "danger": true
+    }
+   ]
+  },
+  "options": {
+   "accuseMode": "next",
+   "devilCard": true,
+   "turnSec": 30,
+   "view": "3d"
+  }
+ },
+ {
   "id": "2026-11-07-353ebd09",
   "game": "liarsbar",
   "label": "Liar's Bar",
