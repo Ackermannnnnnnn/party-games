@@ -1,5 +1,129 @@
 [
  {
+  "id": "2026-11-07-05a31c1a",
+  "game": "whoisit",
+  "label": "Qui est-ce ?",
+  "room": "RMB3QX",
+  "startedAt": 1794079196453,
+  "endedAt": 1794079413323,
+  "durationSec": 217,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769"
+   }
+  ],
+  "winner": "Mo",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": null,
+    "detail": "trouvé en 8 question(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": null,
+    "detail": "pas trouvé",
+    "win": false
+   }
+  ],
+  "recap": {
+   "mode": "Qui suis-je ?",
+   "events": [
+    {
+     "text": "Chacun a son personnage sur le front : à vous de trouver qui vous êtes !",
+     "accent": false
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Est-ce un humain ? → non"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Vient-il d'un dessin animé, d'un anime ou d'un jeu vidéo ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Est-ce un robot ou un cyborg ? → non"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Est-ce un animal ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : annimal ? → non (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Vient-il de l'univers Jeux vidéo ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose Groot : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Est-ce un méchant ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Est-ce une créature, un dieu ou un alien ? → oui"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : A-t-il des pouvoirs ou de la magie ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : dans un film ? → je ne sais pas (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Porte-t-il un chapeau, une casquette ou une capuche ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : annimé → oui (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Est-ce un personnage masculin ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : A-t-il les cheveux colorés (bleu, rose, vert…) ? → non"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Porte-t-il des lunettes ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose Light Yagami : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf propose Steve : bonne réponse !",
+     "accent": true,
+     "danger": false
+    }
+   ]
+  },
+  "options": {
+   "mode": "postit",
+   "universes": [
+    "anime",
+    "cinema",
+    "dc",
+    "marvel",
+    "gaming"
+   ],
+   "boardSize": 24,
+   "questions": "both",
+   "wrongGuess": "skip",
+   "meneur": "app",
+   "rounds": 5,
+   "autoFlip": true
+  }
+ },
+ {
   "id": "2026-11-07-88c8337b",
   "game": "whoisit",
   "label": "Qui est-ce ?",
