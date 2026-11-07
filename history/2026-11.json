@@ -1,5 +1,118 @@
 [
  {
+  "id": "2026-11-07-d027cfb1",
+  "game": "whoisit",
+  "label": "Qui est-ce ?",
+  "room": "RMB3QX",
+  "startedAt": 1794078390938,
+  "endedAt": 1794078553863,
+  "durationSec": 163,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769"
+   }
+  ],
+  "winner": "Mo",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": null,
+    "detail": "trouvé en 7 question(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": null,
+    "detail": "pas trouvé",
+    "win": false
+   }
+  ],
+  "recap": {
+   "mode": "Qui suis-je ?",
+   "events": [
+    {
+     "text": "Chacun a son personnage sur le front : à vous de trouver qui vous êtes !",
+     "accent": false
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Vient-il de l'univers DC ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Est-ce un personnage masculin ? → oui"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Vient-il de l'univers Jeux vidéo ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Vient-il d'un dessin animé, d'un anime ou d'un jeu vidéo ? → oui"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : A-t-il une arme ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Est-ce un animal ? → non"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : A-t-il une barbe ou une moustache ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : italien → non (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : A-t-il les cheveux bruns ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : jeu recent → non (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Sa couleur principale est-elle le rouge ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : animee → oui (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Sa couleur principale est-elle le vert ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose Goku : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf propose Luigi : bonne réponse !",
+     "accent": true,
+     "danger": false
+    }
+   ]
+  },
+  "options": {
+   "mode": "postit",
+   "universes": [
+    "anime",
+    "cinema",
+    "dc",
+    "marvel",
+    "gaming"
+   ],
+   "boardSize": 24,
+   "questions": "both",
+   "wrongGuess": "skip",
+   "meneur": "app",
+   "rounds": 5,
+   "autoFlip": true
+  }
+ },
+ {
   "id": "2026-11-07-74aebd8c",
   "game": "whoisit",
   "label": "Qui est-ce ?",
