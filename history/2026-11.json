@@ -1,5 +1,233 @@
 [
  {
+  "id": "2026-11-07-78d3b63c",
+  "game": "whoisit",
+  "label": "Qui est-ce ?",
+  "room": "RMB3QX",
+  "startedAt": 1794081156704,
+  "endedAt": 1794081596777,
+  "durationSec": 440,
+  "host": "Mo",
+  "players": [
+   {
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man"
+   },
+   {
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769"
+   },
+   {
+    "pseudo": "oui",
+    "avatar": "img:perso/batman"
+   }
+  ],
+  "winner": "oui",
+  "ranking": [
+   {
+    "rank": 1,
+    "pseudo": "oui",
+    "avatar": "img:perso/batman",
+    "score": null,
+    "detail": "trouvé en 4 question(s)",
+    "win": true
+   },
+   {
+    "rank": 2,
+    "pseudo": "Eren foncé",
+    "avatar": "photo:b07f8e946cc64769",
+    "score": null,
+    "detail": "trouvé en 9 question(s)",
+    "win": false
+   },
+   {
+    "rank": 3,
+    "pseudo": "Mo",
+    "avatar": "img:perso/spider-man",
+    "score": null,
+    "detail": "pas trouvé",
+    "win": false
+   }
+  ],
+  "recap": {
+   "mode": "Qui suis-je ?",
+   "events": [
+    {
+     "text": "Chacun a son personnage sur le front : à vous de trouver qui vous êtes !",
+     "accent": false
+    },
+    {
+     "text": "1a3d4vs74xktie5q : Vient-il d'un dessin animé, d'un anime ou d'un jeu vidéo ? → oui"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Vient-il de l'univers DC ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Vient-il de l'univers Anime ? → non"
+    },
+    {
+     "text": "1a3d4vs74xktie5q : Vient-il de l'univers Jeux vidéo ? → oui"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Vient-il de l'univers Marvel ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : Vient-il de l'univers Cinéma & séries ? → oui"
+    },
+    {
+     "text": "1a3d4vs74xktie5q : Est-ce un personnage féminin ? → non"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Est-ce un personnage masculin ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : marvel → non (répondu par 1a3d4vs74xktie5q)"
+    },
+    {
+     "text": "1a3d4vs74xktie5q : Est-ce un humain ? → non"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Est-ce une créature, un dieu ou un alien ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : dc → non (répondu par 1a3d4vs74xktie5q)"
+    },
+    {
+     "text": "1a3d4vs74xktie5q propose Kirby : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : A-t-il les cheveux noirs ? → oui"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : homme ? → oui (répondu par 1a3d4vs74xktie5q)"
+    },
+    {
+     "text": "1a3d4vs74xktie5q propose Crash : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : Est-ce un robot ou un cyborg ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : sport ? → non (répondu par 1a3d4vs74xktie5q)"
+    },
+    {
+     "text": "1a3d4vs74xktie5q propose Yoshi : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : film → non (répondu par 7w35q53yk98ldhpl)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose James Bond : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "1a3d4vs74xktie5q propose Donkey Kong : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : seriµ → non (répondu par 7w35q53yk98ldhpl)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose Neo : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "1a3d4vs74xktie5q propose Bowser : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf propose Donkey Kong : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose Indiana Jones : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "1a3d4vs74xktie5q propose Creeper : bonne réponse !",
+     "accent": true,
+     "danger": false
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : A-t-il une arme ? → non"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : serie → non (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf propose Harry Potter : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose Jack Sparrow : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : jeu → non (répondu par 7w35q53yk98ldhpl)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : sorcccier sans nez ? → non (répondu par 1a3d4vs74xktie5q)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf : qnime → oui (répondu par 7w35q53yk98ldhpl)"
+    },
+    {
+     "text": "7w35q53yk98ldhpl : dans harry potter → non (répondu par 7tn1ypojop6uqkyf)"
+    },
+    {
+     "text": "7tn1ypojop6uqkyf propose Goku : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose Terminator : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7tn1ypojop6uqkyf propose L : raté",
+     "accent": true,
+     "danger": true
+    },
+    {
+     "text": "7w35q53yk98ldhpl propose Gandalf : bonne réponse !",
+     "accent": true,
+     "danger": false
+    }
+   ]
+  },
+  "options": {
+   "mode": "postit",
+   "universes": [
+    "anime",
+    "cinema",
+    "dc",
+    "marvel",
+    "gaming"
+   ],
+   "boardSize": 24,
+   "questions": "both",
+   "wrongGuess": "skip",
+   "meneur": "app",
+   "rounds": 5,
+   "autoFlip": true
+  }
+ },
+ {
   "id": "2026-11-07-75dfb5ae",
   "game": "whoisit",
   "label": "Qui est-ce ?",
